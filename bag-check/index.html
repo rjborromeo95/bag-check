@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bag check — playtest rig</title>
+<meta name="description" content="A digital playtest rig for Bag Check, a card game about airport security screening.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="signage">
+  <span class="mark">Bag check</span>
+  <span class="lane">Lane 4</span>
+  <span class="belt-count" id="beltCount">18 trays on the belt</span>
+  <span class="clock" id="clock">0:00</span>
+</header>
+
+<section class="beltbar" aria-label="Conveyor">
+  <div class="belt" id="belt"></div>
+</section>
+
+<main class="lane-grid">
+
+  <section class="rig">
+    <div class="stagewrap" id="stagewrap">
+      <div class="stage" id="stage">
+
+        <div class="conveyor"><div class="rollers" id="rollers"></div></div>
+
+        <div class="arch">
+          <div class="arch-mouth"></div>
+          <div class="arch-head">
+            <span class="arch-lamp" id="lamp"></span>
+            <span class="arch-name">Detector</span>
+          </div>
+        </div>
+
+        <div class="bin" id="bin"><span>Seized</span></div>
+        <p class="bench-note">Inspection bench</p>
+
+        <div class="tray" id="tray" hidden><div class="tray-lip"></div><div class="tray-case" id="trayCase" hidden></div></div>
+
+      </div>
+    </div>
+
+    <p class="prompt" id="prompt">Two officers, one belt. It ends when the belt is empty.</p>
+    <div class="controls" id="controls"></div>
+  </section>
+
+  <aside class="tally">
+    <div class="pane pane-you">
+      <p class="pane-who">You</p>
+      <p class="pane-score" id="youScore">0</p>
+      <p class="pane-caveat">before paperwork</p>
+      <dl class="pane-lines">
+        <div><dt>Trays</dt><dd id="youTrays">0</dd></div>
+        <div><dt>Seized</dt><dd id="youSeized">0</dd></div>
+      </dl>
+    </div>
+    <div class="pane pane-opp">
+      <p class="pane-who">Officer B</p>
+      <p class="pane-score" id="oppScore">0</p>
+      <p class="pane-caveat">before paperwork</p>
+      <dl class="pane-lines">
+        <div><dt>Trays</dt><dd id="oppTrays">0</dd></div>
+        <div><dt>Seized</dt><dd id="oppSeized">0</dd></div>
+      </dl>
+      <p class="pane-doing" id="oppDoing">Walking to the lane</p>
+    </div>
+    <div class="evidence">
+      <p class="evidence-head">Evidence bag</p>
+      <div class="evidence-rail" id="evidence"><span class="evidence-none">Nothing seized yet</span></div>
+    </div>
+  </aside>
+
+</main>
+
+<section class="result" id="result" hidden></section>
+
+<footer class="colophon">
+  <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
+</footer>
+
+<script src="assets/items.js"></script>
+<script src="assets/game.js"></script>
+</body>
+</html>
