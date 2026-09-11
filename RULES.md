@@ -59,12 +59,16 @@ points across all of them.
 Two signs are posted at the start of every shift, and they override the
 standing list of forbidden items for that shift only.
 
-A **red sign** bans an ordinary category: books, shoes, trousers, toothbrushes,
-bowling balls. Those are contraband today and seizing one scores as contraband.
+A **red sign** bans an ordinary category: books, shoes, trousers, underwear,
+tote bags, cameras, toothbrushes, bobbleheads, croissants, bowling balls. Those
+are contraband today and seizing one scores as contraband.
 
-A **green sign** permits a forbidden one: knives, firearms. Those are legal
-today. Seizing one is taking something off a passenger for nothing, and costs
-you five.
+A **green sign** permits a forbidden one: knives, firearms, explosives,
+poisons. Those are legal today. Seizing one is taking something off a passenger
+for nothing, and costs you five.
+
+Some green signs permit things that were never forbidden. They are still worth
+reading, and they are still a waste of your time.
 
 Categories are read broadly and literally. All shoes means all shoes, heels
 included. Trousers means trousers; skirts are not trousers.

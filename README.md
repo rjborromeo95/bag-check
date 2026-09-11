@@ -391,8 +391,8 @@ bag it belonged to, and anything from an older one is dropped. `oppLater`,
 
 ## The day's amendments
 
-Two signs go up on the wall every shift, drawn from seven, and **they beat the
-standing list both ways**. A ban makes an ordinary category contraband — books,
+Two signs go up on the wall every shift, drawn from sixteen, and **they beat
+the standing list both ways**. A ban makes an ordinary category contraband — books,
 shoes, trousers, toothbrushes, bowling balls. An OK makes a forbidden one legal
 — knives, firearms. So some days the paperback is worth +3 and the machete is
 worth −5, and the only reason you know is that you read the wall.
@@ -403,17 +403,30 @@ without being told about them separately. A card the signs have just banned can
 never also be a stolen good, because the goods are planted after the amendments
 are applied.
 
-**The categories are deliberately blunt**, because a rule you have to
-adjudicate is no use with ten seconds on the clock. All shoes means all shoes,
-heels included. Trousers means trousers and not skirts. Judgement calls I made
-and you may want to change, all in `SIGNS` in `assets/items.js`:
+**Two of the sixteen change no rule at all.** Tote bags permitted, and
+underwear permitted — both of which were always permitted. They are worth more
+than they look: a sign that names a category makes you check that category, and
+on a ten-second bench attention is the resource. Somebody will burn four seconds
+squinting at a tote bag that was never going anywhere. The draw refuses to pair
+a sign with its own opposite, so you will never see No tote bags next to Tote
+bags permitted.
 
-- **No books** covers books, novels and the magazine. Newspapers are not in it.
-- **No shoes** covers the three pairs and the heels. Flippers are not in it.
+**The categories are deliberately blunt**, because a rule you have to
+adjudicate is no use with ten seconds on the clock. All shoes means all shoes.
+Trousers means trousers and not skirts. Judgement calls I made and you may want
+to change, all in `SIGNS` in `assets/items.js`:
+
+- **No books** covers books, novels, the magazine and the newspapers.
+- **No shoes** covers the three pairs, the heels and the flippers.
+- **No underwear** includes the bra.
+- **Poisons permitted** includes the hydrochloric acid.
 - **Knives permitted** covers the five knives. Scissors are not in it.
-- **No bowling balls** covers exactly one card, and that card is only dealt in
-  about seven shifts out of ten. It is a joke sign and it will sometimes do
-  nothing at all.
+- **No bobbleheads** covers the two bobbleheads. The icon reads more like a
+  trophy than a bobblehead, and there is a gold trophy in the deck that is not
+  in the category — one line if you want it.
+- **No croissants** and **No bowling balls** cover one card each, and each of
+  those cards is only dealt in about seven shifts out of ten. They are joke
+  signs and they will sometimes do nothing at all.
 
 **They swing the difficulty hard, on purpose.** A No books shift adds roughly
 six cards to the fifteen already forbidden — a 40% jump. Two bans at once is a
