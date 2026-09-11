@@ -594,3 +594,9 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 }
 .traytime.urgent{background:var(--alarm);color:#fff;animation:tick .5s steps(2,end) infinite}
 @keyframes tick{50%{background:#9c2020}}
+
+/* ---- the menu, now that there is one game ---- */
+.menu-blurb{
+  margin:.9rem auto 0;max-width:56ch;font-size:.92rem;line-height:1.5;color:#b9c5c3;
+}
+.menu-modes-two{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:720px;margin-left:auto;margin-right:auto}

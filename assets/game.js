@@ -16,27 +16,27 @@ const WANTED_EACH = 5;    /* on the budget shift, planted five a side */
 const FREEZE_MS = 2000;   /* the hold after letting something through */
 const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
-/* ---------- three games ----------
-   Same deck, same bench, three different questions.
+/* ---------- the game ----------
+   Twelve trays each, ten seconds a bag, no detector. The belt runs itself: at
+   zero the suitcase goes, finished or not.
 
-   detector — the original. The arch says whether a bag is dirty before you
-     open it, so the decision is how fast you can work a bag you already know
-     is bad.
-   clock — no lamp, so the only way to know is to look, and a shift clock says
-     how much looking you can afford. The decision is when to stop.
-   budget — no lamp and no clock, but a fixed number of inspections against a
-     queue of your own. The decision is which bags are worth one.
+   Before the shift you each hide five stolen items in the other's queue and
+   tell them what they are, once, in words. Recovering them is squared, so
+   three is worth nine.
 
-   The two without a lamp also put the misses back where the card game has
-   them: you do not find out what you let through until the cases are opened
-   at the end. */
-const MODES = {
-  classic: { key: 'classic', name: 'Detector',          lamp: true,  hold: true,  reveal: true,  shared: true,  clock: 0,      budget: 0,  bounce: true },
-  clock:   { key: 'clock',   name: 'Clock shift',       lamp: false, hold: false, reveal: false, shared: true,  clock: 120000, budget: 0,  bounce: true },
-  budget:  { key: 'budget',  name: 'Inspection budget', lamp: false, hold: false, reveal: false, shared: false, clock: 0,      budget: 10, bounce: false, planted: true, bagMiss: true },
-  rapid:   { key: 'rapid',   name: 'Ten seconds',       lamp: false, hold: false, reveal: false, shared: false, clock: 0,      budget: 0,  bounce: false, planted: true, auto: true, tray: 10000, cut: true }
+   And the cut: finish searching and pass with time left and the other officer
+   has to pass too, wherever they have got to. Passing a bag you never opened
+   does not count as finishing it and cuts nobody.
+
+   The detector, the shift clock and the inspection budget were all tried and
+   are all gone. This is what is left. */
+const M = {
+  name: 'Ten seconds',
+  tray: 10000,        /* per bag */
+  cut: true,          /* passing early ends their bag too */
+  planted: true,      /* five stolen goods each, hidden in the other's queue */
+  reveal: false       /* you learn what you missed at the end, not as it happens */
 };
-let M = MODES.classic;
 
 /* ---------- the bench ----------
    One stage, two lanes facing each other. Both belts run the same way — in
@@ -85,6 +85,12 @@ let stowYou = [], stowThem = [];
 let wanted = [], wantedThem = [];   /* stolen goods, yours to find and theirs */
 let briefed = false;
 let hudShown = 0, hudAnim = null;
+
+/* Best of one or best of three. A round is a shift; the match goes to whoever
+   takes two of them, so a three can finish in two. A drawn round counts for
+   nobody, and if a match ends level on rounds the points across all of them
+   break it. */
+const series = { best: 1, round: 0, youWins: 0, oppWins: 0, youPts: 0, oppPts: 0, done: false };
 const timers = [];
 
 /* every delayed step goes through here so a restart can cancel the lot */
@@ -223,7 +229,7 @@ function start() {
   clearTimers();
   clearInterval(tick);
   const dealt = deal();
-  if (M.shared) {
+  if (false) {
     belt = dealt;
     YOU.queue = belt; THEM.queue = belt;
   } else {
@@ -233,7 +239,7 @@ function start() {
     THEM.queue = dealt.slice(half);
     belt = YOU.queue;
   }
-  deadline = M.clock ? 0 : 0; leftovers = 0;
+  leftovers = 0;
   held = null; onDeck = null; phase = 'idle'; opened = false; cards = [];
   oppHeld = null; oppDeck = null; oppBusy = false;
   you.trays = opp.trays = 0; you.seized = []; you.missed = []; opp.seized = []; opp.missed = [];
@@ -247,7 +253,7 @@ function start() {
   initLane(YOU); initLane(THEM);
   plantGoods();
   briefed = false;
-  $('freeze').hidden = true;
+
   $('weigh').hidden = true;
   showLens('you', null); showLens('them', null);
   $('lensYou').classList.remove('hot');
@@ -256,9 +262,11 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
-  $('modeName').textContent = M.name;
+  $('modeName').textContent = series.best > 1
+    ? 'Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
+    : 'One shift';
   $('clock').className = 'clock';
-  $('clock').textContent = M.clock ? clockText(M.clock) : '0:00';
+  $('clock').textContent = '0:00';
   fit(); drawQueue(); drawTally(); render();
 }
 
@@ -335,7 +343,7 @@ function drawQueue() {
   b.innerHTML = q.length
     ? q.map((t, i) => '<span class="qtray' + (i === 0 ? ' next' : '') + '" data-bounces="' + t.bounces + '"></span>').join('')
     : '<span class="belt-empty">Belt empty</span>';
-  const word = M.shared ? ' on the belt' : ' in your queue';
+  const word = ' in your queue';
   $('beltCount').textContent = q.length + (q.length === 1 ? ' tray' : ' trays') + word;
   $('hudBelt').textContent = q.length + word;
 }
@@ -346,20 +354,14 @@ function clockText(ms) {
   const s = Math.max(0, Math.round(ms / 1000));
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
-function timeLeft() { return M.clock ? Math.max(0, deadline - Date.now()) : Infinity; }
+
 
 function beginClock() {
   if (started) return;
   started = true; t0 = Date.now();
-  if (M.clock) deadline = t0 + M.clock;
+
   tick = setInterval(() => {
-    if (M.clock) {
-      const left = timeLeft();
-      const el = $('clock');
-      el.textContent = clockText(left);
-      el.className = 'clock' + (left <= 10000 ? ' out' : left <= 45000 ? ' low' : '');
-      if (left <= 0) { clearInterval(tick); timeUp(); }
-    } else {
+    {
       const s = Math.floor((Date.now() - t0) / 1000);
       $('clock').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
     }
@@ -372,7 +374,7 @@ function beginClock() {
    point, which is what stops a losing player downing tools to spoil it. */
 function timeUp() {
   if (over) return;
-  leftovers = (M.shared ? belt.length : YOU.queue.length + THEM.queue.length) +
+  leftovers = (YOU.queue.length + THEM.queue.length) +
               (held ? 1 : 0) + (onDeck ? 1 : 0) + (oppHeld ? 1 : 0) + (oppDeck ? 1 : 0);
   finish();
 }
@@ -835,7 +837,7 @@ function weighBand(n) {
 
 function showWeight(on) {
   const box = $('weigh');
-  if (!on || M.lamp || !held) { box.hidden = true; return; }
+  if (!on || !held) { box.hidden = true; return; }
   const b = weighBand(held.bag.items.length);
   $('weighWord').textContent = b[0];
   $('weighBars').innerHTML = '<i class="' + (b[1] > 0 ? 'on' : '') + '"></i>' +
@@ -852,7 +854,7 @@ function goPressed() {
 /* On the ten-second shift nobody presses Go twice: the belt runs itself and
    the only decisions left are Check, seize and Pass. */
 function autoRun() {
-  if (!M.auto || over) return;
+  if (over) return;
   if (phase === 'ready') { beltNoise(YOU); scan(); }
 }
 
@@ -866,15 +868,12 @@ function scan() {
     render();
   });
   later(queueNext, 420);
-  if (M.lamp) later(() => { if (!over && held) lamp(YOU, held.bag.items.some(bad), true); }, 700);
 }
 
 /* Check — the belt stops and the suitcase becomes yours to open */
 function checkPressed() {
   showWeight(false);
   if (phase !== 'scanned') return;
-  if (M.budget && you.checks >= M.budget) return;
-  if (M.budget) { you.checks++; drawTally(); }
   phase = 'searching';
   searchedTray = true;
   YOU.work.box.hidden = true;
@@ -889,20 +888,6 @@ function passPressed() {
   if (phase === 'searching' && !opened) fileTray();
 }
 
-function bounce() {
-  showWeight(false);
-  held.bounces++;
-  YOU.queue.push(held);
-  clearCards();
-  phase = 'leaving'; render();
-  const t = YOU.work; YOU.work = null;
-  move(YOU, t, X.exit, 900, () => {
-    freeTray(YOU, t);
-    held = null; lamp(YOU, false);
-    drawQueue(); wakeOpp();
-    promote();
-  });
-}
 
 /* A passed tray slides right and parks. The one already parked gets pushed off
    the end to make room, so there is exactly one sitting there per officer. */
@@ -937,32 +922,10 @@ function fileTray(expired) {
   if (early) cutOpp();
   later(() => {
     if (over) return;
-    if (slipped.length && M.hold) freeze(slipped.length); else promote();
+    promote();
   }, 700);
 }
 
-/* ---------- the hold ---------- */
-
-function freeze(n) {
-  phase = 'frozen';
-  const box = $('freeze');
-  box.hidden = false;
-  $('freezeWhy').textContent = n === 1
-    ? 'One restricted item went through'
-    : n + ' restricted items went through';
-  render();
-  const end = Date.now() + FREEZE_MS;
-  const t = setInterval(() => {
-    const left = Math.max(0, end - Date.now());
-    $('freezeCount').textContent = (left / 1000).toFixed(1) + 's';
-    if (left <= 0) {
-      clearInterval(t);
-      box.hidden = true;
-      if (!over) promote();
-    }
-  }, 80);
-  timers.push(t);
-}
 
 /* ---------- ten seconds ----------
    A clock on the tray rather than on the shift. It starts the moment the bag
@@ -1050,9 +1013,8 @@ function cutYou() {
 function render() {
   const p = $('prompt');
   later(() => { $('hudLine').textContent = p.textContent; }, 0);
-  const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck'), back = $('btnBounce');
+  const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck');
   go.disabled = pass.disabled = check.disabled = true;
-  back.hidden = true;
   check.classList.toggle('active', phase === 'searching');
 
   if (over) { p.textContent = 'Shift over.'; return; }
@@ -1060,9 +1022,7 @@ function render() {
   if (phase === 'idle') {
     if (!started) {
       go.disabled = false;
-      p.innerHTML = M.shared
-        ? 'Officer B is across the bench, working the same belt. <strong>Go</strong> starts it and pushes the first tray down to you.'
-        : 'Officer B has a queue of their own and so do you. <strong>Go</strong> brings your first tray down.';
+      p.innerHTML = 'Twelve trays each and ten seconds a bag. <strong>Go</strong> starts the belt, and after that it does not stop.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
     }
@@ -1072,8 +1032,8 @@ function render() {
 
   if (phase === 'ready') {
     /* the ten-second belt runs itself, so Go is only ever pressed once */
-    go.disabled = !!M.auto;
-    p.innerHTML = 'A closed suitcase in a tray. No idea what is under the lid until it goes through. <strong>Go</strong> sends it into the detector.';
+    go.disabled = true;
+    p.textContent = 'Tray coming through.';
     return;
   }
   if (phase === 'scanning') { p.textContent = 'Scanning.'; return; }
@@ -1081,33 +1041,17 @@ function render() {
   if (phase === 'scanned') {
     if (!held) return;
     pass.disabled = false;
-    const spent = M.budget && you.checks >= M.budget;
-    check.disabled = spent;
-    check.textContent = M.budget ? 'Check (' + (M.budget - you.checks) + ')' : 'Check';
-    back.hidden = !M.bounce || held.bounces >= BOUNCE_CAP;
-    if (M.lamp) {
-      const dirty = held.bag.items.some(bad);
-      p.innerHTML = dirty
-        ? 'Red light. Something in there is restricted, and the detector will not say how many. <strong>Check</strong> stops the belt and opens the case. <strong>Pass</strong> sends it through as it is.'
-        : 'No light. Nothing restricted in there. <strong>Pass</strong> keeps the tray and moves the belt on.';
-    } else if (spent) {
-      p.innerHTML = 'No inspections left. Everything from here goes through on the strength of how it looks. <strong>Pass</strong>.';
-    } else if (M.budget) {
-      p.innerHTML = 'No machine, no lamp — only the weight in your hands. <strong>Check</strong> spends one of your ' + M.budget +
-        ' inspections — ' + (M.budget - you.checks) + ' left, ' + (YOU.queue.length + 1) +
-        ' trays including this one. <strong>Pass</strong> costs nothing and tells you nothing.';
-    } else {
-      p.innerHTML = 'No machine, no lamp. The only way to know is to look, and looking costs you the clock. <strong>Check</strong> opens it, <strong>Pass</strong> sends it on.';
-    }
+    check.disabled = false;
+    check.textContent = 'Check';
+    p.innerHTML = 'No machine, no lamp — only the weight in your hands and the clock on the tray. ' +
+      '<strong>Check</strong> opens it. <strong>Pass</strong> sends it on, and if you are quick it ends their bag too.';
     return;
   }
 
   if (phase === 'searching') {
     if (!opened) {
       pass.disabled = false;
-      p.innerHTML = M.reveal
-        ? 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray — there is no second scan, so whatever is still in there goes with it.'
-        : 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray. You will find out what you left in it when the cases are opened at the end.';
+      p.innerHTML = 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray and, with time on the clock, cuts Officer B off mid-bag.';
     } else {
       p.innerHTML = 'The item cards are clear, so they print over each other. Slide them out onto the bench to read them, drag what is restricted into <strong>your seize tray</strong>, then put the front back on the tray to close it.';
     }
@@ -1161,7 +1105,6 @@ function oppScan() {
   beltNoise(THEM);
   oppMove(THEM.work, X.parkOut, 1250, oppAfterScan);
   oppLater(oppQueueNext, 420);
-  if (M.lamp) oppLater(() => { if (oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
 }
 
 function oppQueueNext() {
@@ -1176,20 +1119,9 @@ function oppQueueNext() {
 /* With no lamp B is in the same position you are: all they have to go on is
    how fat the bag looks, and whatever the mode lets them spend. */
 function oppWantsSearch(size) {
-  if (M.lamp) return true;                       /* the lamp already told them */
-  if (M.budget) {
-    const spare = M.budget - opp.checks;
-    if (spare <= 0) return false;
-    if (spare >= THEM.queue.length + 1) return true;   /* can afford the lot */
-    return size >= 4 ? Math.random() < 0.85 : Math.random() < 0.3;
-  }
-  if (M.clock) {
-    const left = timeLeft();
-    if (left < 25000) return size >= 5 && Math.random() < 0.4;
-    if (left < 70000) return Math.random() < (size >= 4 ? 0.7 : 0.35);
-    return Math.random() < (size >= 3 ? 0.92 : 0.65);
-  }
-  return true;
+  /* Ten seconds is not long enough to be precious about it: B opens almost
+     everything, and skips the odd thin one to save the time. */
+  return size >= 3 ? true : Math.random() < 0.8;
 }
 
 function oppAfterScan() {
@@ -1198,7 +1130,7 @@ function oppAfterScan() {
   const size = oppHeld.bag.items.length;
   const rush = oppRush();
 
-  if (M.lamp && !contraband.length) {
+  if (false) {
     oppSay('No light — tray kept');
     oppLater(() => oppFile([]), Math.round(rnd(600, 1100)));
     return;
@@ -1209,10 +1141,9 @@ function oppAfterScan() {
     oppLater(() => oppFile(contraband), Math.round(rnd(500, 950)));
     return;
   }
-  if (M.budget) opp.checks++;
 
   /* bouncing costs a tray, so an officer who is behind stops doing it */
-  const bounceOdds = M.bounce ? 0.4 * (1 - rush) * (size >= 5 ? 1 : 0.3) : 0;
+  const bounceOdds = 0;
   if (oppHeld.bounces < BOUNCE_CAP && Math.random() < bounceOdds) {
     oppSay('Pushed a tray back');
     oppHeld.bounces++;
@@ -1360,7 +1291,7 @@ function wantedTaken(p) { return p.seized.filter(it => isWantedFor(p, it)).lengt
 function wrongGrabs(p) { return p.seized.filter(it => !it.restricted && !isWantedFor(p, it)).length; }
 /* squared, which is why four is worth more than twice two */
 function wantedScore(p) { const k = wantedTaken(p); return k * k; }
-function missPenalty(p) { return M.bagMiss ? p.dirtyBags * VP_DIRTY_BAG : p.missed.length * VP_MISSED; }
+function missPenalty(p) { return p.missed.length * VP_MISSED; }
 
 /* The final figure. Everything counts. */
 function scoreOf(p) {
@@ -1391,8 +1322,7 @@ function drawTally() {
   $('hudYou').textContent = shown(you);
   $('hudOpp').textContent = shown(opp);
   const bud = $('budget');
-  bud.hidden = !M.budget;
-  if (M.budget) bud.textContent = (M.budget - you.checks) + ' checks left';
+  bud.hidden = true;
   drawHud();
 }
 
@@ -1406,12 +1336,16 @@ function finish() {
   clearInterval(tick);
   clearTimers();
   if (ambience) ambience.pause();
-  $('freeze').hidden = true;
+
   $('stage').classList.remove('running-you', 'running-b');
   render();
 
   const ys = scoreOf(you), os = scoreOf(opp);
-  const verdict = ys > os ? 'You win the shift.' : ys < os ? 'Officer B wins the shift.' : 'Dead heat.';
+  recordRound(ys, os);
+  const roundLine = ys > os ? 'You win the round.' : ys < os ? 'Officer B wins the round.' : 'The round is a dead heat.';
+  const verdict = series.best === 1 ? roundLine
+    : series.done ? seriesVerdict()
+    : roundLine + ' ' + series.youWins + '–' + series.oppWins + '.';
   const falseGrabs = wrongGrabs(you);
 
   const sheet = (who, p) => {
@@ -1421,12 +1355,10 @@ function finish() {
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
       '<tr><td>Stolen goods — ' + wantedTaken(p) + ' recovered, squared</td><td>' + wantedScore(p) + '</td></tr>' +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
-      '<tr class="neg"><td>' + (M.bagMiss
-        ? 'Bags through with something in — ' + p.dirtyBags + ' × ' + VP_DIRTY_BAG
-        : 'Let through — ' + p.missed.length + ' × ' + VP_MISSED) +
+      '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
         '</td><td>' + missPenalty(p) + '</td></tr>' +
       (leftovers ? '<tr class="neg"><td>Belt not cleared — ' + leftovers + ' × ' + VP_LEFT + '</td><td>' + (leftovers * VP_LEFT) + '</td></tr>' : '') +
-      (M.budget ? '<tr><td>Inspections used</td><td>' + p.checks + ' / ' + M.budget + '</td></tr>' : '') +
+
       '<tr class="total"><td>Total</td><td>' + scoreOf(p) + '</td></tr></table>' +
       (p.missed.length ? '<p class="missed">Walked straight through: ' + p.missed.map(i => i.name.toLowerCase()).join(', ') + '</p>' : '') +
       '</div>';
@@ -1434,7 +1366,9 @@ function finish() {
 
   $('result').innerHTML =
     '<div class="result-inner"><h2>' + verdict + '</h2>' +
-    '<p class="verdict">' + M.name + '. ' +
+    '<p class="verdict">' + (series.best > 1
+      ? 'Round ' + series.round + ' of ' + series.best + ', standing at ' + series.youWins + '–' + series.oppWins + '. '
+      : '') +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
     'You were looking for: ' +
     wanted.map(x => (you.seized.some(it => it.design === x.file)
@@ -1443,10 +1377,22 @@ function finish() {
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
-    '<div class="controls again"><button class="go" id="again">Run another shift</button>' +
-    '<button class="check" id="menuBtn">Change the rules</button></div></div>';
+    (series.done ? '' :
+      '<p class="verdict"><strong>' + (series.youWins > series.oppWins
+        ? 'One more round and the match is yours.'
+        : series.oppWins > series.youWins ? 'Lose the next one and the match is theirs.'
+        : 'Level. The next round decides it.') + '</strong></p>') +
+    '<div class="controls again">' +
+    (series.done
+      ? '<button class="go" id="again">Play again</button>'
+      : '<button class="go" id="again">Next round</button>') +
+    '<button class="check" id="menuBtn">Back to the menu</button></div></div>';
   $('result').hidden = false;
-  $('again').onclick = () => { oppSay('Walking to the lane'); start(); };
+  $('again').onclick = () => {
+    oppSay('Walking to the lane');
+    if (series.done) { $('result').hidden = true; showMenu(); }
+    else nextRound();
+  };
   $('menuBtn').onclick = () => { $('result').hidden = true; showMenu(); };
   $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1460,22 +1406,48 @@ function showMenu() {
   $('menu').hidden = false;
 }
 
-function startMode(key) {
-  M = MODES[key] || MODES.classic;
+function startSeries(best) {
+  series.best = best; series.round = 1;
+  series.youWins = series.oppWins = 0;
+  series.youPts = series.oppPts = 0;
+  series.done = false;
   $('menu').hidden = true;
   start();
   showBriefing();
 }
 
+function nextRound() {
+  series.round++;
+  $('result').hidden = true;
+  start();
+  showBriefing();
+}
+
+/* A drawn round goes to nobody. A match that ends level on rounds is settled
+   on points across all of them, because somebody has to win. */
+function recordRound(ys, os) {
+  series.youPts += ys; series.oppPts += os;
+  if (ys > os) series.youWins++; else if (os > ys) series.oppWins++;
+  const need = series.best > 1 ? 2 : 1;
+  const played = series.round;
+  series.done = series.youWins >= need || series.oppWins >= need || played >= series.best;
+}
+
+function seriesVerdict() {
+  if (series.youWins !== series.oppWins) return series.youWins > series.oppWins ? 'You take the match.' : 'Officer B takes the match.';
+  if (series.youPts !== series.oppPts) return series.youPts > series.oppPts ? 'You take it on points.' : 'Officer B takes it on points.';
+  return 'The match is a dead heat.';
+}
+
+
 loadSfx();
 $('menu').hidden = false;
 [].forEach.call(document.querySelectorAll('.mode'), b => {
-  b.onclick = () => startMode(b.getAttribute('data-mode'));
+  b.onclick = () => startSeries(Number(b.getAttribute('data-best')));
 });
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
 $('btnCheck').onclick = checkPressed;
-$('btnBounce').onclick = () => { if (phase === 'scanned') bounce(); };
 $('mute').onclick = () => setMuted(!muted);
 $('hudMute').onclick = () => setMuted(!muted);
 $('briefGo').onclick = () => { $('brief').hidden = true; briefed = true; render(); };
