@@ -977,6 +977,27 @@ function freeze(n) {
 
 let trayEnd = 0, trayTick = null, oppCut = false, searchedTray = false;
 
+/* Cutting Officer B off mid-bag is not as simple as setting a flag. Their turn
+   is a chain of a dozen delayed steps, and a flag that gets cleared when the
+   next bag starts lets every stale step from the cut bag fire into it — which
+   double-files a tray, empties their lane and leaves them standing there doing
+   nothing for the rest of the shift. So each bag gets a number, every step of
+   theirs remembers which bag it was scheduled for, and anything belonging to
+   an older one is dropped on the floor. */
+let oppGen = 0;
+function oppLater(fn, ms) {
+  const g = oppGen;
+  return later(() => { if (over || g !== oppGen) return; fn(); }, ms);
+}
+function oppMove(t, x, ms, then) {
+  const g = oppGen;
+  move(THEM, t, x, ms, () => { if (over || g !== oppGen) return; if (then) then(); });
+}
+function oppRoll(t, x, ms, then) {
+  const g = oppGen;
+  roll(THEM, t, x, ms, () => { if (over || g !== oppGen) return; if (then) then(); });
+}
+
 function stopTrayClock() {
   clearInterval(trayTick); trayTick = null; trayEnd = 0;
   $('trayTime').hidden = true;
@@ -1006,8 +1027,9 @@ function startTrayClock() {
 
 /* You passed with time to spare, so Officer B loses the rest of theirs. */
 function cutOpp() {
-  if (!M.cut || over || !oppBusy || !oppHeld) return;
+  if (!M.cut || over || !oppBusy || !oppHeld || !oppHeld.bag || !THEM.work) return;
   oppCut = true;
+  oppGen++;               /* everything still pending for this bag is now void */
   oppSay('Cut short');
   oppFile(oppHeld.bag.items.filter(bad));
 }
@@ -1111,6 +1133,7 @@ function oppRush() { return clamp((you.trays - opp.trays) / 6, 0, 1); }
 function oppTurn() {
   if (over) return;
   oppCut = false;
+  oppGen++;
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
   else if (THEM.queue.length) { oppHeld = THEM.queue.shift(); }
@@ -1125,20 +1148,20 @@ function oppTurn() {
   if (fromDeck) {
     THEM.work = THEM.deck; THEM.deck = null;
     THEM.work.el.classList.remove('waiting');
-    later(oppScan, Math.round(rnd(450, 900)));
+    oppLater(oppScan, Math.round(rnd(450, 900)));
   } else {
     THEM.work = takeTray(THEM, oppHeld.front);
-    roll(THEM, THEM.work, X.parkIn, 1200, () => later(oppScan, Math.round(rnd(250, 700))));
+    oppRoll(THEM.work, X.parkIn, 1200, () => oppLater(oppScan, Math.round(rnd(250, 700))));
   }
 }
 
 function oppScan() {
-  if (over || oppCut || !oppHeld || !THEM.work) return;
+  if (over || !oppHeld || !THEM.work) return;
   oppSay('Sending it through');
   beltNoise(THEM);
-  move(THEM, THEM.work, X.parkOut, 1250, oppAfterScan);
-  later(oppQueueNext, 420);
-  if (M.lamp) later(() => { if (!over && oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
+  oppMove(THEM.work, X.parkOut, 1250, oppAfterScan);
+  oppLater(oppQueueNext, 420);
+  if (M.lamp) oppLater(() => { if (oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
 }
 
 function oppQueueNext() {
@@ -1170,20 +1193,20 @@ function oppWantsSearch(size) {
 }
 
 function oppAfterScan() {
-  if (over || oppCut || !oppHeld) return;
+  if (over || !oppHeld) return;
   const contraband = oppHeld.bag.items.filter(bad);
   const size = oppHeld.bag.items.length;
   const rush = oppRush();
 
   if (M.lamp && !contraband.length) {
     oppSay('No light — tray kept');
-    later(() => oppFile([]), Math.round(rnd(600, 1100)));
+    oppLater(() => oppFile([]), Math.round(rnd(600, 1100)));
     return;
   }
 
   if (!oppWantsSearch(size)) {
     oppSay(size >= 5 ? 'Waved a heavy one through' : 'Waved a bag through');
-    later(() => oppFile(contraband), Math.round(rnd(500, 950)));
+    oppLater(() => oppFile(contraband), Math.round(rnd(500, 950)));
     return;
   }
   if (M.budget) opp.checks++;
@@ -1196,7 +1219,7 @@ function oppAfterScan() {
     THEM.queue.push(oppHeld);
     drawQueue();
     const t = THEM.work; THEM.work = null;
-    move(THEM, t, X.exit, 900, () => {
+    oppMove(t, X.exit, 900, () => {
       freeTray(THEM, t);
       oppHeld = null; lamp(THEM, false);
       oppBusy = false;
@@ -1210,7 +1233,7 @@ function oppAfterScan() {
 
 /* lift the front off and lay the bag out, a card at a time, unevenly */
 function oppOpen(contraband, size, rush) {
-  if (over || oppCut || !oppHeld) return;
+  if (over || !oppHeld) return;
   const c = trayCentre(THEM);
   THEM.work.box.hidden = true;
   oppSay(rush > 0.5 ? 'Skimming a bag' : 'Going through a bag');
@@ -1229,7 +1252,7 @@ function oppOpen(contraband, size, rush) {
 
   const pace = 1 - 0.4 * rush;
   let t = Math.round(rnd(150, 320) * pace);
-  later(() => { if (!over && !oppCut) { const lp = lidPark(THEM); settle(lidEl, lp.x, lp.y, 5, Math.round(rnd(280, 420))); } }, t);
+  oppLater(() => { const lp = lidPark(THEM); settle(lidEl, lp.x, lp.y, 5, Math.round(rnd(280, 420))); }, t);
 
   const items = oppCards.filter(cd => cd.kind === 'item');
   items.forEach((cd, i) => {
@@ -1237,8 +1260,7 @@ function oppOpen(contraband, size, rush) {
     let gap = rnd(120, 300);
     if (Math.random() < 0.22) gap += rnd(250, 650) * (1 - rush);
     t += Math.round(gap * pace);
-    later(() => {
-      if (over || oppCut) return;
+    oppLater(() => {
       settle(cd.el, SLOTS[i % SLOTS.length], THEM.bench, rnd(-5, 5), Math.round(rnd(240, 420)));
       playItem(cd.item, SFX_THEM);
       flashLens(cd.item);
@@ -1246,13 +1268,13 @@ function oppOpen(contraband, size, rush) {
   });
 
   const dwell = Math.round(rnd(400, 900) * pace + 180 * size * pace);
-  later(() => { if (!over && !oppCut) oppSearch(contraband, size, rush); }, t + dwell);
+  oppLater(() => oppSearch(contraband, size, rush), t + dwell);
 }
 
 /* Two sweeps if they have time, one if they are panicking. A thin bag gets
    picked clean either way; a fat one is where a hurried officer loses things. */
 function oppSearch(contraband, size, rush) {
-  if (over || oppCut || !oppHeld) return;
+  if (over || !oppHeld) return;
   const perPass = clamp(0.92 - 0.03 * (size - 1) - 0.13 * rush, 0.55, 0.96);
   const passes = rush < 0.6 ? 2 : 1;
   const odds = 1 - Math.pow(1 - perPass, passes);
@@ -1267,8 +1289,7 @@ function oppSearch(contraband, size, rush) {
   let t = 0;
   found.forEach(it => {
     t += Math.round(rnd(280, 620));
-    later(() => {
-      if (over || oppCut) return;
+    oppLater(() => {
       const cd = oppCards.find(x => x.item && x.item.uid === it.uid);
       if (!cd) return;
       oppCards = oppCards.filter(x => x !== cd);
@@ -1282,20 +1303,19 @@ function oppSearch(contraband, size, rush) {
     }, t);
   });
 
-  later(() => { if (!over && !oppCut) oppClose(missed); }, t + Math.round(rnd(350, 700)));
+  oppLater(() => oppClose(missed), t + Math.round(rnd(350, 700)));
 }
 
 /* everything left goes back in one at a time, not all at once */
 function oppClose(missed) {
-  if (over || oppCut || !oppHeld) return;
+  if (over || !oppHeld) return;
   const c = trayCentre(THEM);
   const items = oppCards.filter(cd => cd.kind === 'item');
   let t = 0;
   items.forEach(cd => {
     t += Math.round(rnd(110, 260));
     const it = cd.item;
-    later(() => {
-      if (over || oppCut) return;
+    oppLater(() => {
       settle(cd.el, c.x - ITEM.w / 2 + rnd(-5, 5), c.y - ITEM.h / 2, rnd(-1.5, 1.5), Math.round(rnd(220, 360)));
       playItem(it, SFX_THEM * 0.85);
     }, t);
@@ -1308,7 +1328,7 @@ function oppClose(missed) {
     play('shut', SFX_THEM);
   }, t);
   oppSay('Closing it up');
-  later(() => { if (!over && !oppCut) oppFile(missed); }, t + Math.round(rnd(420, 780)));
+  oppLater(() => oppFile(missed), t + Math.round(rnd(420, 780)));
 }
 
 function oppFile(missed) {
@@ -1330,7 +1350,6 @@ function oppFile(missed) {
   if (t) { t.box.hidden = false; shelve(THEM, t); }
   oppHeld = null; lamp(THEM, false);
   oppBusy = false;
-  oppCut = false;
   if (theyWereQuick) cutYou();
   later(oppTurn, Math.round(rnd(500, 1100)));
 }
