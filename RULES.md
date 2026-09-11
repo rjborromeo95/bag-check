@@ -46,6 +46,18 @@ officer has to pass too, immediately, wherever they have got to.** They can do
 the same to you. Passing a bag you never opened does not count as finishing it
 and cuts nobody.
 
+## Two shifts to choose from
+
+**Your own bench.** The suitcases on your belt are yours to open. Five stolen
+goods have been hidden in your queue by the other officer, and five of theirs
+by you.
+
+**Across the table.** You do not open your own. Each suitcase that arrives on
+your belt goes straight across to the other officer, and theirs comes to you —
+so you are searching each other's queue, and neither of you has seen inside.
+You pass it back when you are done. There are no stolen goods on this shift:
+the bags are already the other player's problem.
+
 ## The match
 
 A round is one shift. Play **best of one**, or **best of three** — first to two

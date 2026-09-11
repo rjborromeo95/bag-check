@@ -2,15 +2,15 @@
    Deliberately split: the shell goes network-first so a deploy actually lands,
    and the artwork and audio go cache-first because they never change without
    also changing name. Bump CACHE whenever you bump the ?v= in index.html. */
-const CACHE = 'bagcheck-v27';
+const CACHE = 'bagcheck-v28';
 
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './assets/style.css?v=27',
-  './assets/items.js?v=27',
-  './assets/game.js?v=27'
+  './assets/style.css?v=28',
+  './assets/items.js?v=28',
+  './assets/game.js?v=28'
 ];
 
 self.addEventListener('install', e => {

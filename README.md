@@ -346,9 +346,33 @@ start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
 
-## The game
+## The two games
 
-One game now. The detector shift, the clock shift and the inspection budget
+Both are the ten-second shift. They differ in one thing: whose bag you are
+holding.
+
+**Your own bench.** Bags arrive on your belt and you work them. Five stolen
+goods each, hidden in the other's queue before the shift and named to you once.
+
+**Across the table.** Your passengers' bags go straight over to Officer B and
+theirs come down to you, so you are checking each other's queue — blind, since
+neither of you has seen inside either. The tray you search visibly travels down
+from their belt and back up to leave when you pass it.
+
+That change does two things worth having. It gives the cut an object: ending
+their bag is no longer a countdown on something abstract, it is you cutting off
+a search you handed them. And it makes the stolen goods redundant, because the
+thing that made them fun — reaching into the other player's material before the
+clock starts — is now the core loop. So that shift has no stolen goods and no
+second list to remember, only the amendments.
+
+The queue swap is one line at each draw point; the crossing is a `top`
+transition on the tray. Everything else — the clock, the cut, the amendments,
+the scoring — is shared.
+
+## Ten seconds
+
+ The detector shift, the clock shift and the inspection budget
 were all built, all played and all cut: the detector answered the question the
 cards exist to ask, the clock had no direction to its pressure, and the budget
 was the better of the two but slower. What is left is the one where the other
