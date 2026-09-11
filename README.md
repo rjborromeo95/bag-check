@@ -213,14 +213,15 @@ it matters more now that the forbidden pool has lighters and pliers in it at
 2% of a card. Officer B uses theirs too: every card they lay out passes over
 it, which is what reading a bag looks like from the other side of a bench.
 
-**The wall.** Two notices down the left-hand side. The standing chart of what
-is forbidden, and the three things reported stolen this shift. The hold overlay
-deliberately stops short of them so you can still read the board while you are
-being held.
+**The wall.** The standing chart of what is forbidden, pinned on the left of
+the bench. The stolen-goods board used to sit under it and doesn't any more:
+it is read, not handled, so it was taking bench space from the half of the
+stage you actually work in. It lives in the sidebar now, where the posters are
+big enough to read properly.
 
 **Three things are reported stolen every shift.** `pickWanted(3)` in
 `assets/items.js` draws three permitted designs at random and pins them on the
-notice board on the left-hand wall, where both officers can see them all
+board in the sidebar, above the scores, where they stay legible all
 shift. Each poster crops the card art down to the object's bounding box —
 `CROP` in `assets/items.js` — because a thumbnail of a whole card is mostly
 empty space. Recovering one is worth `VP_WANTED` (3), and the poster crosses

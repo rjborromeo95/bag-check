@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=13">
+<link rel="stylesheet" href="assets/style.css?v=14">
 </head>
 <body>
 
@@ -60,11 +60,6 @@
           <img class="banned-chart" src="assets/ui/forbidden.png" alt="Chart of forbidden items">
           <p class="notice-foot" id="bannedFoot">16 of them on the belt today</p>
         </div>
-        <div class="notice notice-board" id="board">
-          <p class="notice-head">Reported stolen <span>+3 each</span></p>
-          <div class="board-list" id="boardList"></div>
-        </div>
-
         <!-- a magnifier each, at the right-hand end of the bench -->
         <div class="lens lens-b"><span class="lens-tag">Magnifier</span></div>
         <div class="lens lens-you" id="lensYou"><span class="lens-tag">Magnifier</span></div>
@@ -106,6 +101,10 @@
   </section>
 
   <aside class="tally">
+    <div class="pane pane-board" id="board">
+      <p class="pane-who">Reported stolen <span class="board-worth">+3 each</span></p>
+      <div class="board-list" id="boardList"></div>
+    </div>
     <div class="pane pane-you">
       <p class="pane-who">You</p>
       <p class="pane-score" id="youScore">0</p>
@@ -133,7 +132,7 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=13"></script>
-<script src="assets/game.js?v=13"></script>
+<script src="assets/items.js?v=14"></script>
+<script src="assets/game.js?v=14"></script>
 </body>
 </html>
