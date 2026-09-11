@@ -28,12 +28,21 @@ const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
    The detector, the shift clock and the inspection budget were all tried and
    are all gone. This is what is left. */
-const M = {
-  name: 'Ten seconds',
-  tray: 10000,        /* per bag */
-  cut: true,          /* passing early ends their bag too */
-  reveal: false       /* you learn what you missed at the end, not as it happens */
+const GAMES = {
+  /* The standing shift. Two amendments posted before the belt starts and no
+     more after that. */
+  standard: { key: 'standard', name: 'Standard shift', tray: 10000, cut: true,
+              reveal: false, wide: false, draftEvery: 0 },
+
+  /* The policy shift. A broader deck built so the sign categories overlap,
+     and every fifth thing you seize correctly buys you a sign of your own:
+     the belt stops, you post one, and it applies to both of you for the rest
+     of the shift. Officer B earns them the same way. The wall fills up and
+     what counts as contraband keeps moving under you. */
+  policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
+              reveal: false, wide: true,  draftEvery: 5 }
 };
+let M = GAMES.standard;
 
 /* ---------- the bench ----------
    One stage, two lanes facing each other. Both belts run the same way — in
@@ -76,11 +85,18 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
    is why the opponent, the scoring and the stolen-goods picker all obey the
    signs without being told about them separately. */
 let signsToday = [], banToday = {}, okToday = {};
+let paused = false, drafting = false;
 
 function bad(it) {
   if (banToday[it.design]) return true;
   if (okToday[it.design]) return false;
   return it.restricted;
+}
+
+/* a sign posted mid-shift folds into the same two maps */
+function foldSign(sg) {
+  const into = sg.kind === 'ban' ? banToday : okToday;
+  sg.designs.forEach(d => { into[d] = true; });
 }
 
 function applySigns() {
@@ -93,10 +109,71 @@ function applySigns() {
 }
 
 function drawSigns() {
+  const many = signsToday.length > 2;
+  $('signRow').className = 'sign-row' + (many ? ' sign-row-many' : '');
   $('signRow').innerHTML = signsToday.map(sg =>
     '<span class="sign sign-' + sg.kind + '">' +
     '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-    '<b>' + sg.label + '</b></span>').join('');
+    (many ? '' : '<b>' + sg.label + '</b>') + '</span>').join('');
+}
+
+/* ---------- posting a sign ----------
+   Earned, not dealt. Every fifth correct seizure stops your half of the bench
+   and offers three signs off the unposted pile; the one you pick goes on the
+   wall and binds both officers, which is what stops it being a free punch. */
+
+function draftPool(n) {
+  const up = {};
+  signsToday.forEach(sg => { up[sg.file] = true; });
+  const left = signPool().filter(sg => !up[sg.file]);
+  return pick(left, Math.min(n, left.length));
+}
+
+function postSign(sg, byYou) {
+  if (!sg) return;
+  signsToday.push(sg);
+  foldSign(sg);
+  drawSigns();
+  toast((byYou ? 'You post' : 'Officer B posts') + ': ' + sg.label, byYou);
+}
+
+function toast(text, mine) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (mine ? ' mine' : '');
+  el.textContent = text;
+  $('stage').appendChild(el);
+  later(() => el.remove(), 2600);
+}
+
+function offerDraft() {
+  const opts = draftPool(3);
+  if (!opts.length) return;
+  drafting = true; paused = true;
+  holdTrayClock();
+  $('draftList').innerHTML = opts.map((sg, i) =>
+    '<button class="draft-pick" type="button" data-i="' + i + '">' +
+    '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
+    '<span><b>' + sg.label + '</b>' + sg.blurb + '</span></button>').join('');
+  [].forEach.call($('draftList').querySelectorAll('.draft-pick'), b => {
+    b.onclick = () => {
+      $('draft').hidden = true;
+      drafting = false; paused = false;
+      postSign(opts[Number(b.getAttribute('data-i'))], true);
+      resumeTrayClock();
+      render();
+    };
+  });
+  $('draft').hidden = false;
+  render();
+}
+
+function creditSeizure(p, mine) {
+  if (!M.draftEvery) return;
+  p.run = (p.run || 0) + 1;
+  if (p.run < M.draftEvery) return;
+  p.run = 0;
+  if (mine) offerDraft();
+  else postSign(draftPool(1)[0], false);
 }
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
@@ -271,6 +348,8 @@ function start() {
   you.checks = opp.checks = 0;
   you.dirtyBags = opp.dirtyBags = 0;
   oppCut = false; searchedTray = false; stopTrayClock();
+  paused = false; drafting = false; you.run = 0; opp.run = 0;
+  $('draft').hidden = true;
   started = false; over = false;
   clearCards(); clearOppCards();
   stowYou.forEach(el => el.remove()); stowYou = [];
@@ -289,9 +368,9 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
-  $('modeName').textContent = series.best > 1
-    ? 'Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
-    : 'One shift';
+  $('modeName').textContent = M.name + (series.best > 1
+    ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
+    : '');
   $('clock').className = 'clock';
   $('clock').textContent = '0:00';
   fit(); drawQueue(); drawTally(); render();
@@ -319,7 +398,11 @@ function briefText() {
     '<p class="brief-lede">They hold for this shift only, and they cut both ways: a banned category is ' +
     '<strong>+3</strong> to seize, and anything you take off a passenger that is not forbidden today ' +
     'is <strong>\u22125</strong>.</p>' +
-    '<p class="brief-warn">Read them now. They stay on the wall, but you will not have time to look.</p>';
+    '<p class="brief-warn">Read them now. They stay on the wall, but you will not have time to look.</p>' +
+    (M.draftEvery
+      ? '<p class="brief-score">Every <strong>' + M.draftEvery + '</strong> things you seize correctly, the bench stops and ' +
+        'you post a sign of your own. It applies to <strong>both</strong> of you — so does theirs.</p>'
+      : '');
 }
 
 function showBriefing() {
@@ -735,7 +818,7 @@ function seize(card) {
   const c = centreOf(card.el);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
-  if (bad(card.item)) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
+  if (bad(card.item)) { pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good'); creditSeizure(you, true); }
   else pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
   playItem(card.item);
   cards = cards.filter(other => other !== card);
@@ -940,9 +1023,22 @@ let trayEnd = 0, trayTick = null, oppCut = false, searchedTray = false;
    theirs remembers which bag it was scheduled for, and anything belonging to
    an older one is dropped on the floor. */
 let oppGen = 0;
+/* Every one of B's delayed steps counts down rather than fires on a deadline,
+   so a pause for a draft freezes them where they stand instead of letting the
+   whole chain arrive at once when it lifts. */
 function oppLater(fn, ms) {
   const g = oppGen;
-  return later(() => { if (over || g !== oppGen) return; fn(); }, ms);
+  let left = ms, last = Date.now();
+  const step = () => {
+    if (over || g !== oppGen) return;
+    const now = Date.now();
+    if (!paused) left -= (now - last);
+    last = now;
+    if (left <= 25) { fn(); return; }
+    later(step, Math.min(left, 110));
+  };
+  later(step, Math.min(ms, 110));
+  return null;
 }
 function oppMove(t, x, ms, then) {
   const g = oppGen;
@@ -953,16 +1049,28 @@ function oppRoll(t, x, ms, then) {
   roll(THEM, t, x, ms, () => { if (over || g !== oppGen) return; if (then) then(); });
 }
 
+let trayHeld = 0;
+function holdTrayClock() {
+  if (!trayEnd) return;
+  trayHeld = Math.max(0, trayEnd - Date.now());
+  clearInterval(trayTick); trayTick = null;
+}
+function resumeTrayClock() {
+  if (!trayHeld) return;
+  const left = trayHeld; trayHeld = 0;
+  startTrayClock(left);
+}
+
 function stopTrayClock() {
-  clearInterval(trayTick); trayTick = null; trayEnd = 0;
+  clearInterval(trayTick); trayTick = null; trayEnd = 0; trayHeld = 0;
   $('trayTime').hidden = true;
   $('trayTime').classList.remove('urgent');
 }
 
-function startTrayClock() {
+function startTrayClock(ms) {
   if (!M.tray) return;
   clearInterval(trayTick);
-  trayEnd = Date.now() + M.tray;
+  trayEnd = Date.now() + (ms || M.tray);
   const box = $('trayTime');
   box.hidden = false;
   let warned = false;
@@ -1007,6 +1115,7 @@ function render() {
   later(() => { $('hudLine').textContent = p.textContent; }, 0);
   const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck');
   go.disabled = pass.disabled = check.disabled = true;
+  if (drafting) { $('prompt').textContent = 'Posting a sign.'; return; }
   check.classList.toggle('active', phase === 'searching');
 
   if (over) { p.textContent = 'Shift over.'; return; }
@@ -1218,6 +1327,7 @@ function oppSearch(contraband, size, rush) {
       oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== it.uid);
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem);
+      creditSeizure(opp, false);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');
       drawTally();
@@ -1388,7 +1498,9 @@ function showMenu() {
   $('menu').hidden = false;
 }
 
-function startSeries(best) {
+function startSeries(gameKey, best) {
+  M = GAMES[gameKey] || GAMES.standard;
+  useWide(!!M.wide);
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;
   series.youPts = series.oppPts = 0;
@@ -1425,7 +1537,7 @@ function seriesVerdict() {
 loadSfx();
 $('menu').hidden = false;
 [].forEach.call(document.querySelectorAll('.mode'), b => {
-  b.onclick = () => startSeries(Number(b.getAttribute('data-best')));
+  b.onclick = () => startSeries(b.getAttribute('data-game'), Number(b.getAttribute('data-best')));
 });
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
