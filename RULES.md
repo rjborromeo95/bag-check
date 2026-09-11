@@ -54,6 +54,21 @@ deal with fresh stolen goods, so there is a new list to memorise each time. A
 drawn round counts for nobody; a match level on rounds goes to whoever has more
 points across all of them.
 
+## The day's amendments
+
+Two signs are posted at the start of every shift, and they override the
+standing list of forbidden items for that shift only.
+
+A **red sign** bans an ordinary category: books, shoes, trousers, toothbrushes,
+bowling balls. Those are contraband today and seizing one scores as contraband.
+
+A **green sign** permits a forbidden one: knives, firearms. Those are legal
+today. Seizing one is taking something off a passenger for nothing, and costs
+you five.
+
+Categories are read broadly and literally. All shoes means all shoes, heels
+included. Trousers means trousers; skirts are not trousers.
+
 ## Stolen goods
 
 Three ordinary items are reported stolen at the start of every shift and pinned

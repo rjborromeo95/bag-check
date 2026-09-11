@@ -389,6 +389,43 @@ Every bag of theirs now carries a number, every scheduled step remembers which
 bag it belonged to, and anything from an older one is dropped. `oppLater`,
 `oppMove` and `oppRoll` are the whole fix.
 
+## The day's amendments
+
+Two signs go up on the wall every shift, drawn from seven, and **they beat the
+standing list both ways**. A ban makes an ordinary category contraband — books,
+shoes, trousers, toothbrushes, bowling balls. An OK makes a forbidden one legal
+— knives, firearms. So some days the paperback is worth +3 and the machete is
+worth −5, and the only reason you know is that you read the wall.
+
+Everything that asks "is this bad" goes through one function, which is why the
+opponent, the scoring, the misses and the stolen-goods picker all obey the signs
+without being told about them separately. A card the signs have just banned can
+never also be a stolen good, because the goods are planted after the amendments
+are applied.
+
+**The categories are deliberately blunt**, because a rule you have to
+adjudicate is no use with ten seconds on the clock. All shoes means all shoes,
+heels included. Trousers means trousers and not skirts. Judgement calls I made
+and you may want to change, all in `SIGNS` in `assets/items.js`:
+
+- **No books** covers books, novels and the magazine. Newspapers are not in it.
+- **No shoes** covers the three pairs and the heels. Flippers are not in it.
+- **Knives permitted** covers the five knives. Scissors are not in it.
+- **No bowling balls** covers exactly one card, and that card is only dealt in
+  about seven shifts out of ten. It is a joke sign and it will sometimes do
+  nothing at all.
+
+**They swing the difficulty hard, on purpose.** A No books shift adds roughly
+six cards to the fifteen already forbidden — a 40% jump. Two bans at once is a
+brutal shift; knives and firearms both permitted is a quiet one. That variance
+is the point of the mechanic, but it means a bad round might be the deal rather
+than you.
+
+One side effect worth knowing: the sounds are tuned so no group is mostly
+contraband, and a ban breaks that — on a No books shift, a book landing on the
+bench means contraband most of the time. That is fair rather than a leak,
+because the sign told you.
+
 ## The maths, as it now stands
 
 **The deck is now exactly what is in `object cards.zip`.** 107 permitted
