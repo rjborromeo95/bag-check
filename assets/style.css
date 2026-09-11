@@ -580,3 +580,17 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.25rem;
 }
 .brief-go:hover{background:#ffc528}
+
+/* ---- the tray clock ----
+   Ten seconds a bag, sitting on the tray so it is in the same place your eyes
+   already are. It goes red at three, and says CUT when the other officer
+   finishes first and takes the rest of your time with them. */
+.traytime{
+  position:absolute;left:706px;top:648px;z-index:8;
+  min-width:74px;text-align:center;
+  background:rgba(22,31,30,.82);border-radius:6px;padding:3px 8px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.6rem;
+  line-height:1.05;color:#e6ebe9;letter-spacing:.02em;
+}
+.traytime.urgent{background:var(--alarm);color:#fff;animation:tick .5s steps(2,end) infinite}
+@keyframes tick{50%{background:#9c2020}}
