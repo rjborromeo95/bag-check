@@ -82,7 +82,7 @@ button,.card,.stage{cursor:var(--glove)}
    left to right in both of them. */
 .stagewrap{position:relative;width:100%;overflow:hidden;border-radius:6px}
 .stage{
-  position:absolute;top:0;left:0;width:1150px;height:712px;transform-origin:top left;
+  position:absolute;top:0;left:0;width:1360px;height:712px;transform-origin:top left;
   background:var(--concrete-2);
   background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);
   background-size:7px 7px;
@@ -104,13 +104,13 @@ button,.card,.stage{cursor:var(--glove)}
 
 /* where a passed tray rests, one per lane */
 .donespot{
-  position:absolute;left:936px;width:188px;height:116px;
+  position:absolute;left:1146px;width:188px;height:116px;
   border:2px dashed rgba(255,255,255,.18);border-radius:8px;
 }
 .lane-b .donespot{top:1px}
 .lane-you .donespot{top:37px}
 
-.arch{position:absolute;left:250px;width:212px;height:154px;z-index:5}
+.arch{position:absolute;left:290px;width:212px;height:154px;z-index:5}
 .lane-b .arch{top:0}
 .lane-you .arch{top:0}
 .arch-mouth{position:absolute;left:0;right:0;height:118px;background:#4a585b;border:3px solid #26302f;border-radius:6px}
@@ -152,8 +152,8 @@ button,.card,.stage{cursor:var(--glove)}
   border:2px solid #9aa39d;border-radius:8px;background:rgba(255,255,255,.26);
   box-shadow:inset 0 0 0 5px rgba(0,0,0,.05);
 }
-.seize-b{left:40px}
-.seize-you{left:470px;border-color:var(--steel);background:rgba(255,255,255,.38)}
+.seize-b{left:270px}
+.seize-you{left:700px;border-color:var(--steel);background:rgba(255,255,255,.38)}
 .seize-tag{
   position:absolute;left:10px;top:2px;
   font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#6d7873;
@@ -165,38 +165,69 @@ button,.card,.stage{cursor:var(--glove)}
 }
 .seize-you.hot{border-color:var(--alarm);background:rgba(224,49,49,.14)}
 
-/* ---- the notice board ----
-   Three reported-stolen items, pinned up the right-hand side where both
-   officers can see them all shift. */
-.board{
-  position:absolute;left:908px;top:160px;width:234px;height:381px;
+/* ---- the wall ----
+   Two notices pinned down the left-hand side: the standing list of what is
+   forbidden, and the three things reported stolen this shift. */
+.notice{
+  position:absolute;left:12px;width:240px;
   background:#e7e3d6;border:2px solid #b6ae98;border-radius:6px;
   box-shadow:0 3px 0 rgba(0,0,0,.12), inset 0 0 0 4px rgba(255,255,255,.4);
-  padding:4px 6px;
+  padding:3px 6px 5px;
 }
-.board-head{
-  margin:0 0 4px;display:flex;justify-content:space-between;align-items:baseline;
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;
+.notice-banned{top:160px;height:196px;text-align:center}
+.notice-board{top:364px;height:177px}
+.notice-head{
+  margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.02rem;
   color:#6a5f46;letter-spacing:.03em;text-transform:uppercase;line-height:1.2;
   border-bottom:1px solid #c4bca6;padding-bottom:2px;
 }
-.board-head span{font-size:.9rem;color:#8a6b2e;letter-spacing:0}
-.board-list{display:flex;flex-direction:column;gap:5px}
-.poster{
-  display:flex;align-items:center;gap:6px;height:108px;
-  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:4px;padding:4px 6px;
+.notice-head span{font-size:.88rem;color:#8a6b2e;letter-spacing:0}
+.banned-chart{width:226px;display:block;margin:0 auto}
+.notice-foot{
+  margin:1px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;
+  color:#8a7f64;letter-spacing:.02em;
 }
-.poster img{width:72px;height:98px;object-fit:contain;flex:0 0 auto}
+.board-list{display:flex;flex-direction:column;gap:4px}
+.poster{
+  display:flex;align-items:center;gap:6px;height:46px;
+  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:4px;padding:2px 5px;
+}
+.ptile{position:relative;flex:0 0 auto;width:44px;height:40px;overflow:hidden}
+.ptile img{position:absolute;max-width:none}
 .poster-name{
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;
-  line-height:1.15;color:#3c372a;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.95rem;
+  line-height:1.05;color:#3c372a;
 }
 .poster.found{background:#dfe9df;border-color:#8fae92}
 .poster.found .poster-name{color:#2f5c3a;text-decoration:line-through}
 .poster-got{
   display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;
-  font-size:.85rem;color:#2f7a4b;letter-spacing:.04em;
+  font-size:.78rem;color:#2f7a4b;letter-spacing:.03em;text-decoration:none;
 }
+
+/* ---- the magnifier ----
+   A plate at the right-hand end of each bench. Hold a card over yours and it
+   is shown at two and a bit times the size, which is the difference between
+   seeing a screwdriver and seeing a smudge. */
+.lens{
+  position:absolute;left:1152px;width:196px;height:123px;
+  border:2px dashed #8d9691;border-radius:8px;background:rgba(255,255,255,.2);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+}
+.lens-b{top:160px}
+.lens-you{top:418px}
+.lens-tag{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#7d8782}
+.lens.hot{border-style:solid;border-color:var(--steel);background:rgba(255,255,255,.5)}
+.lensview{
+  position:absolute;left:1146px;width:208px;height:290px;z-index:70;
+  background:#eef1ec;border:3px solid var(--steel);border-radius:10px;
+  box-shadow:0 14px 30px rgba(0,0,0,.35);padding:6px;
+}
+.lensview-b{top:78px}
+.lensview-you{top:336px}
+.lensview img{width:100%;height:100%;object-fit:contain;display:block}
+.lensview img.flip{transform:rotate(180deg)}
 
 /* ---- cards ----
    Clear stock. Only the printed object is opaque, so a card above hides part
@@ -234,12 +265,17 @@ button,.card,.stage{cursor:var(--glove)}
 .card.theirs{pointer-events:none !important;cursor:default}
 .card.theirs.item:hover{box-shadow:inset 0 0 0 1px rgba(22,34,31,.15)}
 
+/* A suitcase lies flat and lengthways in a tray. The card art is portrait, so
+   the box is turned and the image inside it turned with it. */
 .tray-case{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:88px;height:123px;border-radius:5px;overflow:hidden;
+  width:123px;height:88px;border-radius:5px;overflow:hidden;
   box-shadow:0 3px 0 rgba(0,0,0,.35), 0 6px 12px rgba(0,0,0,.25);
 }
-.tray-case img{width:100%;height:100%;display:block;object-fit:cover}
+.tray-case img{
+  position:absolute;left:50%;top:50%;width:88px;height:123px;display:block;
+  object-fit:cover;transform:translate(-50%,-50%) rotate(90deg);
+}
 
 /* a number that lifts off whatever earned it */
 .pop{
@@ -262,7 +298,7 @@ button,.card,.stage{cursor:var(--glove)}
 /* ---- the hold ----
    Only your half of the bench freezes. B keeps working, which is the point. */
 .freeze{
-  position:absolute;left:0;right:0;top:412px;bottom:0;z-index:60;
+  position:absolute;left:260px;right:0;top:412px;bottom:0;z-index:60;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.25rem;text-align:center;
   background:rgba(224,49,49,.17);border:5px solid var(--alarm);border-radius:6px;

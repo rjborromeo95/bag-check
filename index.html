@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=12">
+<link rel="stylesheet" href="assets/style.css?v=13">
 </head>
 <body>
 
@@ -54,11 +54,22 @@
         <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span></div>
         <div class="seize seize-you" id="seizeYou"><span class="seize-tag">You seized</span><span class="seize-n" id="seizeN">0</span></div>
 
-        <!-- the notice board: three stolen items this shift -->
-        <div class="board" id="board">
-          <p class="board-head">Reported stolen <span>+3 each</span></p>
+        <!-- the wall, down the left: what is banned, and what is missing -->
+        <div class="notice notice-banned">
+          <p class="notice-head">Forbidden items</p>
+          <img class="banned-chart" src="assets/ui/forbidden.png" alt="Chart of forbidden items">
+          <p class="notice-foot" id="bannedFoot">16 of them on the belt today</p>
+        </div>
+        <div class="notice notice-board" id="board">
+          <p class="notice-head">Reported stolen <span>+3 each</span></p>
           <div class="board-list" id="boardList"></div>
         </div>
+
+        <!-- a magnifier each, at the right-hand end of the bench -->
+        <div class="lens lens-b"><span class="lens-tag">Magnifier</span></div>
+        <div class="lens lens-you" id="lensYou"><span class="lens-tag">Magnifier</span></div>
+        <div class="lensview lensview-b" id="lensViewB" hidden></div>
+        <div class="lensview lensview-you" id="lensViewYou" hidden></div>
 
         <!-- your side -->
         <div class="lane lane-you">
@@ -122,7 +133,7 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=12"></script>
-<script src="assets/game.js?v=12"></script>
+<script src="assets/items.js?v=13"></script>
+<script src="assets/game.js?v=13"></script>
 </body>
 </html>

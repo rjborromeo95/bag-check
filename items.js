@@ -40,6 +40,7 @@ const PERMITTED = [
   { file: 'hat_2.png',              name: 'Felt hat',                   sound: 'cloth' },
   { file: 'hat_3.png',              name: 'Straw hat',                  sound: 'rustle' },
   { file: 'hat_4.png',              name: 'Blue sun hat',               sound: 'cloth' },
+  { file: 'inflatable_knife.png', name: 'Inflatable knife',    sound: 'plastic' },
   { file: 'hoodie.png',             name: 'Hoodie',                     sound: 'cloth' },
   { file: 'jeans_1.png',            name: 'Folded jeans',               sound: 'cloth' },
   { file: 'jeans_2.png',            name: 'Jeans, corner',              sound: 'cloth' },
@@ -116,24 +117,51 @@ const PERMITTED = [
    That size gap is where the difficulty lives. */
 
 const RESTRICTED = [
+  /* blades */
   { file: 'knife.png',              name: 'Knife',                      sound: 'light' },
   { file: 'knife_2.png',            name: 'Knife, upright',             sound: 'light' },
-  { file: 'knife_3.png',            name: 'Sheathed knife',             sound: 'plastic', copies: 2 },
+  { file: 'knife_3.png',            name: 'Sheathed knife',             sound: 'plastic' },
   { file: 'knife_5.png',            name: 'Sheathed knife, low',        sound: 'plastic' },
+  { file: 'zombie_knife.png',       name: 'Zombie knife',               sound: 'hardcase' },
+  { file: 'scissors_1.png',         name: 'Shears',                     sound: 'light' },
+  { file: 'scissors_2.png',         name: 'Kitchen scissors',           sound: 'light' },
 
-  { file: 'bomb_1.png',             name: 'Bomb',                       sound: 'hardcase', copies: 2 },
-  { file: 'bomb_2.png',             name: 'Bomb, corner',               sound: 'hardcase', copies: 2 },
+  /* bombs */
+  { file: 'bomb_1.png',             name: 'Bomb',                       sound: 'hardcase' },
+  { file: 'bomb_2.png',             name: 'Bomb, corner',               sound: 'hardcase' },
   { file: 'pipe_bomb.png',          name: 'Pipe bomb',                  sound: 'hardcase' },
 
+  /* poisons */
   { file: 'poison.png',             name: 'Poison, green flask',        sound: 'glass' },
-  { file: 'poison_2.png',           name: 'Poison bottle',              sound: 'glass', copies: 2 },
-  { file: 'poison_34.png',          name: 'Poison, top edge',           sound: 'glass', copies: 2 },
-
-  { file: 'flammable_bottle.png',   name: 'Flammable solvent',          sound: 'plastic' },
-  { file: 'gasoline.png',           name: 'Propane cylinder',           sound: 'hardcase', copies: 2 },
+  { file: 'poison_2.png',           name: 'Poison bottle',              sound: 'glass' },
+  { file: 'poison_34.png',          name: 'Poison, top edge',           sound: 'glass' },
   { file: 'hydrochloric_acid.png',  name: 'Hydrochloric acid',          sound: 'glass' },
-  { file: 'lighter_fluid.png',      name: 'Lighter fluid',              sound: 'plastic' }
+
+  /* flammables */
+  { file: 'flammable_bottle.png',   name: 'Flammable solvent',          sound: 'plastic' },
+  { file: 'flammable_liquid.png',   name: 'Flammable liquid',           sound: 'plastic' },
+  { file: 'gasoline.png',           name: 'Propane cylinder',           sound: 'hardcase' },
+  { file: 'lighter_fluid.png',      name: 'Lighter fluid',              sound: 'plastic' },
+  { file: 'lighter.png',            name: 'Lighter, red',               sound: 'plastic' },
+  { file: 'lighter_2.png',          name: 'Lighter, blue',              sound: 'plastic' },
+
+  /* tools */
+  { file: 'hammer.png',             name: 'Claw hammer',                sound: 'hardcase' },
+  { file: 'pliers.png',             name: 'Side cutters',               sound: 'hardcase' },
+  { file: 'pliers_2.png',           name: 'Pliers',                     sound: 'hardcase' },
+  { file: 'screwdriver_1.png',      name: 'Screwdriver, yellow',        sound: 'plastic' },
+  { file: 'screwdriver_2.png',      name: 'Screwdriver, blue',          sound: 'plastic' },
+
+  /* firearms */
+  { file: 'handgun.png',            name: 'Handgun',                    sound: 'hardcase' }
 ];
+
+/* Twenty-six forbidden designs exist; sixteen of them are on the belt in any
+   one shift, drawn at random and one card each. Ten sit out, so what counts as
+   contraband this round is never quite what it was last round — and nobody can
+   learn the deck by heart. */
+const RESTRICTED_N = 16;
+function restrictedCount() { return RESTRICTED_N; }
 
 /* --- suitcase fronts ---------------------------------------------------
    Thirty-two designs, twenty-four of which go on the belt in any one shift.
@@ -192,6 +220,143 @@ function soundFor(design) { return SOUND_OF[design] || 'light'; }
    and gives a permitted seizure a reason to exist.
 
    Restricted designs are never eligible. A wanted knife would just be a knife. */
+
+/* --- where the object sits ---------------------------------------------
+   The bounding box of the opaque pixels on each card, as fractions of the
+   card. The notice board uses it to crop a poster down to the object instead
+   of showing a mostly-empty card at thumbnail size. */
+const CROP = {
+  'artwork_1.png': [0.139, 0.086, 0.786, 0.728],
+  'artwork_2.png': [0.032, 0.193, 0.857, 0.797],
+  'artwork_3.png': [0.041, 0.015, 0.945, 0.363],
+  'beach_towel.png': [0.068, 0.016, 0.843, 0.457],
+  'belt_1.png': [0.184, 0.298, 0.509, 0.687],
+  'belt_2.png': [0.493, 0.113, 0.325, 0.156],
+  'belt_3.png': [0.445, 0.365, 0.377, 0.269],
+  'belt_4.png': [0.014, 0.123, 0.180, 0.279],
+  'bobblehead_1.png': [0.775, 0.543, 0.168, 0.248],
+  'bobblehead_2.png': [0.014, 0.235, 0.461, 0.151],
+  'bomb_1.png': [0.216, 0.149, 0.493, 0.232],
+  'bomb_2.png': [0.766, 0.724, 0.220, 0.196],
+  'book_1.png': [0.211, 0.164, 0.418, 0.441],
+  'book_2.png': [0.116, 0.592, 0.682, 0.382],
+  'book_spine.png': [0.014, 0.326, 0.139, 0.459],
+  'bowl.png': [0.600, 0.318, 0.382, 0.407],
+  'bowling_bll.png': [0.020, 0.382, 0.541, 0.387],
+  'bra.png': [0.091, 0.018, 0.825, 0.413],
+  'camo_trousers.png': [0.418, 0.083, 0.568, 0.611],
+  'cards.png': [0.327, 0.849, 0.473, 0.141],
+  'cash.png': [0.843, 0.305, 0.143, 0.156],
+  'charger_1.png': [0.384, 0.175, 0.525, 0.295],
+  'charger_2.png': [0.014, 0.746, 0.305, 0.230],
+  'flammable_bottle.png': [0.261, 0.298, 0.180, 0.323],
+  'flammable_liquid.png': [0.652, 0.587, 0.227, 0.342],
+  'flippers.png': [0.064, 0.036, 0.895, 0.916],
+  'game_boy.png': [0.486, 0.301, 0.330, 0.387],
+  'gardening.png': [0.368, 0.037, 0.516, 0.460],
+  'gasoline.png': [0.243, 0.280, 0.364, 0.413],
+  'girl_with_dragon_tattoo.png': [0.536, 0.429, 0.450, 0.488],
+  'hairdryer.png': [0.427, 0.021, 0.539, 0.454],
+  'hammer.png': [0.448, 0.011, 0.539, 0.169],
+  'handgun.png': [0.191, 0.227, 0.514, 0.237],
+  'hat_1.png': [0.136, 0.404, 0.668, 0.303],
+  'hat_2.png': [0.375, 0.010, 0.611, 0.634],
+  'hat_3.png': [0.139, 0.386, 0.827, 0.595],
+  'hat_4.png': [0.239, 0.010, 0.748, 0.592],
+  'hoodie.png': [0.014, 0.057, 0.916, 0.833],
+  'hydrochloric_acid.png': [0.457, 0.485, 0.402, 0.371],
+  'inflatable_knife.png': [0.382, 0.157, 0.341, 0.802],
+  'jeans_1.png': [0.227, 0.010, 0.759, 0.413],
+  'jeans_2.png': [0.409, 0.425, 0.577, 0.556],
+  'jeans_3.png': [0.289, 0.532, 0.652, 0.441],
+  'jeans_4.png': [0.014, 0.045, 0.598, 0.465],
+  'keyboard.png': [0.014, 0.104, 0.545, 0.836],
+  'knife.png': [0.170, 0.493, 0.136, 0.331],
+  'knife_2.png': [0.516, 0.188, 0.302, 0.280],
+  'knife_3.png': [0.886, 0.373, 0.100, 0.253],
+  'knife_5.png': [0.386, 0.575, 0.341, 0.279],
+  'laptop.png': [0.073, 0.063, 0.466, 0.467],
+  'laptop_2.png': [0.173, 0.577, 0.793, 0.400],
+  'laptop_3.png': [0.450, 0.243, 0.536, 0.564],
+  'leather_bag_1.png': [0.109, 0.010, 0.780, 0.502],
+  'lighter.png': [0.520, 0.277, 0.193, 0.115],
+  'lighter_2.png': [0.232, 0.710, 0.082, 0.135],
+  'lighter_fluid.png': [0.214, 0.178, 0.591, 0.172],
+  'ms_wiz_1.png': [0.014, 0.527, 0.386, 0.350],
+  'ms_wiz_2.png': [0.318, 0.363, 0.432, 0.382],
+  'ms_wiz_3.png': [0.386, 0.292, 0.380, 0.417],
+  'ms_wiz_4.png': [0.020, 0.105, 0.548, 0.280],
+  'ms_wiz_5.png': [0.402, 0.564, 0.434, 0.387],
+  'mug_1.png': [0.484, 0.630, 0.441, 0.287],
+  'mug_2.png': [0.130, 0.136, 0.470, 0.348],
+  'newspapers.png': [0.039, 0.019, 0.727, 0.963],
+  'paddle.png': [0.334, 0.323, 0.441, 0.545],
+  'pencil_case.png': [0.350, 0.627, 0.636, 0.337],
+  'perfume_1.png': [0.216, 0.491, 0.459, 0.220],
+  'perfume_2.png': [0.384, 0.010, 0.168, 0.167],
+  'perfume_4.png': [0.589, 0.645, 0.398, 0.224],
+  'phone_1.png': [0.027, 0.645, 0.275, 0.329],
+  'pipe_bomb.png': [0.602, 0.447, 0.195, 0.402],
+  'plate.png': [0.195, 0.053, 0.682, 0.493],
+  'pliers.png': [0.711, 0.173, 0.157, 0.191],
+  'pliers_2.png': [0.248, 0.146, 0.143, 0.220],
+  'poison.png': [0.564, 0.540, 0.132, 0.156],
+  'poison_2.png': [0.832, 0.042, 0.155, 0.194],
+  'poison_34.png': [0.248, 0.010, 0.273, 0.086],
+  'recorder.png': [0.695, 0.173, 0.120, 0.653],
+  'ripped_jeans.png': [0.443, 0.254, 0.543, 0.446],
+  'scarf_1.png': [0.336, 0.243, 0.573, 0.399],
+  'scarf_2.png': [0.298, 0.559, 0.652, 0.420],
+  'scarf_4.png': [0.050, 0.230, 0.470, 0.428],
+  'scissors_1.png': [0.273, 0.347, 0.448, 0.109],
+  'scissors_2.png': [0.584, 0.130, 0.402, 0.282],
+  'screwdriver_1.png': [0.895, 0.371, 0.091, 0.256],
+  'screwdriver_2.png': [0.180, 0.773, 0.243, 0.049],
+  'shirt_folded.png': [0.098, 0.245, 0.734, 0.637],
+  'shirt_folded_2.png': [0.220, 0.015, 0.702, 0.569],
+  'shirt_folded_34.png': [0.014, 0.010, 0.732, 0.626],
+  'shirting.png': [0.198, 0.010, 0.789, 0.536],
+  'shoes_1.png': [0.014, 0.010, 0.577, 0.595],
+  'shoes_2.png': [0.243, 0.791, 0.641, 0.199],
+  'shoes_3.png': [0.014, 0.010, 0.327, 0.541],
+  'skirt_1.png': [0.043, 0.454, 0.655, 0.536],
+  'skirt_2.png': [0.257, 0.010, 0.730, 0.457],
+  'stripy_trousers.png': [0.014, 0.399, 0.591, 0.420],
+  't_shirt_1.png': [0.014, 0.010, 0.743, 0.485],
+  't_shirt_2.png': [0.075, 0.298, 0.911, 0.692],
+  'toothbrush_1.png': [0.861, 0.324, 0.109, 0.462],
+  'toothbrush_2.png': [0.077, 0.627, 0.198, 0.363],
+  'toothbrush_3.png': [0.014, 0.042, 0.111, 0.546],
+  'toothpaste.png': [0.261, 0.613, 0.130, 0.160],
+  'toothpaste_2.png': [0.445, 0.185, 0.225, 0.091],
+  'tote_1.png': [0.330, 0.177, 0.657, 0.814],
+  'tote_2.png': [0.270, 0.297, 0.511, 0.588],
+  'tote_3.png': [0.175, 0.010, 0.811, 0.457],
+  'umbrella_1.png': [0.014, 0.310, 0.286, 0.387],
+  'umbrella_2.png': [0.218, 0.078, 0.607, 0.345],
+  'umbrella_3.png': [0.200, 0.831, 0.530, 0.159],
+  'underwear_1.png': [0.141, 0.151, 0.561, 0.331],
+  'underwear_2.png': [0.093, 0.614, 0.770, 0.376],
+  'underwear_3.png': [0.500, 0.253, 0.343, 0.404],
+  'vase.png': [0.068, 0.083, 0.593, 0.831],
+  'washbag_1.png': [0.139, 0.812, 0.473, 0.178],
+  'washbag_2.png': [0.589, 0.673, 0.332, 0.318],
+  'washbag_3.png': [0.727, 0.583, 0.259, 0.308],
+  'yellow_bag.png': [0.014, 0.162, 0.866, 0.525],
+  'yellow_t_shirt.png': [0.114, 0.298, 0.775, 0.556],
+  'zombie_knife.png': [0.127, 0.013, 0.830, 0.932]
+};
+function cropOf(file) { return CROP[file] || [0, 0, 1, 1]; }
+
+function pick(list, n) {
+  const pool = list.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+  }
+  return pool.slice(0, n);
+}
+
 function pickWanted(n) {
   const pool = PERMITTED.slice();
   for (let i = pool.length - 1; i > 0; i--) {
@@ -215,7 +380,7 @@ function buildItemDeck() {
     }
   };
   PERMITTED.forEach(c => add(c, false));
-  RESTRICTED.forEach(c => add(c, true));
+  pick(RESTRICTED, RESTRICTED_N).forEach(c => add(c, true));
   return deck;
 }
 

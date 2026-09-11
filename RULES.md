@@ -7,18 +7,24 @@
 - 24 security trays
 - 32 suitcase cards, printed opaque, no two alike — 24 go on the belt in any
   one shift
-- 112 item cards, printed on clear stock so only the object shows, with the
-  object in a different position on every card
+- 119 item cards, printed on clear stock so only the object shows, with the
+  object in a different position on every card. 109 of them are dealt.
 
-92 item cards are permitted. 20 are restricted: five each of knives, bombs,
-poison and flammable liquid. Every restricted card prints its object somewhere
-different, and they are all small — a knife takes up about a twentieth of the
-card, so nearly anything sitting on top of it will hide it completely.
+93 item cards are permitted. 26 are forbidden — blades, bombs, poisons,
+flammables, tools and a handgun — and **sixteen of those twenty-six are shuffled
+in each shift**, chosen at random, so what counts as contraband is never quite
+the same twice. Every card prints its object somewhere different, and the
+forbidden ones are all small: a lighter takes up about a fiftieth of the card,
+so nearly anything sitting on top of it will hide it completely.
+
+One of the permitted cards is an inflatable knife. It is a toy. It is allowed.
 
 ## Setup
 
 Deal twenty-four of the 32 suitcase cards at random and put the other eight
-back in the box. Shuffle those 24 into the 112 item cards and deal the lot out.
+back in the box. Deal sixteen of the 26 forbidden cards the same way. Shuffle
+those 24 suitcases into the 93 permitted and 16 forbidden cards and deal the
+lot out.
 Don't straighten the item cards as you go — whichever way up one comes out of
 the shuffle is the way it goes in the bag, which is what stops the same object
 always turning up in the same corner.

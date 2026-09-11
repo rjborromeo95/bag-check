@@ -114,12 +114,18 @@ every card and how many copies of it exist.
 
 ## The deck in this build
 
-112 item cards: 92 permitted and 20 restricted. Every design is real artwork —
-no placeholders left. The permitted 92 are all different; the restricted 20 are
-14 designs (four knives, three bombs, three poisons, four liquids) with six
-doubled to give five cards of each kind. If both copies of a doubled design
-land in the same bag the dealer swaps one out, since identical cards stack into
-what looks like a single card.
+109 item cards a shift: 93 permitted and 16 restricted, drawn from a pool of
+26 forbidden designs, so ten of them sit out every round and nobody can learn
+the deck by heart. The full deck is 119 designs. Every design is real artwork. The forbidden
+pool runs to blades, bombs, poisons, flammables, tools and a handgun — seven
+knives including a machete and two pairs of scissors, three bombs, four
+poisons, six flammables including two lighters, five tools, one firearm — and
+`RESTRICTED_N` (16) is how many of them are dealt. No design is ever doubled
+now, so the old both-copies-in-one-bag swap is gone.
+
+The permitted deck gained an inflatable knife, which is the joke the rest of
+the deck has been waiting for: it is a toy, it is the size of a machete, and it
+is perfectly legal. Watch what people do with it in playtest.
 
 The most recent 14 permitted designs are a wash bag, an umbrella, a tote, a
 pair of pants and a t-shirt in three or two colourways each, plus a carved
@@ -133,11 +139,11 @@ that end up effectively invisible drop from 20% to 17%, and bags with an
 invisible item from 27% to 24%. Those two figures were measured on the 98-card
 build and have not been re-run since; fatter bags will have nudged both up.
 
-The restricted objects are small — 2.6% to 10.4% of the card, averaging 5.1%,
-against 19% for the average permitted item. That gap is where the difficulty
-lives, but it is no longer a tell: fourteen permitted designs are now under 6%
-of the card too, and 32 sit inside the restricted size range, so a small object
-is only contraband 38% of the time — down from 43%.
+The restricted objects are small — 2.1% to 12.2% of the card, against 19% for
+the average permitted item. That gap is where the difficulty
+lives, but it is no longer a tell: fourteen permitted designs are under 6% of the
+card too, and the magnifier exists so that size is a reason to look closer
+rather than a reason to guess.
 
 32 suitcase fronts, no two alike, of which 24 go on the belt each shift — a
 different eight sit out every game. They are opaque full-bleed cards, so they
@@ -149,9 +155,13 @@ remember. Six designs at three copies each, which is what this used to be, made
 the front almost useless as an identifier.
 
 Bags are dealt the way the rules say — the 24 suitcase cards shuffled into the
-item deck, whatever lands under a suitcase is what's in it. 112 cards across 24
-suitcases averages 4.7 a bag: median 4, a fifth at the eight-card cap, and 43%
-of bags completely clean. Going from 18 trays to 24 is what pulled that back
+item deck, whatever lands under a suitcase is what's in it. 109 cards across 24
+suitcases averages 4.5 a bag: median 4, and 51% of bags completely clean.
+That last number is the one to watch: dropping from 20 restricted cards to 16
+took clean bags from 43% to 51%, so half your trays are now a green lamp and a
+Pass. Fewer searches also means fewer chances at the stolen goods, since those
+can only be found in a bag you open. `RESTRICTED_N` is the dial if the shift
+starts feeling quiet. Going from 18 trays to 24 is what pulled that back
 into shape — at 18 the median bag was 6 and a third of them were pinned at the
 cap. `BAG_CAP` (8) is a physical limit, not a balance knob: it's the most a
 suitcase card can actually cover.
@@ -196,10 +206,24 @@ the tabletop rules don't: on a table you find out at the end.
 thing to watch in playtest is whether it makes people thorough or just makes
 them slow.
 
+**A magnifier each.** A plate at the right-hand end of each bench. Drag a card
+over yours and it appears at two and a bit times the size in the panel above,
+which is the difference between seeing a screwdriver and seeing a smudge — and
+it matters more now that the forbidden pool has lighters and pliers in it at
+2% of a card. Officer B uses theirs too: every card they lay out passes over
+it, which is what reading a bag looks like from the other side of a bench.
+
+**The wall.** Two notices down the left-hand side. The standing chart of what
+is forbidden, and the three things reported stolen this shift. The hold overlay
+deliberately stops short of them so you can still read the board while you are
+being held.
+
 **Three things are reported stolen every shift.** `pickWanted(3)` in
 `assets/items.js` draws three permitted designs at random and pins them on the
-notice board up the right-hand side of the bench, where both officers can see
-them all shift. Recovering one is worth `VP_WANTED` (3), and the poster crosses
+notice board on the left-hand wall, where both officers can see them all
+shift. Each poster crops the card art down to the object's bounding box —
+`CROP` in `assets/items.js` — because a thumbnail of a whole card is mostly
+empty space. Recovering one is worth `VP_WANTED` (3), and the poster crosses
 itself off when either of you finds it.
 
 They are deliberately ordinary — a hat, a book, a mug — so nothing about the
@@ -262,8 +286,12 @@ The knife and bomb takes went into `light` and `hardcase` rather than getting
 groups of their own, which is the rule the sound map has to keep: no group
 belongs to contraband alone. Glass is the mugs, the perfumes, the plate, the bowl and the vase as
 well as the poisons; hardcase is the laptops, the Game Boy and the bowling ball
-as well as the bombs. As dealt, glass is contraband 43% of the time, hardcase
-41%, plastic 31%, light 25%, and book, cloth and rustle never. That is a hint
+as well as the bombs. The twelve new forbidden designs were spread across four groups rather than
+piled into one: pliers, hammer, handgun and the machete sound like hardcase
+along with the laptops and the Game Boy, the screwdrivers and lighters sound
+like plastic along with the chargers and umbrellas, the scissors sound like
+light along with the toothbrushes. As dealt that puts every group between 27%
+and 33% contraband, with book, cloth and rustle never. That is a hint
 rather than an answer, and it only reaches you once you have already pulled the
 card out and can see it — the exception being a card that landed completely
 hidden under another, which you would now hear even though you cannot see it.
