@@ -11,8 +11,6 @@ const VP_DIRTY_BAG = -10; /* or, on the budget shift, per bag rather than per it
 /* Stolen goods are squared: one is worth 1, three is worth 9, five is 25.
    Nothing else in the game rewards a run like that, which is what makes
    remembering the list the thing worth doing. */
-const WANTED_N = 10;      /* on the table in total, both modes */
-const WANTED_EACH = 5;    /* on the budget shift, planted five a side */
 const FREEZE_MS = 2000;   /* the hold after letting something through */
 const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
@@ -30,28 +28,12 @@ const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
    The detector, the shift clock and the inspection budget were all tried and
    are all gone. This is what is left. */
-const GAMES = {
-  /* Your own bench. Bags arrive on your belt and you work them. Five stolen
-     goods each, hidden in the other's queue before the shift. */
-  home:  { key: 'home',  name: 'Your own bench',   tray: 10000, cut: true, planted: true,  stolen: true,  cross: false, reveal: false },
-
-  /* Across the table. Your passengers' bags arrive on your belt and go
-     straight over to Officer B; theirs come down to you. You are checking
-     each other's queue, blind, and handing it back when you are done. No
-     stolen goods — the interaction that made them worth having is now the
-     core loop, so the second list goes. */
-  cross: { key: 'cross', name: 'Across the table', tray: 10000, cut: true, planted: false, stolen: false, cross: true,  reveal: false }
+const M = {
+  name: 'Ten seconds',
+  tray: 10000,        /* per bag */
+  cut: true,          /* passing early ends their bag too */
+  reveal: false       /* you learn what you missed at the end, not as it happens */
 };
-let M = GAMES.home;
-
-/* Which belt a tray arrives on, and which bench it gets worked at. On your own
-   bench they are the same lane. Across the table they are opposite ones, so a
-   tray travels down the screen to be searched and back up to leave. */
-function arriveTop(mine) {
-  if (!M.cross) return mine ? YOU.top : THEM.top;
-  return mine ? THEM.top : YOU.top;      /* it came from the other side */
-}
-function deskTop(mine) { return mine ? YOU.top : THEM.top; }
 
 /* ---------- the bench ----------
    One stage, two lanes facing each other. Both belts run the same way — in
@@ -125,7 +107,6 @@ const you = { trays: 0, seized: [], missed: [], checks: 0 };
 const opp = { trays: 0, seized: [], missed: [], checks: 0 };
 let oppHeld = null, oppDeck = null, oppCards = [], oppBusy = false;
 let stowYou = [], stowThem = [];
-let wanted = [], wantedThem = [];   /* stolen goods, yours to find and theirs */
 let briefed = false;
 let hudShown = 0, hudAnim = null;
 
@@ -157,13 +138,10 @@ function takeTray(lane, front) {
   t.el.className = 'tray';
   t.el.style.transition = 'none';
   t.el.style.left = X.offstage + 'px';
-  t.el.style.top = arriveTop(lane.mine) + 'px';
+  t.el.style.top = (lane.mine ? YOU.top : THEM.top) + 'px';
   t.el.hidden = true;
   return t;
 }
-
-/* the vertical half of a handover; the horizontal half is an ordinary move */
-function glide(t, y) { t.el.style.top = Math.round(y) + 'px'; }
 
 function freeTray(lane, t) {
   if (!t) return;
@@ -300,11 +278,7 @@ function start() {
   initLane(YOU); initLane(THEM);
   applySigns();
   drawSigns();
-  if (M.stolen) plantGoods();
-  else {
-    wanted = []; wantedThem = [];
-    you.wantSet = {}; opp.wantSet = {}; opp.recall = {};
-  }
+
   briefed = false;
 
   $('weigh').hidden = true;
@@ -315,58 +289,20 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
-  $('modeName').textContent = M.name + (series.best > 1
-    ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
-    : '');
+  $('modeName').textContent = series.best > 1
+    ? 'Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
+    : 'One shift';
   $('clock').className = 'clock';
   $('clock').textContent = '0:00';
   fit(); drawQueue(); drawTally(); render();
 }
 
-/* ---------- stolen goods ----------
-   Ten of them, and they are chosen out of the bags rather than off the
-   catalogue, so every one is guaranteed to be on the belt somewhere. One per
-   suitcase, ten different suitcases.
-
-   On the budget shift they are planted rather than reported: five in your
-   queue by Officer B, five in theirs by you, which is why you get told five
-   and not ten. That is the physical game too — the other player picks them
-   and tells you what they are.
-
-   You are told once, in words, at the start. No picture, no list to check
-   against later. Remembering is the mechanic. */
-
-function plantInto(trays, n, taken) {
-  const out = [];
-  const pool = shuffle(trays.slice()).filter(t => t.bag.items.some(it => !bad(it)));
-  for (let i = 0; i < pool.length && out.length < n; i++) {
-    const options = pool[i].bag.items.filter(it => !bad(it) && !taken[it.design]);
-    if (!options.length) continue;
-    const pickOne = options[Math.floor(Math.random() * options.length)];
-    taken[pickOne.design] = true;
-    out.push({ file: pickOne.design, name: pickOne.name });
-  }
-  return out;
-}
-
-function plantGoods() {
-  const taken = {};
-  if (M.planted) {
-    wanted = plantInto(YOU.queue, WANTED_EACH, taken);
-    wantedThem = plantInto(THEM.queue, WANTED_EACH, taken);
-  } else {
-    wanted = plantInto(YOU.queue, WANTED_N, taken);
-    wantedThem = wanted;
-  }
-  you.wantSet = {}; wanted.forEach(x => { you.wantSet[x.file] = true; });
-  opp.wantSet = {}; wantedThem.forEach(x => { opp.wantSet[x.file] = true; });
-
-  /* Officer B has to remember them too, and does not manage all of them */
-  opp.recall = {};
-  wantedThem.forEach(x => { if (Math.random() < OPP_RECALL) opp.recall[x.file] = true; });
-}
-
-function isWantedFor(p, item) { return !!(p.wantSet && p.wantSet[item.design]); }
+/* ---------- the briefing ----------
+   One thing to read before the belt starts: the two amendments. There is no
+   second list any more. Stolen goods asked you to hold five ordinary objects
+   in your head at the same time as the signs, and with ten seconds a bag
+   nobody could keep the two apart — the signs do that job better, and they
+   are the joke as well. */
 
 function amendBlock() {
   return '<div class="brief-signs">' + signsToday.map(sg =>
@@ -378,29 +314,12 @@ function amendBlock() {
 }
 
 function briefText() {
-  if (!M.stolen) {
-    return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
-      amendBlock() +
-      '<p class="brief-lede">Your passengers\u2019 bags go straight across to Officer B and theirs come to you, ' +
-      'so you are checking each other\u2019s queue and neither of you has seen inside. ' +
-      'Ten seconds a bag, and finishing first takes the rest of their time.</p>';
-  }
-  const lines = wanted.map(x => '<li>' + x.name + '</li>').join('');
-  const mine = M.planted
-    ? 'Officer B has hidden <strong>' + wanted.length + ' stolen items</strong> in your queue, one to a suitcase, and has told you what they are.'
-    : '<strong>' + wanted.length + ' items</strong> have been reported stolen. They are ordinary things, they are somewhere on the belt, and both of you are looking for them.';
-  const plantedBack = M.planted && wantedThem.length
-    ? '<p class="brief-foot">You have hidden ' + wantedThem.map(x => x.name.toLowerCase()).join(', ') + ' in theirs.</p>'
-    : '';
-  const amend = amendBlock();
-
   return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
-    amend +
-    '<p class="brief-lede">' + mine + '</p>' +
-    '<p class="brief-warn">Read them now. You will not be shown them again.</p>' +
-    '<ul class="brief-list">' + lines + '</ul>' +
-    '<p class="brief-score">Recovering them scores the <strong>square</strong> of how many you get — ' +
-    'one is 1 point, three is 9, five is 25.</p>' + plantedBack;
+    amendBlock() +
+    '<p class="brief-lede">They hold for this shift only, and they cut both ways: a banned category is ' +
+    '<strong>+3</strong> to seize, and anything you take off a passenger that is not forbidden today ' +
+    'is <strong>\u22125</strong>.</p>' +
+    '<p class="brief-warn">Read them now. They stay on the wall, but you will not have time to look.</p>';
 }
 
 function showBriefing() {
@@ -531,7 +450,6 @@ const SFX = {
 };
 const SFX_VOL = 0.65;
 const SFX_THEM = 0.2;
-const OPP_RECALL = 0.6;   /* how much of the stolen list Officer B actually remembers */
 const AMBIENCE_VOL = 0.17;
 
 const sfxBank = {};
@@ -817,8 +735,7 @@ function seize(card) {
   const c = centreOf(card.el);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
-  if (isWantedFor(you, card.item)) pop(c.x - 14, c.y - 28, 'Stolen', 'good');
-  else if (bad(card.item)) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
+  if (bad(card.item)) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
   else pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
   playItem(card.item);
   cards = cards.filter(other => other !== card);
@@ -860,7 +777,7 @@ function closeCase() {
 function feedLane() {
   if (over || held) return;
   searchedTray = false;
-  const q = M.cross ? THEM.queue : YOU.queue;
+  const q = YOU.queue;
   if (!q.length) { phase = 'idle'; render(); checkEnd(); return; }
   held = q.shift();
   opened = false;
@@ -876,7 +793,7 @@ function feedLane() {
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
-  const q = M.cross ? THEM.queue : YOU.queue;
+  const q = YOU.queue;
   if (over || onDeck || !q.length) return;
   onDeck = q.shift();
   YOU.deck = takeTray(YOU, onDeck.front);
@@ -935,7 +852,6 @@ function autoRun() {
 
 function scan() {
   phase = 'scanning'; render();
-  glide(YOU.work, deskTop(true));            /* it comes across to your bench */
   move(YOU, YOU.work, X.parkOut, 1250, () => {
     if (over) return;
     phase = 'scanned';
@@ -968,7 +884,6 @@ function passPressed() {
 /* A passed tray slides right and parks. The one already parked gets pushed off
    the end to make room, so there is exactly one sitting there per officer. */
 function shelve(lane, t) {
-  glide(t, arriveTop(lane.mine));            /* and back over to leave */
   const old = lane.done;
   lane.done = t;
   t.el.classList.add('done');
@@ -1099,9 +1014,7 @@ function render() {
   if (phase === 'idle') {
     if (!started) {
       go.disabled = false;
-      p.innerHTML = (M.cross
-        ? 'Twelve bags each, swapped across the bench — you check theirs, they check yours. '
-        : 'Twelve trays each and ten seconds a bag. ') +
+      p.innerHTML = 'Twelve trays each and ten seconds a bag. ' +
         '<strong>Go</strong> starts the belt, and after that it does not stop.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
@@ -1148,7 +1061,7 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
-function oppQueue() { return M.cross ? YOU.queue : THEM.queue; }
+function oppQueue() { return THEM.queue; }
 function wakeOpp() { if (!over && started && !oppBusy && oppQueue().length) later(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; }
 
@@ -1184,7 +1097,6 @@ function oppScan() {
   if (over || !oppHeld || !THEM.work) return;
   oppSay('Sending it through');
   beltNoise(THEM);
-  glide(THEM.work, deskTop(false));
   oppMove(THEM.work, X.parkOut, 1250, oppAfterScan);
   oppLater(oppQueueNext, 420);
 }
@@ -1294,10 +1206,6 @@ function oppSearch(contraband, size, rush) {
 
   const found = [], missed = [];
   contraband.forEach(it => (Math.random() < odds ? found : missed).push(it));
-  /* B is looking at the same notice board you are */
-  oppCards.forEach(cd => {
-    if (cd.item && opp.recall[cd.item.design] && Math.random() < odds) found.push(cd.item);
-  });
 
   let t = 0;
   found.forEach(it => {
@@ -1311,7 +1219,7 @@ function oppSearch(contraband, size, rush) {
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
-          isWantedFor(opp, it) ? 'Stolen' : '+' + VP_SEIZED, 'theirs');
+          '+' + VP_SEIZED, 'theirs');
       drawTally();
     }, t);
   });
@@ -1369,17 +1277,13 @@ function oppFile(missed) {
 
 /* ---------- score ---------- */
 
-function wantedTaken(p) { return p.seized.filter(it => isWantedFor(p, it)).length; }
-function wrongGrabs(p) { return p.seized.filter(it => !bad(it) && !isWantedFor(p, it)).length; }
-/* squared, which is why four is worth more than twice two */
-function wantedScore(p) { const k = wantedTaken(p); return k * k; }
+function wrongGrabs(p) { return p.seized.filter(it => !bad(it)).length; }
 function missPenalty(p) { return p.missed.length * VP_MISSED; }
 
 /* The final figure. Everything counts. */
 function scoreOf(p) {
   return p.trays * VP_TRAY
     + p.seized.filter(bad).length * VP_SEIZED
-    + wantedScore(p)
     + wrongGrabs(p) * VP_WRONG
     + missPenalty(p)
     + leftovers * VP_LEFT;
@@ -1389,7 +1293,7 @@ function scoreOf(p) {
    not know what went past you, so the running total does not either. */
 function shown(p) {
   return M.reveal ? scoreOf(p)
-    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wantedScore(p) + wrongGrabs(p) * VP_WRONG;
+    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wrongGrabs(p) * VP_WRONG;
 }
 
 function drawTally() {
@@ -1435,7 +1339,6 @@ function finish() {
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
-      (M.stolen ? '<tr><td>Stolen goods — ' + wantedTaken(p) + ' recovered, squared</td><td>' + wantedScore(p) + '</td></tr>' : '') +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
         '</td><td>' + missPenalty(p) + '</td></tr>' +
@@ -1452,10 +1355,7 @@ function finish() {
       ? 'Round ' + series.round + ' of ' + series.best + ', standing at ' + series.youWins + '–' + series.oppWins + '. '
       : '') +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
-    (M.stolen ? 'You were looking for: ' +
-      wanted.map(x => (you.seized.some(it => it.design === x.file)
-        ? '<b>' + x.name.toLowerCase() + '</b>' : x.name.toLowerCase())).join(', ') +
-      ' — bold is what you got. ' : '') +
+    'Today: ' + signsToday.map(sg => sg.label.toLowerCase()).join(' and ') + '. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
@@ -1488,8 +1388,7 @@ function showMenu() {
   $('menu').hidden = false;
 }
 
-function startSeries(gameKey, best) {
-  M = GAMES[gameKey] || GAMES.home;
+function startSeries(best) {
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;
   series.youPts = series.oppPts = 0;
@@ -1526,7 +1425,7 @@ function seriesVerdict() {
 loadSfx();
 $('menu').hidden = false;
 [].forEach.call(document.querySelectorAll('.mode'), b => {
-  b.onclick = () => startSeries(b.getAttribute('data-game'), Number(b.getAttribute('data-best')));
+  b.onclick = () => startSeries(Number(b.getAttribute('data-best')));
 });
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
