@@ -368,6 +368,44 @@ theirs now carries a number, every scheduled step remembers which bag it belonge
 to, and anything from an older one is dropped. `oppLater`, `oppMove` and `oppRoll`
 are the whole fix.
 
+## The policy shift
+
+A second game on the menu, and the first one where the two of you touch the
+same thing.
+
+**A wider deck.** 107 designs built so the categories overlap on purpose. Blue
+jeans answer to No blue and to No trousers. The croissant teddy answers to No
+croissants and to No teddies. The yellow croissant top answers to three. Every
+card carries its own tags, so a sign is a tag rather than a hand-written list —
+add an object and it joins every category it belongs to automatically.
+
+**You write the rules as you go.** Every five things you seize correctly, the
+bench stops, and you choose one of three signs off the unposted pile. It goes on
+the wall for the rest of the shift.
+
+The rule that makes it a decision rather than a free punch: **a sign you post
+binds both of you.** Banning blue because their queue looked blue also bans it
+in yours. Officer B earns them the same way and posts against you.
+
+**Thirty-four signs**, including seven colours. Colour bans are the sharpest
+because they cut across the object taxonomy — you cannot pattern-match a
+silhouette, you have to look at the actual thing. Two or three signs deep and
+the wall is doing real work.
+
+**The pause is real, not cosmetic.** Your tray clock is held and restarted with
+the time you had left, and Officer B freezes where they stand. That last part
+needed their delayed steps rewritten to count down rather than fire on a
+deadline — otherwise an entire chain of theirs arrives at once the moment the
+pause lifts.
+
+**And it exposes the cut problem badly.** Measured: against a player who
+searches properly and passes early, B was cut on every tray, seized nothing,
+and **never reached five, so never posted a single sign**. Half the mechanic
+sat inert. With a passive player B seized nine and posted one. So the cut is no
+longer just a balance issue — in this mode it switches off the opponent's
+entire contribution. Capping cuts at three a shift is now the fix rather than
+an option.
+
 ## The day's amendments
 
 Two signs go up on the wall every shift, drawn from sixteen, and **they beat

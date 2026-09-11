@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=29">
+<link rel="stylesheet" href="assets/style.css?v=30">
 </head>
 <body>
 
@@ -32,20 +32,29 @@
       pass too, wherever they have got to.</p>
 
     <div class="menu-modes menu-modes-two">
-      <button class="mode" type="button" data-best="1">
-        <span class="mode-name">Best of one</span>
-        <span class="mode-tag">One shift &middot; about two minutes</span>
-        <span class="mode-body">Twelve trays each, ten seconds a bag, two amendments on the wall.
-          One shift, highest score, done. The quick version and the one to teach somebody on.</span>
-      </button>
+      <div class="mode-card">
+        <span class="mode-name">Standard shift</span>
+        <span class="mode-tag">12 trays each &middot; 10s a bag &middot; two signs</span>
+        <span class="mode-body">Two amendments go up before the belt starts and nothing changes after
+          that. Seize what is forbidden today, leave what is not, and do it in ten seconds a bag.</span>
+        <span class="mode-picks">
+          <button class="mode" type="button" data-game="standard" data-best="1">One shift</button>
+          <button class="mode" type="button" data-game="standard" data-best="3">Best of three</button>
+        </span>
+      </div>
 
-      <button class="mode" type="button" data-best="3">
-        <span class="mode-name">Best of three</span>
-        <span class="mode-tag">First to two rounds</span>
-        <span class="mode-body">The same shift, up to three times, and the match goes to whoever takes
-          two of them — so it can be over in two. Fresh amendments every round, so what counts as
-          contraband changes under you. A level match is settled on points.</span>
-      </button>
+      <div class="mode-card">
+        <span class="mode-name">Policy shift</span>
+        <span class="mode-tag">Wider deck &middot; you write the rules as you go</span>
+        <span class="mode-body">A broader deck built so the categories overlap — blue jeans answer to
+          No blue and to No trousers. Every five things you seize correctly the bench stops and you post
+          a sign of your own, binding on both of you. Officer B earns them the same way, and the wall
+          keeps filling up.</span>
+        <span class="mode-picks">
+          <button class="mode" type="button" data-game="policy" data-best="1">One shift</button>
+          <button class="mode" type="button" data-game="policy" data-best="3">Best of three</button>
+        </span>
+      </div>
     </div>
 
       <div class="mode-card">
@@ -189,6 +198,15 @@
 
 </main>
 
+<div class="draft" id="draft" hidden>
+  <div class="draft-inner">
+    <p class="brief-kicker">Five seized</p>
+    <h2 class="brief-head">Post a sign</h2>
+    <p class="brief-lede">It goes up on the wall for the rest of the shift and it applies to both of you.</p>
+    <div class="draft-list" id="draftList"></div>
+  </div>
+</div>
+
 <div class="brief" id="brief" hidden>
   <div class="brief-inner">
     <p class="brief-kicker">Before the shift</p>
@@ -209,8 +227,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=29"></script>
-<script src="assets/game.js?v=29"></script>
+<script src="assets/items.js?v=30"></script>
+<script src="assets/game.js?v=30"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

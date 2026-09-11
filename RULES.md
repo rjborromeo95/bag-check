@@ -46,6 +46,17 @@ officer has to pass too, immediately, wherever they have got to.** They can do
 the same to you. Passing a bag you never opened does not count as finishing it
 and cuts nobody.
 
+## The policy shift
+
+An alternative shift with a broader deck, built so the categories overlap: blue
+jeans are caught by No blue and by No trousers, and a croissant teddy is caught
+by No croissants and by No teddies.
+
+Every **five** items you seize correctly, the belt stops and you post one of
+three signs onto the wall. It holds for the rest of the shift and **it applies
+to both officers, including you**. The other officer earns signs the same way.
+The suitcases carry on in the same order afterwards.
+
 ## The match
 
 A round is one shift. Play **best of one**, or **best of three** — first to two
