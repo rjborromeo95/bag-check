@@ -58,12 +58,21 @@ you how many. Now choose:
 When the conveyor is empty, the shift is over. Finish the tray in your hands,
 then score.
 
+## Stolen goods
+
+Three ordinary items are reported stolen at the start of every shift and pinned
+up where both officers can see them. Nothing marks them out in a bag and the
+detector does not care about them, so the only way to recover one is to notice
+it in a case you have opened for some other reason. **+3** each. A restricted
+item is never one of them.
+
 ## Scoring
 
 | | |
 |---|---|
 | Each tray you kept | **+1** |
 | Each restricted item you seized | **+2** |
+| Each reported-stolen item you recovered | **+3** |
 | Each restricted item you let through | **−3** |
 
 Open every suitcase in your pile to find out what you missed. Highest total

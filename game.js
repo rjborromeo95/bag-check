@@ -6,6 +6,8 @@ const BOUNCE_CAP = 2;
 const VP_TRAY = 1;
 const VP_SEIZED = 2;
 const VP_MISSED = -3;
+const VP_WANTED = 3;    /* a reported-stolen item, found in a bag you opened */
+const WANTED_N = 3;
 const FREEZE_MS = 2000;   /* the hold after letting something through */
 
 /* ---------- the bench ----------
@@ -27,12 +29,14 @@ const X = { offstage: -230, parkIn: 16, parkOut: 500, done: 940, exit: 1260 };
 const YOU  = { top: 594, bench: 418, mine: true,  lamp: 'lamp',  ids: ['tya', 'tyb', 'tyc'] };
 const THEM = { top: 8,   bench: 160, mine: false, lamp: 'lampB', ids: ['tba', 'tbb', 'tbc'] };
 
-const SEIZE_YOU  = { x: 595, y: 292, w: 420, h: 116 };
-const SEIZE_THEM = { x: 135, y: 292, w: 420, h: 116 };
-const STOW = { scale: 0.42, cols: 10, dx: 40, dy: 46, ox: 8, oy: 18 };
+const SEIZE_YOU  = { x: 470, y: 292, w: 400, h: 116 };
+const SEIZE_THEM = { x: 40,  y: 292, w: 400, h: 116 };
+const STOW = { scale: 0.42, cols: 9, dx: 42, dy: 46, ox: 8, oy: 18 };
 
 const SLOTS = [14, 126, 238, 350, 462, 574, 686, 798];
-const LID_PARK = 920;
+/* the front gets set down on the belt next to the tray, not on the bench —
+   the right-hand end of each bench row belongs to the notice board */
+function lidPark(lane) { return { x: 700, y: lane.top - 8 }; }
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -45,6 +49,7 @@ const you = { trays: 0, seized: [], missed: [] };
 const opp = { trays: 0, seized: [], missed: [] };
 let oppHeld = null, oppDeck = null, oppCards = [], oppBusy = false;
 let stowYou = [], stowThem = [];
+let wanted = [], wantedSet = null;
 let hudShown = 0, hudAnim = null;
 const timers = [];
 
@@ -158,12 +163,36 @@ function start() {
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
   initLane(YOU); initLane(THEM);
+  wanted = pickWanted(WANTED_N);
+  wantedSet = {};
+  wanted.forEach(w => { wantedSet[w.file] = true; });
+  drawBoard();
   $('freeze').hidden = true;
   $('result').hidden = true;
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
   fit(); drawQueue(); drawTally(); render();
+}
+
+/* ---------- the notice board ---------- */
+
+function isWanted(item) { return !!(wantedSet && wantedSet[item.design]); }
+
+function foundWanted(who, file) {
+  return who.seized.some(it => it.design === file);
+}
+
+function drawBoard() {
+  $('boardList').innerHTML = wanted.map(w => {
+    const mine = foundWanted(you, w.file);
+    const theirs = foundWanted(opp, w.file);
+    const tag = mine ? '<span class="poster-got">Recovered</span>'
+              : theirs ? '<span class="poster-got">B recovered it</span>' : '';
+    return '<div class="poster' + (mine || theirs ? ' found' : '') + '">' +
+      '<img src="assets/cards/' + w.file + '" alt="">' +
+      '<span class="poster-name">' + w.name + tag + '</span></div>';
+  }).join('');
 }
 
 /* ---------- queue ---------- */
@@ -214,6 +243,9 @@ function move(lane, t, x, ms, then) {
   }, ms);
 }
 
+/* the belt itself, whenever a tray is sent anywhere */
+function beltNoise(lane) { play('conveyor', lane.mine ? 0.5 : SFX_THEM); }
+
 function roll(lane, t, x, ms, then) {
   t.el.style.transition = 'none';
   void t.el.offsetWidth;
@@ -244,7 +276,8 @@ const SFX = {
   rustle:   ['rustle_1', 'rustle_2'],
   open:     ['open_1', 'open_2', 'open_3', 'open_4'],
   shut:     ['shut_1'],
-  beep:     ['beep']
+  beep:     ['beep'],
+  conveyor: ['conveyor']
 };
 const SFX_VOL = 0.65;
 const SFX_THEM = 0.2;
@@ -470,7 +503,7 @@ function onTray(el) {
 function onTap(card) {
   if (phase !== 'searching') return;
   if (card.kind === 'lid') {
-    if (!opened) { openCase(); settle(card.el, LID_PARK, YOU.bench, -4); }
+    if (!opened) { const lp = lidPark(YOU); openCase(); settle(card.el, lp.x, lp.y, -4); }
     else closeCase();
     return;
   }
@@ -499,7 +532,8 @@ function seize(card) {
   const c = centreOf(card.el);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
-  if (card.item.restricted) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
+  if (isWanted(card.item)) { pop(c.x - 14, c.y - 28, '+' + VP_WANTED, 'good'); drawBoard(); }
+  else if (card.item.restricted) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
   playItem(card.item);
   cards = cards.filter(other => other !== card);
   stow(card.el, SEIZE_YOU, stowYou);
@@ -577,8 +611,8 @@ function promote() {
 }
 
 function goPressed() {
-  if (!started) { beginClock(); feedLane(); return; }
-  if (phase === 'ready') scan();
+  if (!started) { beginClock(); beltNoise(YOU); feedLane(); return; }
+  if (phase === 'ready') { beltNoise(YOU); scan(); }
 }
 
 function scan() {
@@ -768,6 +802,7 @@ function oppTurn() {
 function oppScan() {
   if (over || !THEM.work) return;
   oppSay('Sending it through');
+  beltNoise(THEM);
   move(THEM, THEM.work, X.parkOut, 1250, oppAfterScan);
   later(oppQueueNext, 420);
   later(() => { if (!over && oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
@@ -834,7 +869,7 @@ function oppOpen(contraband, size, rush) {
 
   const pace = 1 - 0.4 * rush;
   let t = Math.round(rnd(150, 320) * pace);
-  later(() => { if (!over) settle(lidEl, LID_PARK, THEM.bench, 5, Math.round(rnd(280, 420))); }, t);
+  later(() => { if (!over) { const lp = lidPark(THEM); settle(lidEl, lp.x, lp.y, 5, Math.round(rnd(280, 420))); } }, t);
 
   const items = oppCards.filter(cd => cd.kind === 'item');
   items.forEach((cd, i) => {
@@ -863,6 +898,10 @@ function oppSearch(contraband, size, rush) {
 
   const found = [], missed = [];
   contraband.forEach(it => (Math.random() < odds ? found : missed).push(it));
+  /* B is looking at the same notice board you are */
+  oppCards.forEach(cd => {
+    if (cd.item && isWanted(cd.item) && Math.random() < odds) found.push(cd.item);
+  });
 
   let t = 0;
   found.forEach(it => {
@@ -873,9 +912,12 @@ function oppSearch(contraband, size, rush) {
       if (!cd) return;
       oppCards = oppCards.filter(x => x !== cd);
       opp.seized.push(it);
+      oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== it.uid);
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem);
-      pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26, '+' + VP_SEIZED, 'theirs');
+      pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
+          '+' + (isWanted(it) ? VP_WANTED : VP_SEIZED), 'theirs');
+      if (isWanted(it)) drawBoard();
       drawTally();
     }, t);
   });
@@ -931,7 +973,13 @@ function oppFile(missed) {
 
 /* ---------- score ---------- */
 
-function scoreOf(p) { return p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + p.missed.length * VP_MISSED; }
+function wantedTaken(p) { return p.seized.filter(isWanted).length; }
+function scoreOf(p) {
+  return p.trays * VP_TRAY
+    + p.seized.filter(bad).length * VP_SEIZED
+    + wantedTaken(p) * VP_WANTED
+    + p.missed.length * VP_MISSED;
+}
 
 function drawTally() {
   $('youTrays').textContent = you.trays;
@@ -961,13 +1009,14 @@ function finish() {
 
   const ys = scoreOf(you), os = scoreOf(opp);
   const verdict = ys > os ? 'You win the shift.' : ys < os ? 'Officer B wins the shift.' : 'Dead heat.';
-  const falseGrabs = you.seized.filter(it => !it.restricted).length;
+  const falseGrabs = you.seized.filter(it => !it.restricted && !isWanted(it)).length;
 
   const sheet = (who, p) => {
     const s = p.seized.filter(bad).length;
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
       '<tr><td>Restricted seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
+      '<tr><td>Stolen goods recovered — ' + wantedTaken(p) + ' × ' + VP_WANTED + '</td><td>' + (wantedTaken(p) * VP_WANTED) + '</td></tr>' +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED + '</td><td>' + (p.missed.length * VP_MISSED) + '</td></tr>' +
       '<tr class="total"><td>Total</td><td>' + scoreOf(p) + '</td></tr></table>' +
       (p.missed.length ? '<p class="missed">Walked straight through: ' + p.missed.map(i => i.name.toLowerCase()).join(', ') + '</p>' : '') +
@@ -976,7 +1025,8 @@ function finish() {
 
   $('result').innerHTML =
     '<div class="result-inner"><h2>' + verdict + '</h2>' +
-    '<p class="verdict">The belt is empty, so the shift ends. ' +
+    '<p class="verdict">Reported stolen this shift: ' +
+    wanted.map(x => x.name.toLowerCase()).join(', ') + '. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +

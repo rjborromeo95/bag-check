@@ -148,12 +148,12 @@ button,.card,.stage{cursor:var(--glove)}
    in: seized cards are laid out in them for the rest of the shift so both
    officers can see how the other is doing. */
 .seize{
-  position:absolute;top:292px;width:420px;height:116px;
+  position:absolute;top:292px;width:400px;height:116px;
   border:2px solid #9aa39d;border-radius:8px;background:rgba(255,255,255,.26);
   box-shadow:inset 0 0 0 5px rgba(0,0,0,.05);
 }
-.seize-b{left:135px}
-.seize-you{left:595px;border-color:var(--steel);background:rgba(255,255,255,.38)}
+.seize-b{left:40px}
+.seize-you{left:470px;border-color:var(--steel);background:rgba(255,255,255,.38)}
 .seize-tag{
   position:absolute;left:10px;top:2px;
   font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#6d7873;
@@ -164,6 +164,39 @@ button,.card,.stage{cursor:var(--glove)}
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.1rem;color:#6d7873;
 }
 .seize-you.hot{border-color:var(--alarm);background:rgba(224,49,49,.14)}
+
+/* ---- the notice board ----
+   Three reported-stolen items, pinned up the right-hand side where both
+   officers can see them all shift. */
+.board{
+  position:absolute;left:908px;top:160px;width:234px;height:381px;
+  background:#e7e3d6;border:2px solid #b6ae98;border-radius:6px;
+  box-shadow:0 3px 0 rgba(0,0,0,.12), inset 0 0 0 4px rgba(255,255,255,.4);
+  padding:4px 6px;
+}
+.board-head{
+  margin:0 0 4px;display:flex;justify-content:space-between;align-items:baseline;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;
+  color:#6a5f46;letter-spacing:.03em;text-transform:uppercase;line-height:1.2;
+  border-bottom:1px solid #c4bca6;padding-bottom:2px;
+}
+.board-head span{font-size:.9rem;color:#8a6b2e;letter-spacing:0}
+.board-list{display:flex;flex-direction:column;gap:5px}
+.poster{
+  display:flex;align-items:center;gap:6px;height:108px;
+  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:4px;padding:4px 6px;
+}
+.poster img{width:72px;height:98px;object-fit:contain;flex:0 0 auto}
+.poster-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;
+  line-height:1.15;color:#3c372a;
+}
+.poster.found{background:#dfe9df;border-color:#8fae92}
+.poster.found .poster-name{color:#2f5c3a;text-decoration:line-through}
+.poster-got{
+  display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  font-size:.85rem;color:#2f7a4b;letter-spacing:.04em;
+}
 
 /* ---- cards ----
    Clear stock. Only the printed object is opaque, so a card above hides part

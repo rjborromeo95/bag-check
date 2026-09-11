@@ -196,6 +196,25 @@ the tabletop rules don't: on a table you find out at the end.
 thing to watch in playtest is whether it makes people thorough or just makes
 them slow.
 
+**Three things are reported stolen every shift.** `pickWanted(3)` in
+`assets/items.js` draws three permitted designs at random and pins them on the
+notice board up the right-hand side of the bench, where both officers can see
+them all shift. Recovering one is worth `VP_WANTED` (3), and the poster crosses
+itself off when either of you finds it.
+
+They are deliberately ordinary — a hat, a book, a mug — so nothing about the
+bag or the lamp gives them away. The only way to find one is to be looking
+properly at a bag you already had a reason to open, which is what the mechanic
+is for: it gives a red tray a second payoff, it makes seizing a permitted item
+worth doing for the first time, and it means the deck plays differently every
+round without changing the deck. Restricted designs are never eligible — a
+wanted knife would just be a knife.
+
+The side effect worth watching in playtest: a wanted item can easily sit in a
+bag that never flags, in which case nobody gets it. That is the intended shape
+— three leads, and you are lucky to see two of them — but if it feels like
+wasted print, `WANTED_N` is the number to turn.
+
 **Two seize trays, always in view.** One each, side by side between the two
 lanes. Whatever either of you takes out of a bag is laid out in your own tray
 and stays there — you can see how many things B has found without reading a
@@ -227,7 +246,9 @@ goes back in. Groups with more than one take pick one at random, never the same
 take twice running, with a little pitch wobble on top so a small group doesn't
 sound like a machine. `light` has six takes, `cloth` four, `hardcase` and
 `glass` three. The suitcase front has four opening takes and one closing thud,
-and the detector beeps when the lamp goes red.
+the detector beeps when the lamp goes red, and the belt itself rumbles on every
+Go — quietly on B's side, so you hear them working the moment they send one
+through.
 
 Under all of it, a checkpoint ambience loops at `AMBIENCE_VOL` (0.17). It is
 cut at 115 seconds with a two-and-a-half second crossfade so the loop point
