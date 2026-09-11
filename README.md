@@ -356,6 +356,22 @@ ten seconds; the first to finish stops the other. It is the only rule in any of
 the four where being fast does something *to* the other officer rather than
 merely ahead of them.
 
+**The cut needed a generation counter, not a flag.** Officer B's turn is a
+chain of a dozen delayed steps. A boolean that gets cleared when their next bag
+starts lets every stale step from the cut bag fire into it: a tray gets filed
+twice, the lane empties, and B stands there doing nothing for the rest of the
+shift. Every bag of theirs now carries a number, every scheduled step remembers
+which bag it belonged to, and anything from an older one is dropped. `oppLater`,
+`oppMove` and `oppRoll` at the top of the opponent section are the whole fix.
+
+**The cut may be too strong.** Measured: a player who searches properly and
+passes as soon as they are done cuts B on *every single tray*. Across twelve
+trays B seized nothing at all and finished on 12 points to 37. B is slower than
+a focused human by design — four to six seconds of visible work a bag — so
+against anyone competent they never finish one. If that holds up in play, the
+lever is making the cut leave two seconds rather than none, or capping how many
+times a shift you can use it.
+
 **One thing to watch, with numbers.** A player who refuses to engage can force
 a draw. I ran a bot that hammered Pass on every tray without looking: it cut B
 off twelve times out of twelve, B seized nothing, and both finished on 12
