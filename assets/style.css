@@ -11,9 +11,13 @@
   --alarm:#e03131;
   --glove:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2738%27%20height%3D%2744%27%20viewBox%3D%270%200%2038%2044%27%3E%3Cg%20fill%3D%27%23123a5e%27%20stroke%3D%27%23123a5e%27%20stroke-width%3D%274%27%20stroke-linejoin%3D%27round%27%3E%3Crect%20x%3D%2711%27%20y%3D%275%27%20width%3D%278%27%20height%3D%2719%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2718%27%20y%3D%2715%27%20width%3D%277%27%20height%3D%2711%27%20rx%3D%273.5%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2717%27%20width%3D%277%27%20height%3D%2711%27%20rx%3D%273.5%27%2F%3E%3Crect%20x%3D%275%27%20y%3D%2720%27%20width%3D%278%27%20height%3D%2712%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%278%27%20y%3D%2720%27%20width%3D%2722%27%20height%3D%2716%27%20rx%3D%276%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%234aa3f0%27%3E%3Crect%20x%3D%2711%27%20y%3D%275%27%20width%3D%278%27%20height%3D%2719%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2718%27%20y%3D%2715%27%20width%3D%277%27%20height%3D%2711%27%20rx%3D%273.5%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2717%27%20width%3D%277%27%20height%3D%2711%27%20rx%3D%273.5%27%2F%3E%3Crect%20x%3D%275%27%20y%3D%2720%27%20width%3D%278%27%20height%3D%2712%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%278%27%20y%3D%2720%27%20width%3D%2722%27%20height%3D%2716%27%20rx%3D%276%27%2F%3E%3C%2Fg%3E%3Crect%20x%3D%277%27%20y%3D%2731%27%20width%3D%2724%27%20height%3D%279%27%20rx%3D%273%27%20fill%3D%27%232f7fd6%27%2F%3E%3C%2Fsvg%3E") 15 4, pointer;
   --glove-grab:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2738%27%20height%3D%2744%27%20viewBox%3D%270%200%2038%2044%27%3E%3Cg%20fill%3D%27%23123a5e%27%20stroke%3D%27%23123a5e%27%20stroke-width%3D%274%27%20stroke-linejoin%3D%27round%27%3E%3Crect%20x%3D%279%27%20y%3D%2713%27%20width%3D%278%27%20height%3D%2711%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2716%27%20y%3D%2710%27%20width%3D%278%27%20height%3D%2713%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2722%27%20y%3D%2713%27%20width%3D%278%27%20height%3D%2711%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%275%27%20y%3D%2720%27%20width%3D%279%27%20height%3D%2710%27%20rx%3D%274.5%27%2F%3E%3Crect%20x%3D%278%27%20y%3D%2718%27%20width%3D%2722%27%20height%3D%2717%27%20rx%3D%277%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%234aa3f0%27%3E%3Crect%20x%3D%279%27%20y%3D%2713%27%20width%3D%278%27%20height%3D%2711%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2716%27%20y%3D%2710%27%20width%3D%278%27%20height%3D%2713%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%2722%27%20y%3D%2713%27%20width%3D%278%27%20height%3D%2711%27%20rx%3D%274%27%2F%3E%3Crect%20x%3D%275%27%20y%3D%2720%27%20width%3D%279%27%20height%3D%2710%27%20rx%3D%274.5%27%2F%3E%3Crect%20x%3D%278%27%20y%3D%2718%27%20width%3D%2722%27%20height%3D%2717%27%20rx%3D%277%27%2F%3E%3C%2Fg%3E%3Crect%20x%3D%277%27%20y%3D%2731%27%20width%3D%2724%27%20height%3D%279%27%20rx%3D%273%27%20fill%3D%27%232f7fd6%27%2F%3E%3C%2Fsvg%3E") 19 13, grabbing;}
+}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+/* the attribute has to win over any display rule below it, or a panel with
+   display:flex stays on screen when the code hides it */
+[hidden]{display:none !important}
 body{
   margin:0;background:var(--concrete);color:var(--ink);
   font-family:'Barlow',system-ui,sans-serif;font-size:16px;line-height:1.5;
@@ -22,63 +26,63 @@ body{
 }
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
-button,.card,.stage,.bin{cursor:var(--glove)}
+button,.card,.stage{cursor:var(--glove)}
 .card.lift,.card:active{cursor:var(--glove-grab)}
 
 /* ---- signage ---- */
 .signage{
-  display:flex;align-items:baseline;gap:1.25rem;flex-wrap:wrap;
-  background:var(--steel);color:#e6ebe9;padding:.7rem clamp(1rem,4vw,2.5rem);
-  border-bottom:4px solid var(--tray);
+  display:flex;align-items:baseline;gap:1.1rem;flex-wrap:wrap;
+  background:var(--steel);color:#e6ebe9;padding:.45rem clamp(1rem,3vw,2rem);
+  border-bottom:3px solid var(--tray);
 }
-.mark{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.6rem;line-height:1}
-.lane,.belt-count,.clock{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1.05rem;color:#a9b6b4}
+.mark{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.35rem;line-height:1}
+.belt-count,.clock{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1rem;color:#a9b6b4}
 .belt-count{margin-left:auto}
 .clock{min-width:3.2rem;text-align:right;color:#e6ebe9}
-.mute{
-  border:1px solid #5b6a6c;background:transparent;color:#a9b6b4;border-radius:3px;
-  padding:.15rem .5rem;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.95rem;
-}
-.mute:hover{background:rgba(255,255,255,.08);color:#e6ebe9}
-.mute.off{color:#6f7c7e;border-color:#3f4d50;text-decoration:line-through}
 .scoreboard{display:flex;align-items:baseline;gap:.4rem}
-.scoreboard-label{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1.05rem;color:#a9b6b4}
+.scoreboard-label{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1rem;color:#a9b6b4}
 .scoreboard-num{
   display:inline-block;min-width:2.4ch;text-align:right;
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.55rem;line-height:1;color:var(--tray);
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.45rem;line-height:1;color:var(--tray);
 }
 .scoreboard-num.bump{animation:bump .42s ease-out}
 @keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.3)}100%{transform:scale(1)}}
+.mute{
+  border:1px solid #5b6a6c;background:transparent;color:#a9b6b4;border-radius:3px;
+  padding:.1rem .5rem;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.9rem;
+}
+.mute:hover{background:rgba(255,255,255,.08);color:#e6ebe9}
+.mute.off{color:#6f7c7e;border-color:#3f4d50;text-decoration:line-through}
 
 /* ---- queue ---- */
-.beltbar{background:var(--concrete-3);padding:.8rem clamp(1rem,4vw,2.5rem);overflow-x:auto}
-.belt{display:flex;gap:5px;min-height:30px;align-items:center}
+.beltbar{background:var(--concrete-3);padding:.4rem clamp(1rem,3vw,2rem);overflow-x:auto}
+.belt{display:flex;gap:4px;min-height:22px;align-items:center}
 .qtray{
-  position:relative;flex:0 0 auto;width:40px;height:27px;border-radius:3px;
+  position:relative;flex:0 0 auto;width:32px;height:21px;border-radius:3px;
   background:var(--tray);border:1px solid var(--tray-edge);
-  box-shadow:inset 0 0 0 3px rgba(0,0,0,.09);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.09);
 }
 .qtray.next{outline:2px solid var(--steel);outline-offset:1px}
 .qtray[data-bounces="1"]::after,.qtray[data-bounces="2"]::after{
   content:attr(data-bounces);position:absolute;inset:0;display:grid;place-items:center;
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.78rem;color:var(--tray-edge);
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.7rem;color:var(--tray-edge);
 }
-.belt-empty{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;color:var(--ink-soft)}
+.belt-empty{font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:var(--ink-soft)}
 
 /* ---- page ---- */
 .lane-grid{
-  display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:1.5rem;
-  padding:1.25rem clamp(1rem,4vw,2.5rem) 2rem;align-items:start;max-width:1240px;
+  display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:1rem;
+  padding:.7rem clamp(.75rem,2vw,1.5rem) 1rem;align-items:start;max-width:1680px;
 }
-@media(max-width:900px){.lane-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:960px){.lane-grid{grid-template-columns:minmax(0,1fr)}}
 
 /* ---- stage ----
-   Two lanes facing each other across one bench. Officer B works the top half,
-   their trays running right to left; you work the bottom half, left to right.
-   The seized bin sits between you and both of you reach into it. */
+   Landscape, because a window is usually wider than it is tall and the stage
+   is fitted to both. Two lanes facing each other across one bench; trays run
+   left to right in both of them. */
 .stagewrap{position:relative;width:100%;overflow:hidden;border-radius:6px}
 .stage{
-  position:absolute;top:0;left:0;width:820px;height:768px;transform-origin:top left;
+  position:absolute;top:0;left:0;width:1150px;height:712px;transform-origin:top left;
   background:var(--concrete-2);
   background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);
   background-size:7px 7px;
@@ -87,69 +91,76 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 }
 
 .lane{position:absolute;left:0;right:0}
-.lane-b{top:0;height:172px}
-.lane-you{top:588px;height:172px}
+.lane-b{top:0;height:154px}
+.lane-you{top:586px;height:154px}
 
-.conveyor{position:absolute;left:0;right:0;height:130px;z-index:0;background:#333f42;border-top:2px solid #202a2c;border-bottom:2px solid #202a2c}
+.conveyor{position:absolute;left:0;right:0;height:118px;z-index:0;background:#333f42;border-top:2px solid #202a2c;border-bottom:2px solid #202a2c}
 .lane-b .conveyor{top:0}
-.lane-you .conveyor{top:42px}
+.lane-you .conveyor{top:36px}
 .rollers{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#3d4a4d 0 22px,#2c3739 22px 26px)}
 .running-b .lane-b .rollers{animation:roll .7s linear infinite}
 .running-you .lane-you .rollers{animation:roll .7s linear infinite}
 @keyframes roll{to{background-position-x:26px}}
 
-/* the arch is mirrored on B's side: the head sits below the mouth, because
-   they are standing on the other side of it */
-.arch{position:absolute;left:304px;width:212px;height:172px;z-index:5}
+/* where a passed tray rests, one per lane */
+.donespot{
+  position:absolute;left:936px;width:188px;height:116px;
+  border:2px dashed rgba(255,255,255,.18);border-radius:8px;
+}
+.lane-b .donespot{top:1px}
+.lane-you .donespot{top:37px}
+
+.arch{position:absolute;left:250px;width:212px;height:154px;z-index:5}
 .lane-b .arch{top:0}
 .lane-you .arch{top:0}
-.arch-mouth{position:absolute;left:0;right:0;height:130px;background:#4a585b;border:3px solid #26302f;border-radius:6px}
+.arch-mouth{position:absolute;left:0;right:0;height:118px;background:#4a585b;border:3px solid #26302f;border-radius:6px}
 .lane-b .arch-mouth{top:0}
 .lane-you .arch-mouth{bottom:0}
 .arch-mouth::before,.arch-mouth::after{content:"";position:absolute;top:6px;bottom:6px;width:16px;background:#1d2526;border-radius:3px}
 .arch-mouth::before{left:6px}
 .arch-mouth::after{right:6px}
 .arch-head{
-  position:absolute;left:14px;right:14px;height:42px;background:#26302f;border-radius:5px;
+  position:absolute;left:14px;right:14px;height:36px;background:#26302f;border-radius:5px;
   display:flex;align-items:center;gap:10px;padding:0 12px;
 }
 .lane-b .arch-head{bottom:0}
 .lane-you .arch-head{top:0}
-.arch-name{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;color:#93a3a1}
-.arch-lamp{width:40px;height:14px;border-radius:7px;background:#3c4a4b;border:1px solid #151c1d}
+.arch-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:#93a3a1}
+.arch-lamp{width:36px;height:13px;border-radius:7px;background:#3c4a4b;border:1px solid #151c1d}
 .arch-lamp.red{background:var(--alarm);box-shadow:0 0 18px 4px rgba(224,49,49,.65)}
 .arch-lamp.flash{animation:flash .5s steps(2,end) 6}
 @keyframes flash{50%{background:#3c4a4b;box-shadow:none}}
 
 .tray{
-  position:absolute;left:-240px;width:180px;height:118px;
+  position:absolute;left:-230px;width:180px;height:108px;
   background:var(--tray);border:2px solid var(--tray-edge);border-radius:7px;
-  box-shadow:inset 0 0 0 6px rgba(0,0,0,.1);
+  box-shadow:inset 0 0 0 5px rgba(0,0,0,.1);
   transition:left 1.15s cubic-bezier(.3,.05,.2,1);
 }
-#trayB,#trayB2{top:4px}
-#tray,#tray2{top:634px}
+.lane-tray-b{top:8px}
+.lane-tray-you{top:594px}
 .tray.waiting{filter:brightness(.93) saturate(.9)}
-.tray-lip{position:absolute;inset:8px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
+.tray.done{filter:brightness(.82) saturate(.7)}
+.tray-lip{position:absolute;inset:7px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
 
 /* ---- the seize trays ----
    One each, side by side in the middle of the bench, and what goes in stays
    in: seized cards are laid out in them for the rest of the shift so both
    officers can see how the other is doing. */
 .seize{
-  position:absolute;top:312px;width:350px;height:128px;
+  position:absolute;top:292px;width:420px;height:116px;
   border:2px solid #9aa39d;border-radius:8px;background:rgba(255,255,255,.26);
   box-shadow:inset 0 0 0 5px rgba(0,0,0,.05);
 }
-.seize-b{left:36px}
-.seize-you{left:434px;border-color:var(--steel);background:rgba(255,255,255,.38)}
+.seize-b{left:135px}
+.seize-you{left:595px;border-color:var(--steel);background:rgba(255,255,255,.38)}
 .seize-tag{
-  position:absolute;left:10px;top:4px;
+  position:absolute;left:10px;top:2px;
   font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#6d7873;
 }
 .seize-you .seize-tag{color:var(--ink-soft);font-weight:500}
 .seize-n{
-  position:absolute;right:10px;top:2px;
+  position:absolute;right:10px;top:0;
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.1rem;color:#6d7873;
 }
 .seize-you.hot{border-color:var(--alarm);background:rgba(224,49,49,.14)}
@@ -218,7 +229,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 /* ---- the hold ----
    Only your half of the bench freezes. B keeps working, which is the point. */
 .freeze{
-  position:absolute;left:0;right:0;top:448px;bottom:0;z-index:60;
+  position:absolute;left:0;right:0;top:412px;bottom:0;z-index:60;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.25rem;text-align:center;
   background:rgba(224,49,49,.17);border:5px solid var(--alarm);border-radius:6px;
@@ -228,13 +239,11 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .freeze-count{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.5rem;color:#8c1d1d}
 
 /* ---- controls ---- */
-.prompt{margin:.6rem auto .2rem;color:var(--ink-soft);font-size:.92rem;max-width:70ch;min-height:2.6em;text-align:center}
-.prompt strong{color:var(--ink);font-weight:600}
-.controls{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:.85rem 0 0}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:.7rem 0 0}
 .controls button{
   border:2px solid var(--ink-soft);background:transparent;color:var(--ink);
-  border-radius:4px;padding:.55rem 0;min-width:8.5rem;
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.25rem;
+  border-radius:4px;padding:.45rem 0;min-width:8.5rem;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.2rem;
   letter-spacing:.02em;
 }
 .controls button:hover:not(:disabled){filter:brightness(1.06)}
@@ -243,33 +252,28 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .controls button.pass{background:#2f7a4b;border-color:#1d5533;color:#eafaf0}
 .controls button.check{background:var(--steel);border-color:var(--ink);color:#e6ebe9}
 .controls button.ghost{
-  min-width:0;padding:.55rem .9rem;font-size:1rem;font-weight:500;
+  min-width:0;padding:.45rem .9rem;font-size:.95rem;font-weight:500;
   border-width:1px;border-style:dashed;color:var(--ink-soft);
 }
 .controls button.active{box-shadow:0 0 0 3px rgba(43,54,57,.25)}
 .controls .again button{min-width:0}
+.prompt{margin:.35rem auto 0;color:var(--ink-soft);font-size:.88rem;max-width:80ch;min-height:2.4em;text-align:center}
+.prompt strong{color:var(--ink);font-weight:600}
 
 /* ---- tally ---- */
-.tally{display:grid;gap:.75rem}
-.pane{background:var(--concrete-2);border-radius:6px;padding:.85rem 1rem;border-left:5px solid var(--steel)}
+.tally{display:grid;gap:.6rem}
+.pane{background:var(--concrete-2);border-radius:6px;padding:.7rem .85rem;border-left:5px solid var(--steel)}
 .pane-opp{border-left-color:var(--concrete-3)}
-.pane-who{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;color:var(--ink-soft)}
-.pane-score{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:2.5rem;line-height:1}
-.pane-lines{display:flex;gap:1.25rem;margin:.35rem 0 0}
-.pane-lines div{display:flex;gap:.4rem}
-.pane-lines dt{color:var(--ink-soft);font-size:.9rem}
-.pane-lines dd{margin:0;font-size:.9rem;font-weight:600}
-.pane-doing{margin:.4rem 0 0;font-size:.85rem;color:var(--ink-soft);font-style:italic}
-.evidence{background:var(--concrete-2);border-radius:6px;padding:.85rem 1rem}
-.evidence-head{margin:0 0 .5rem;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;color:var(--ink-soft)}
-.evidence-rail{display:flex;flex-wrap:wrap;gap:.35rem}
-.evidence-none{font-size:.85rem;color:var(--ink-soft)}
-.chip{display:flex;align-items:center;gap:.3rem;background:var(--concrete);border-radius:3px;padding:.2rem .45rem;font-size:.8rem}
-.chipimg{width:18px;height:25px;object-fit:contain}
-.chip.bad{background:#f3d3d3}
+.pane-who{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:var(--ink-soft)}
+.pane-score{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:2.1rem;line-height:1}
+.pane-lines{display:flex;gap:1rem;margin:.3rem 0 0}
+.pane-lines div{display:flex;gap:.35rem}
+.pane-lines dt{color:var(--ink-soft);font-size:.85rem}
+.pane-lines dd{margin:0;font-size:.85rem;font-weight:600}
+.pane-doing{margin:.35rem 0 0;font-size:.8rem;color:var(--ink-soft);font-style:italic}
 
 /* ---- result ---- */
-.result{padding:0 clamp(1rem,4vw,2.5rem) 3rem;max-width:1240px}
+.result{padding:0 clamp(1rem,3vw,2rem) 3rem;max-width:1680px}
 .result-inner{background:var(--steel);color:#e6ebe9;border-radius:6px;padding:1.5rem clamp(1rem,3vw,2rem)}
 .result h2{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:2.2rem;margin:0 0 .25rem;line-height:1.1}
 .result .verdict{margin:0 0 1.5rem;color:#a9b6b4;max-width:60ch}
@@ -283,8 +287,8 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .sheet tr.total td{border-top:1px solid #46565a;padding-top:.5rem;font-size:1.35rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;color:#fff}
 .missed{margin:.75rem 0 0;font-size:.85rem;color:#ff9a9a}
 .result .again{margin-top:1.5rem}
-.colophon{padding:0 clamp(1rem,4vw,2.5rem) 2.5rem;max-width:60ch}
-.colophon p{margin:0;font-size:.85rem;color:var(--ink-soft)}
+.colophon{padding:0 clamp(1rem,3vw,2rem) 1.5rem;max-width:60ch}
+.colophon p{margin:0;font-size:.8rem;color:var(--ink-soft)}
 
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important}
