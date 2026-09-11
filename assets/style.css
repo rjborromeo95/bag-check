@@ -71,7 +71,7 @@ button,.card,.stage{cursor:var(--glove)}
 
 /* ---- page ---- */
 .lane-grid{
-  display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:1rem;
+  display:grid;grid-template-columns:minmax(0,1fr) 246px;gap:1rem;
   padding:.7rem clamp(.75rem,2vw,1.5rem) 1rem;align-items:start;max-width:1680px;
 }
 @media(max-width:960px){.lane-grid{grid-template-columns:minmax(0,1fr)}}
@@ -166,16 +166,17 @@ button,.card,.stage{cursor:var(--glove)}
 .seize-you.hot{border-color:var(--alarm);background:rgba(224,49,49,.14)}
 
 /* ---- the wall ----
-   Two notices pinned down the left-hand side: the standing list of what is
-   forbidden, and the three things reported stolen this shift. */
+   One notice on the bench itself: the standing list of what is forbidden. The
+   stolen-goods board moved off the stage and into the sidebar, because it is
+   read, not handled, and it was taking bench space from the half of the stage
+   you actually work in. */
 .notice{
   position:absolute;left:12px;width:240px;
   background:#e7e3d6;border:2px solid #b6ae98;border-radius:6px;
   box-shadow:0 3px 0 rgba(0,0,0,.12), inset 0 0 0 4px rgba(255,255,255,.4);
   padding:3px 6px 5px;
 }
-.notice-banned{top:160px;height:196px;text-align:center}
-.notice-board{top:364px;height:177px}
+.notice-banned{top:250px;height:196px;text-align:center}
 .notice-head{
   margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.02rem;
@@ -188,22 +189,24 @@ button,.card,.stage{cursor:var(--glove)}
   margin:1px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;
   color:#8a7f64;letter-spacing:.02em;
 }
-.board-list{display:flex;flex-direction:column;gap:4px}
+.pane-board{border-left-color:#b6ae98;background:#e7e3d6}
+.board-worth{float:right;font-size:.95rem;color:#8a6b2e}
+.board-list{display:flex;flex-direction:column;gap:5px;margin-top:.45rem}
 .poster{
-  display:flex;align-items:center;gap:6px;height:46px;
-  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:4px;padding:2px 5px;
+  display:flex;align-items:center;gap:8px;height:58px;
+  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:4px;padding:3px 7px;
 }
-.ptile{position:relative;flex:0 0 auto;width:44px;height:40px;overflow:hidden}
+.ptile{position:relative;flex:0 0 auto;width:56px;height:50px;overflow:hidden}
 .ptile img{position:absolute;max-width:none}
 .poster-name{
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.95rem;
-  line-height:1.05;color:#3c372a;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;
+  line-height:1.1;color:#3c372a;
 }
 .poster.found{background:#dfe9df;border-color:#8fae92}
 .poster.found .poster-name{color:#2f5c3a;text-decoration:line-through}
 .poster-got{
   display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;
-  font-size:.78rem;color:#2f7a4b;letter-spacing:.03em;text-decoration:none;
+  font-size:.82rem;color:#2f7a4b;letter-spacing:.03em;text-decoration:none;
 }
 
 /* ---- the magnifier ----

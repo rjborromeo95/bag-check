@@ -213,7 +213,7 @@ function drawBoard() {
     const tag = mine ? '<span class="poster-got">Recovered</span>'
               : theirs ? '<span class="poster-got">B recovered it</span>' : '';
     return '<div class="poster' + (mine || theirs ? ' found' : '') + '">' +
-      tile(w.file, 44, 40) +
+      tile(w.file, 56, 50) +
       '<span class="poster-name">' + w.name + tag + '</span></div>';
   }).join('');
 }
