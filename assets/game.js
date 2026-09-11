@@ -40,7 +40,9 @@ const GAMES = {
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
   policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
-              reveal: false, wide: true,  draftEvery: 5 }
+              reveal: false, wide: true,  draftEvery: 3,
+              circulate: true,   /* bags go round and round rather than away */
+              recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
 let M = GAMES.standard;
 
@@ -85,7 +87,7 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
    is why the opponent, the scoring and the stolen-goods picker all obey the
    signs without being told about them separately. */
 let signsToday = [], banToday = {}, okToday = {};
-let paused = false, drafting = false;
+let paused = false, drafting = false, recirc = 0, seizeGoal = 0;
 
 function bad(it) {
   if (banToday[it.design]) return true;
@@ -126,6 +128,7 @@ function draftPool(n) {
   const up = {};
   signsToday.forEach(sg => { up[sg.file] = true; });
   const left = signPool().filter(sg => !up[sg.file]);
+  if (n == null) return left;                 /* everything still unposted */
   return pick(left, Math.min(n, left.length));
 }
 
@@ -146,14 +149,15 @@ function toast(text, mine) {
 }
 
 function offerDraft() {
-  const opts = draftPool(3);
+  const opts = draftPool();          /* every sign still off the wall */
   if (!opts.length) return;
   drafting = true; paused = true;
   holdTrayClock();
+  $('draftCount').textContent = opts.length + ' still unposted';
   $('draftList').innerHTML = opts.map((sg, i) =>
-    '<button class="draft-pick" type="button" data-i="' + i + '">' +
+    '<button class="draft-pick" type="button" data-i="' + i + '" title="' + sg.blurb + '">' +
     '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-    '<span><b>' + sg.label + '</b>' + sg.blurb + '</span></button>').join('');
+    '<b>' + sg.label + '</b></button>').join('');
   [].forEach.call($('draftList').querySelectorAll('.draft-pick'), b => {
     b.onclick = () => {
       $('draft').hidden = true;
@@ -168,6 +172,8 @@ function offerDraft() {
 }
 
 function creditSeizure(p, mine) {
+  p.hits = (p.hits || 0) + 1;
+  if (seizeGoal) { drawTally(); checkEnd(); if (over) return; }
   if (!M.draftEvery) return;
   p.run = (p.run || 0) + 1;
   if (p.run < M.draftEvery) return;
@@ -206,6 +212,7 @@ function initLane(lane) {
   lane.pool = lane.ids.map(id => ({ el: $(id), box: $(id + 'c') }));
   lane.free = lane.pool.slice();
   lane.work = null; lane.deck = null; lane.done = null;
+  lane.donePile = [];
   lane.moving = 0;
 }
 
@@ -348,6 +355,7 @@ function start() {
   you.checks = opp.checks = 0;
   you.dirtyBags = opp.dirtyBags = 0;
   oppCut = false; searchedTray = false; stopTrayClock();
+  recirc = 0; you.emptied = 0; opp.emptied = 0; you.hits = 0; opp.hits = 0;
   paused = false; drafting = false; you.run = 0; opp.run = 0;
   $('draft').hidden = true;
   started = false; over = false;
@@ -368,9 +376,10 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
-  $('modeName').textContent = M.name + (series.best > 1
-    ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
-    : '');
+  $('modeName').textContent = M.name + (seizeGoal ? '  ·  first to ' + seizeGoal : '') +
+    (series.best > 1
+      ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
+      : '');
   $('clock').className = 'clock';
   $('clock').textContent = '0:00';
   fit(); drawQueue(); drawTally(); render();
@@ -401,7 +410,8 @@ function briefText() {
     '<p class="brief-warn">Read them now. They stay on the wall, but you will not have time to look.</p>' +
     (M.draftEvery
       ? '<p class="brief-score">Every <strong>' + M.draftEvery + '</strong> things you seize correctly, the bench stops and ' +
-        'you post a sign of your own. It applies to <strong>both</strong> of you — so does theirs.</p>'
+        'you post a sign of your own. It applies to <strong>both</strong> of you — so does theirs. ' +
+        'The bags go round and round; the shift ends when somebody has seized <strong>' + seizeGoal + '</strong>.</p>'
       : '');
 }
 
@@ -412,6 +422,33 @@ function showBriefing() {
 
 /* ---------- queue ---------- */
 
+/* When your own twelve run out you take what the other officer has finished
+   with, in the order they finished it. Bags keep circling until somebody
+   strips three of them bare; a bag with nothing left in it leaves the game. */
+function nextBag(mine) {
+  const own = mine ? YOU : THEM, other = mine ? THEM : YOU;
+  if (own.queue.length) return own.queue.shift();
+  if (M.circulate && other.donePile.length) { recirc++; return other.donePile.shift(); }
+  return null;
+}
+
+function bagsLeft() {
+  return YOU.queue.length + THEM.queue.length + YOU.donePile.length + THEM.donePile.length;
+}
+
+/* A bag with nothing left in it is out of the game — there is nothing to
+   search and it would only clog the loop. Everything else goes back round to
+   the other officer, in the order it was finished with. */
+function retire(tray, p) {
+  if (!M.circulate) return;
+  if (!tray.bag.items.length) {
+    p.emptied = (p.emptied || 0) + 1;
+    toast((p === you ? 'You emptied a bag' : 'Officer B emptied a bag') + ' — it leaves the game', p === you);
+    return;
+  }
+  (p === you ? YOU : THEM).donePile.push(tray);
+}
+
 function drawQueue() {
   const q = YOU.queue;
   const b = $('belt');
@@ -419,7 +456,8 @@ function drawQueue() {
     ? q.map((t, i) => '<span class="qtray' + (i === 0 ? ' next' : '') + '" data-bounces="' + t.bounces + '"></span>').join('')
     : '<span class="belt-empty">Belt empty</span>';
   const word = ' in your queue';
-  $('beltCount').textContent = q.length + (q.length === 1 ? ' tray' : ' trays') + word;
+  const extra = M.circulate ? '  ·  ' + bagsLeft() + ' bags going round' : '';
+  $('beltCount').textContent = q.length + (q.length === 1 ? ' tray' : ' trays') + word + extra;
   $('hudBelt').textContent = q.length + word;
 }
 
@@ -824,6 +862,7 @@ function seize(card) {
   cards = cards.filter(other => other !== card);
   stow(card.el, SEIZE_YOU, stowYou);
   drawTally();
+  if (M.circulate && held && !held.bag.items.length) render();
   render();
 }
 
@@ -860,9 +899,8 @@ function closeCase() {
 function feedLane() {
   if (over || held) return;
   searchedTray = false;
-  const q = YOU.queue;
-  if (!q.length) { phase = 'idle'; render(); checkEnd(); return; }
-  held = q.shift();
+  held = nextBag(true);
+  if (!held) { phase = 'idle'; render(); checkEnd(); return; }
   opened = false;
   clearCards();
   lamp(YOU, false);
@@ -876,9 +914,9 @@ function feedLane() {
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
-  const q = YOU.queue;
-  if (over || onDeck || !q.length) return;
-  onDeck = q.shift();
+  if (over || onDeck) return;
+  onDeck = nextBag(true);
+  if (!onDeck) return;
   YOU.deck = takeTray(YOU, onDeck.front);
   YOU.deck.el.classList.add('waiting');
   drawQueue();
@@ -991,11 +1029,14 @@ function fileTray(expired) {
   const t = YOU.work; YOU.work = null;
   t.box.hidden = false;
   shelve(YOU, t);
+  retire(held, you);
   held = null; opened = false;
   lamp(YOU, false);
   drawTally();
   if (early) cutOpp();
   later(() => {
+    if (over) return;
+    checkEnd();
     if (over) return;
     promote();
   }, 700);
@@ -1170,8 +1211,7 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
-function oppQueue() { return THEM.queue; }
-function wakeOpp() { if (!over && started && !oppBusy && oppQueue().length) later(oppTurn, 900); }
+function wakeOpp() { if (!over && started && !oppBusy) later(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
@@ -1183,8 +1223,8 @@ function oppTurn() {
   oppGen++;
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
-  else if (oppQueue().length) { oppHeld = oppQueue().shift(); }
-  else { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
+  else { oppHeld = nextBag(false); }
+  if (!oppHeld) { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
 
   oppBusy = true;
   clearOppCards();
@@ -1211,8 +1251,9 @@ function oppScan() {
 }
 
 function oppQueueNext() {
-  if (over || oppDeck || !oppQueue().length) return;
-  oppDeck = oppQueue().shift();
+  if (over || oppDeck) return;
+  oppDeck = nextBag(false);
+  if (!oppDeck) return;
   THEM.deck = takeTray(THEM, oppDeck.front);
   THEM.deck.el.classList.add('waiting');
   drawQueue();
@@ -1379,7 +1420,10 @@ function oppFile(missed) {
 
   const t = THEM.work; THEM.work = null;
   if (t) { t.box.hidden = false; shelve(THEM, t); }
+  retire(oppHeld, opp);
   oppHeld = null; lamp(THEM, false);
+  checkEnd();
+  if (over) return;
   oppBusy = false;
   if (theyWereQuick) cutYou();
   later(oppTurn, Math.round(rnd(500, 1100)));
@@ -1413,8 +1457,8 @@ function drawTally() {
   $('oppTrays').textContent = opp.trays;
   $('oppSeized').textContent = opp.seized.filter(bad).length;
   $('oppScore').textContent = shown(opp);
-  $('seizeN').textContent = you.seized.length;
-  $('seizeNB').textContent = opp.seized.length;
+  $('seizeN').textContent = seizeGoal ? (you.hits || 0) + ' / ' + seizeGoal : you.seized.length;
+  $('seizeNB').textContent = seizeGoal ? (opp.hits || 0) + ' / ' + seizeGoal : opp.seized.length;
   $('hudYou').textContent = shown(you);
   $('hudOpp').textContent = shown(opp);
   const bud = $('budget');
@@ -1424,7 +1468,14 @@ function drawTally() {
 
 function checkEnd() {
   if (over) return;
-  if (!YOU.queue.length && !THEM.queue.length && !held && !onDeck && !oppHeld && !oppDeck && !oppBusy) finish();
+  if (M.circulate) {
+    /* The shift runs until somebody has taken the target off the belt. Only
+       correct seizures count, so grabbing everything in sight gets you there
+       no faster — it just costs five a time. */
+    if (seizeGoal && ((you.hits || 0) >= seizeGoal || (opp.hits || 0) >= seizeGoal)) return finish();
+    if (recirc >= M.recircCap) return finish();
+  }
+  if (!bagsLeft() && !held && !onDeck && !oppHeld && !oppDeck && !oppBusy) finish();
 }
 
 function finish() {
@@ -1439,6 +1490,11 @@ function finish() {
   const ys = scoreOf(you), os = scoreOf(opp);
   recordRound(ys, os);
   const roundLine = ys > os ? 'You win the round.' : ys < os ? 'Officer B wins the round.' : 'The round is a dead heat.';
+  const why = !M.circulate ? ''
+    : (seizeGoal && (you.hits || 0) >= seizeGoal) ? 'You reached ' + seizeGoal + ' seized and the shift stopped. '
+    : (seizeGoal && (opp.hits || 0) >= seizeGoal) ? 'Officer B reached ' + seizeGoal + ' seized and the shift stopped. '
+    : recirc >= M.recircCap ? 'The bags went round until there was nothing left worth taking. '
+    : 'Nothing left on the belt. ';
   const verdict = series.best === 1 ? roundLine
     : series.done ? seriesVerdict()
     : roundLine + ' ' + series.youWins + '–' + series.oppWins + '.';
@@ -1448,6 +1504,7 @@ function finish() {
     const s = p.seized.filter(bad).length;
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
+      (M.circulate ? '<tr><td>Bags emptied and retired</td><td>' + (p.emptied || 0) + '</td></tr>' : '') +
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
@@ -1465,7 +1522,7 @@ function finish() {
       ? 'Round ' + series.round + ' of ' + series.best + ', standing at ' + series.youWins + '–' + series.oppWins + '. '
       : '') +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
-    'Today: ' + signsToday.map(sg => sg.label.toLowerCase()).join(' and ') + '. ' +
+    why + 'On the wall: ' + signsToday.map(sg => sg.label.toLowerCase()).join(', ') + '. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
@@ -1498,9 +1555,10 @@ function showMenu() {
   $('menu').hidden = false;
 }
 
-function startSeries(gameKey, best) {
+function startSeries(gameKey, best, goal) {
   M = GAMES[gameKey] || GAMES.standard;
   useWide(!!M.wide);
+  seizeGoal = goal || 0;
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;
   series.youPts = series.oppPts = 0;
@@ -1537,7 +1595,9 @@ function seriesVerdict() {
 loadSfx();
 $('menu').hidden = false;
 [].forEach.call(document.querySelectorAll('.mode'), b => {
-  b.onclick = () => startSeries(b.getAttribute('data-game'), Number(b.getAttribute('data-best')));
+  b.onclick = () => startSeries(b.getAttribute('data-game'),
+    Number(b.getAttribute('data-best') || 1),
+    Number(b.getAttribute('data-goal') || 0));
 });
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
