@@ -286,6 +286,19 @@ like repacking rather than a single clatter. Officer B's case is audible at
 `SFX_THEM` (0.2) so you can hear the other lane working; set it to 0 for
 silence. There's a Sound on/off toggle in the signage.
 
+Ten objects now have a noise of their own rather than a group's — the
+balaclava, the bath salts, both cameras, the envelope, the clock, the
+croissants, the fidget spinner, the saffron and the sweets. All ten are
+permitted, so none of it tells you anything about contraband. What it does do
+is make those ten findable by ear, which is the first help the stolen-goods
+memory mechanic has had: if the thing you are hunting happens to be one of
+them, you will hear it land whether or not you were looking at it.
+
+That thinned the shared groups, so three cards moved to keep the shared sounds
+honest — chocolate peanuts, the pencil case and the striped wash bag now sound
+like plastic. Shared groups sit at glass 27%, hardcase 34%, light 33%, plastic
+34% contraband, and book, cloth and rustle never.
+
 The knife and bomb takes went into `light` and `hardcase` rather than getting
 groups of their own, which is the rule the sound map has to keep: no group
 belongs to contraband alone. Glass is the mugs, the perfumes, the plate, the bowl and the vase as
