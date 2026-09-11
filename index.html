@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=31">
+<link rel="stylesheet" href="assets/style.css?v=33">
 </head>
 <body>
 
@@ -45,13 +45,13 @@
 
       <div class="mode-card">
         <span class="mode-name">Policy shift</span>
-        <span class="mode-tag">Wider deck &middot; you write the rules as you go</span>
+        <span class="mode-tag">Wider deck &middot; bags go round &middot; you write the rules</span>
         <span class="mode-body">A wider deck where the categories overlap: blue jeans answer to No blue
-          and to No trousers. Every five correct seizures you post a sign of your own — and it binds
-          both of you.</span>
+          and to No trousers. The bags circle between you, emptying as they go. Every three correct
+          seizures you post a sign — and it binds both of you.</span>
         <span class="mode-picks">
-          <button class="mode" type="button" data-game="policy" data-best="1">One shift</button>
-          <button class="mode" type="button" data-game="policy" data-best="3">Best of three</button>
+          <button class="mode" type="button" data-game="policy" data-goal="21">First to 21</button>
+          <button class="mode" type="button" data-game="policy" data-goal="41">First to 41</button>
         </span>
       </div>
     </div>
@@ -188,7 +188,7 @@
   <div class="draft-inner">
     <p class="brief-kicker">Five seized</p>
     <h2 class="brief-head">Post a sign</h2>
-    <p class="brief-lede">It goes up on the wall for the rest of the shift and it applies to both of you.</p>
+    <p class="brief-lede">It goes up on the wall for the rest of the shift and it applies to both of you. <span class="draft-count" id="draftCount"></span></p>
     <div class="draft-list" id="draftList"></div>
   </div>
 </div>
@@ -213,8 +213,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=31"></script>
-<script src="assets/game.js?v=31"></script>
+<script src="assets/items.js?v=33"></script>
+<script src="assets/game.js?v=33"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

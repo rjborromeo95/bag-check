@@ -370,41 +370,56 @@ are the whole fix.
 
 ## The policy shift
 
-A second game on the menu, and the first one where the two of you touch the
-same thing.
+A second game on the menu, and the one where the two of you actually push on
+each other.
 
 **A wider deck.** 107 designs built so the categories overlap on purpose. Blue
 jeans answer to No blue and to No trousers. The croissant teddy answers to No
-croissants and to No teddies. The yellow croissant top answers to three. Every
+croissants and to No teddies. The yellow croissant top answers to three. Each
 card carries its own tags, so a sign is a tag rather than a hand-written list —
 add an object and it joins every category it belongs to automatically.
 
-**You write the rules as you go.** Every five things you seize correctly, the
-bench stops, and you choose one of three signs off the unposted pile. It goes on
-the wall for the rest of the shift.
+**The bags go round.** Your twelve are not a shift, they are a lap. When your
+queue runs out you take what Officer B has finished with, in the order they
+finished it, and they take yours. Bags come back lighter every time, because
+everything either of you seized is gone from them for good. A bag with nothing
+left in it leaves the game.
 
-The rule that makes it a decision rather than a free punch: **a sign you post
-binds both of you.** Banning blue because their queue looked blue also bans it
-in yours. Officer B earns them the same way and posts against you.
+**You write the rules as you go.** Every three correct seizures the bench stops
+and you post a sign — **all of them**, every sign still off the wall, not a hand
+of three. It holds for the rest of the shift, and the rule that makes it a
+decision rather than a free punch is that **it binds both of you**. Banning blue
+because their queue looked blue bans it in yours as well. B earns them the same
+way and posts against you.
 
-**Thirty-four signs**, including seven colours. Colour bans are the sharpest
-because they cut across the object taxonomy — you cannot pattern-match a
-silhouette, you have to look at the actual thing. Two or three signs deep and
-the wall is doing real work.
+**It ends on a seizure target**, 21 or 41, chosen on the menu. Only correct
+seizures count, so grabbing everything in sight gets you there no faster — it
+just costs five a time.
+
+**Why a target rather than an ending condition about the bags.** The first
+version ended when somebody stripped three bags bare, and I measured it: a
+correct player went **211 trays without emptying a single one**. The reason is a
+selection effect — the cards that survive a lap are precisely the ones no posted
+sign covers, so the survivors are always the hardest things to ban. A seizure
+target converges because seizing is the thing that always happens. First to 21
+came in at about 20 trays and 8 signs; first to 41 at about 34 trays and 15.
+
+**How fast the wall closes in.** Measured over 3,000 deals: two signs make 24%
+of the deck contraband, six make 38%, ten make 50%, sixteen make 64%. By the end
+of a first-to-41 shift most of what a passenger owns is illegal, which is the
+joke the mode is built on.
 
 **The pause is real, not cosmetic.** Your tray clock is held and restarted with
 the time you had left, and Officer B freezes where they stand. That last part
 needed their delayed steps rewritten to count down rather than fire on a
-deadline — otherwise an entire chain of theirs arrives at once the moment the
+deadline — otherwise a whole chain of theirs arrives at once the moment the
 pause lifts.
 
-**And it exposes the cut problem badly.** Measured: against a player who
-searches properly and passes early, B was cut on every tray, seized nothing,
-and **never reached five, so never posted a single sign**. Half the mechanic
-sat inert. With a passive player B seized nine and posted one. So the cut is no
-longer just a balance issue — in this mode it switches off the opponent's
-entire contribution. Capping cuts at three a shift is now the fix rather than
-an option.
+**And it still exposes the cut problem.** Against a player who searches properly
+and passes early, B gets cut on nearly every tray, never reaches three, and
+never posts a sign. Left alone, B reached 21 and posted six. So the cut does not
+just cost B time, it switches off their half of this mode. Capping cuts at three
+a shift is the fix.
 
 ## The day's amendments
 

@@ -52,10 +52,18 @@ An alternative shift with a broader deck, built so the categories overlap: blue
 jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
-Every **five** items you seize correctly, the belt stops and you post one of
-three signs onto the wall. It holds for the rest of the shift and **it applies
-to both officers, including you**. The other officer earns signs the same way.
-The suitcases carry on in the same order afterwards.
+**The bags circle.** Your twelve are a lap, not a shift. When you have worked
+them all you take the other officer's twelve, in the order they worked them, and
+they take yours. Everything seized is gone from those bags for good, so they come
+back lighter each time. A bag with nothing left in it is out of the game.
+
+**Every three items you seize correctly**, the belt stops and you post a sign
+onto the wall — any sign that is not already up there. It holds for the rest of
+the shift and **it applies to both officers, including you**. The other officer
+earns signs the same way. The bags carry on in the same order afterwards.
+
+**First to 21 seized wins the shift**, or 41 for a long one. Only correct
+seizures count.
 
 ## The match
 
