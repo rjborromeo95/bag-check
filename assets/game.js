@@ -9,6 +9,28 @@ const VP_MISSED = -3;
 const VP_WANTED = 3;    /* a reported-stolen item, found in a bag you opened */
 const WANTED_N = 3;
 const FREEZE_MS = 2000;   /* the hold after letting something through */
+const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
+
+/* ---------- three games ----------
+   Same deck, same bench, three different questions.
+
+   detector — the original. The arch says whether a bag is dirty before you
+     open it, so the decision is how fast you can work a bag you already know
+     is bad.
+   clock — no lamp, so the only way to know is to look, and a shift clock says
+     how much looking you can afford. The decision is when to stop.
+   budget — no lamp and no clock, but a fixed number of inspections against a
+     queue of your own. The decision is which bags are worth one.
+
+   The two without a lamp also put the misses back where the card game has
+   them: you do not find out what you let through until the cases are opened
+   at the end. */
+const MODES = {
+  classic: { key: 'classic', name: 'Detector',          lamp: true,  hold: true,  reveal: true,  shared: true,  clock: 0,      budget: 0,  bounce: true },
+  clock:   { key: 'clock',   name: 'Clock shift',       lamp: false, hold: false, reveal: false, shared: true,  clock: 240000, budget: 0,  bounce: true },
+  budget:  { key: 'budget',  name: 'Inspection budget', lamp: false, hold: false, reveal: false, shared: false, clock: 0,      budget: 10, bounce: false }
+};
+let M = MODES.classic;
 
 /* ---------- the bench ----------
    One stage, two lanes facing each other. Both belts run the same way — in
@@ -49,8 +71,9 @@ const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
 let belt, held, onDeck, phase, opened, cards, started, t0, tick, over, scale = 1;
-const you = { trays: 0, seized: [], missed: [] };
-const opp = { trays: 0, seized: [], missed: [] };
+let deadline = 0, leftovers = 0;
+const you = { trays: 0, seized: [], missed: [], checks: 0 };
+const opp = { trays: 0, seized: [], missed: [], checks: 0 };
 let oppHeld = null, oppDeck = null, oppCards = [], oppBusy = false;
 let stowYou = [], stowThem = [];
 let wanted = [], wantedSet = null;
@@ -192,10 +215,22 @@ function deal() {
 function start() {
   clearTimers();
   clearInterval(tick);
-  belt = deal();
+  const dealt = deal();
+  if (M.shared) {
+    belt = dealt;
+    YOU.queue = belt; THEM.queue = belt;
+  } else {
+    /* a queue each: you work yours, they work theirs, nobody hands anything over */
+    const half = Math.ceil(dealt.length / 2);
+    YOU.queue = dealt.slice(0, half);
+    THEM.queue = dealt.slice(half);
+    belt = YOU.queue;
+  }
+  deadline = M.clock ? 0 : 0; leftovers = 0;
   held = null; onDeck = null; phase = 'idle'; opened = false; cards = [];
   oppHeld = null; oppDeck = null; oppBusy = false;
   you.trays = opp.trays = 0; you.seized = []; you.missed = []; opp.seized = []; opp.missed = [];
+  you.checks = opp.checks = 0;
   started = false; over = false;
   clearCards(); clearOppCards();
   stowYou.forEach(el => el.remove()); stowYou = [];
@@ -206,6 +241,7 @@ function start() {
   wanted.forEach(w => { wantedSet[w.file] = true; });
   drawBoard();
   $('freeze').hidden = true;
+  $('weigh').hidden = true;
   showLens('you', null); showLens('them', null);
   $('lensYou').classList.remove('hot');
   $('bannedFoot').textContent = restrictedCount() + ' of them on the belt today';
@@ -213,6 +249,9 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
+  $('modeName').textContent = M.name;
+  $('clock').className = 'clock';
+  $('clock').textContent = M.clock ? clockText(M.clock) : '0:00';
   fit(); drawQueue(); drawTally(); render();
 }
 
@@ -255,25 +294,51 @@ function drawBoard() {
 /* ---------- queue ---------- */
 
 function drawQueue() {
+  const q = YOU.queue;
   const b = $('belt');
-  b.innerHTML = belt.length
-    ? belt.map((t, i) => '<span class="qtray' + (i === 0 ? ' next' : '') + '" data-bounces="' + t.bounces + '"></span>').join('')
+  b.innerHTML = q.length
+    ? q.map((t, i) => '<span class="qtray' + (i === 0 ? ' next' : '') + '" data-bounces="' + t.bounces + '"></span>').join('')
     : '<span class="belt-empty">Belt empty</span>';
-  $('beltCount').textContent = belt.length + (belt.length === 1 ? ' tray on the belt' : ' trays on the belt');
-  $('hudBelt').textContent = belt.length + ' on the belt';
+  const word = M.shared ? ' on the belt' : ' in your queue';
+  $('beltCount').textContent = q.length + (q.length === 1 ? ' tray' : ' trays') + word;
+  $('hudBelt').textContent = q.length + word;
 }
 
 /* ---------- clock ---------- */
 
+function clockText(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+function timeLeft() { return M.clock ? Math.max(0, deadline - Date.now()) : Infinity; }
+
 function beginClock() {
   if (started) return;
   started = true; t0 = Date.now();
+  if (M.clock) deadline = t0 + M.clock;
   tick = setInterval(() => {
-    const s = Math.floor((Date.now() - t0) / 1000);
-    $('clock').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-  }, 500);
+    if (M.clock) {
+      const left = timeLeft();
+      const el = $('clock');
+      el.textContent = clockText(left);
+      el.className = 'clock' + (left <= 10000 ? ' out' : left <= 45000 ? ' low' : '');
+      if (left <= 0) { clearInterval(tick); timeUp(); }
+    } else {
+      const s = Math.floor((Date.now() - t0) / 1000);
+      $('clock').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    }
+  }, 250);
   startAmbience();
   later(oppTurn, 2600);
+}
+
+/* The belt does not clear itself. Anything still on it costs both officers a
+   point, which is what stops a losing player downing tools to spoil it. */
+function timeUp() {
+  if (over) return;
+  leftovers = (M.shared ? belt.length : YOU.queue.length + THEM.queue.length) +
+              (held ? 1 : 0) + (onDeck ? 1 : 0) + (oppHeld ? 1 : 0) + (oppDeck ? 1 : 0);
+  finish();
 }
 
 /* ---------- machine ---------- */
@@ -411,7 +476,7 @@ function pop(x, y, text, kind) {
 }
 
 function drawHud() {
-  const target = scoreOf(you);
+  const target = shown(you);
   if (target === hudShown) return;
   cancelAnimationFrame(hudAnim);
   const from = hudShown, delta = target - from, at = performance.now(), dur = 420;
@@ -665,8 +730,8 @@ function closeCase() {
 
 function feedLane() {
   if (over || held) return;
-  if (!belt.length) { phase = 'idle'; render(); checkEnd(); return; }
-  held = belt.shift();
+  if (!YOU.queue.length) { phase = 'idle'; render(); checkEnd(); return; }
+  held = YOU.queue.shift();
   opened = false;
   clearCards();
   lamp(YOU, false);
@@ -680,8 +745,8 @@ function feedLane() {
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
-  if (over || onDeck || !belt.length) return;
-  onDeck = belt.shift();
+  if (over || onDeck || !YOU.queue.length) return;
+  onDeck = YOU.queue.shift();
   YOU.deck = takeTray(YOU, onDeck.front);
   YOU.deck.el.classList.add('waiting');
   drawQueue();
@@ -702,6 +767,26 @@ function promote() {
   drawQueue(); render();
 }
 
+/* Three coarse bands. Coarse on purpose: it should narrow the guess, not make
+   it for you. A heavy bag is likelier to be hiding something and costs more to
+   work, which is the whole trade in one number you are allowed to know. */
+function weighBand(n) {
+  if (n <= 3) return ['Light', 1];
+  if (n <= 6) return ['Medium', 2];
+  return ['Heavy', 3];
+}
+
+function showWeight(on) {
+  const box = $('weigh');
+  if (!on || M.lamp || !held) { box.hidden = true; return; }
+  const b = weighBand(held.bag.items.length);
+  $('weighWord').textContent = b[0];
+  $('weighBars').innerHTML = '<i class="' + (b[1] > 0 ? 'on' : '') + '"></i>' +
+    '<i class="' + (b[1] > 1 ? 'on' : '') + '"></i>' +
+    '<i class="' + (b[1] > 2 ? 'on' : '') + '"></i>';
+  box.hidden = false;
+}
+
 function goPressed() {
   if (!started) { beginClock(); beltNoise(YOU); feedLane(); return; }
   if (phase === 'ready') { beltNoise(YOU); scan(); }
@@ -712,15 +797,19 @@ function scan() {
   move(YOU, YOU.work, X.parkOut, 1250, () => {
     if (over) return;
     phase = 'scanned';
+    showWeight(true);
     render();
   });
   later(queueNext, 420);
-  later(() => { if (!over && held) lamp(YOU, held.bag.items.some(bad), true); }, 700);
+  if (M.lamp) later(() => { if (!over && held) lamp(YOU, held.bag.items.some(bad), true); }, 700);
 }
 
 /* Check — the belt stops and the suitcase becomes yours to open */
 function checkPressed() {
+  showWeight(false);
   if (phase !== 'scanned') return;
+  if (M.budget && you.checks >= M.budget) return;
+  if (M.budget) { you.checks++; drawTally(); }
   phase = 'searching';
   YOU.work.box.hidden = true;
   spawnCards();
@@ -729,13 +818,15 @@ function checkPressed() {
 
 /* Pass — this tray is done with, whatever is still in it */
 function passPressed() {
+  showWeight(false);
   if (phase === 'scanned') { fileTray(); return; }
   if (phase === 'searching' && !opened) fileTray();
 }
 
 function bounce() {
+  showWeight(false);
   held.bounces++;
-  belt.push(held);
+  YOU.queue.push(held);
   clearCards();
   phase = 'leaving'; render();
   const t = YOU.work; YOU.work = null;
@@ -762,7 +853,7 @@ function fileTray() {
   const slipped = held.bag.items.filter(bad);
   slipped.forEach(it => you.missed.push(it));
   const c = trayCentre(YOU);
-  if (slipped.length) pop(c.x - 22, c.y - 96, String(VP_MISSED * slipped.length), 'bad');
+  if (slipped.length && M.reveal) pop(c.x - 22, c.y - 96, String(VP_MISSED * slipped.length), 'bad');
   else pop(c.x - 12, c.y - 96, '+' + VP_TRAY, 'good');
 
   phase = 'leaving'; render();
@@ -776,7 +867,7 @@ function fileTray() {
   drawTally();
   later(() => {
     if (over) return;
-    if (slipped.length) freeze(slipped.length); else promote();
+    if (slipped.length && M.hold) freeze(slipped.length); else promote();
   }, 700);
 }
 
@@ -818,7 +909,9 @@ function render() {
   if (phase === 'idle') {
     if (!started) {
       go.disabled = false;
-      p.innerHTML = 'Officer B is across the bench, working the same belt. <strong>Go</strong> starts it and pushes the first tray down to you.';
+      p.innerHTML = M.shared
+        ? 'Officer B is across the bench, working the same belt. <strong>Go</strong> starts it and pushes the first tray down to you.'
+        : 'Officer B has a queue of their own and so do you. <strong>Go</strong> brings your first tray down.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
     }
@@ -834,19 +927,34 @@ function render() {
   if (phase === 'scanning') { p.textContent = 'Scanning.'; return; }
 
   if (phase === 'scanned') {
-    pass.disabled = false; check.disabled = false;
-    back.hidden = held.bounces >= BOUNCE_CAP;
-    const dirty = held.bag.items.some(bad);
-    p.innerHTML = dirty
-      ? 'Red light. Something in there is restricted, and the detector will not say how many. <strong>Check</strong> stops the belt and opens the case. <strong>Pass</strong> sends it through as it is.'
-      : 'No light. Nothing restricted in there. <strong>Pass</strong> keeps the tray and moves the belt on.';
+    pass.disabled = false;
+    const spent = M.budget && you.checks >= M.budget;
+    check.disabled = spent;
+    check.textContent = M.budget ? 'Check (' + (M.budget - you.checks) + ')' : 'Check';
+    back.hidden = !M.bounce || held.bounces >= BOUNCE_CAP;
+    if (M.lamp) {
+      const dirty = held.bag.items.some(bad);
+      p.innerHTML = dirty
+        ? 'Red light. Something in there is restricted, and the detector will not say how many. <strong>Check</strong> stops the belt and opens the case. <strong>Pass</strong> sends it through as it is.'
+        : 'No light. Nothing restricted in there. <strong>Pass</strong> keeps the tray and moves the belt on.';
+    } else if (spent) {
+      p.innerHTML = 'No inspections left. Everything from here goes through on the strength of how it looks. <strong>Pass</strong>.';
+    } else if (M.budget) {
+      p.innerHTML = 'No machine, no lamp — only the weight in your hands. <strong>Check</strong> spends one of your ' + M.budget +
+        ' inspections — ' + (M.budget - you.checks) + ' left, ' + (YOU.queue.length + 1) +
+        ' trays including this one. <strong>Pass</strong> costs nothing and tells you nothing.';
+    } else {
+      p.innerHTML = 'No machine, no lamp. The only way to know is to look, and looking costs you the clock. <strong>Check</strong> opens it, <strong>Pass</strong> sends it on.';
+    }
     return;
   }
 
   if (phase === 'searching') {
     if (!opened) {
       pass.disabled = false;
-      p.innerHTML = 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray — there is no second scan, so whatever is still in there goes with it.';
+      p.innerHTML = M.reveal
+        ? 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray — there is no second scan, so whatever is still in there goes with it.'
+        : 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray. You will find out what you left in it when the cases are opened at the end.';
     } else {
       p.innerHTML = 'The item cards are clear, so they print over each other. Slide them out onto the bench to read them, drag what is restricted into <strong>your seize tray</strong>, then put the front back on the tray to close it.';
     }
@@ -863,7 +971,7 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
-function wakeOpp() { if (!over && started && !oppBusy && belt.length) later(oppTurn, 900); }
+function wakeOpp() { if (!over && started && !oppBusy && THEM.queue.length) later(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; $('sheetDoing').textContent = 'Officer B: ' + t.toLowerCase(); }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
@@ -873,7 +981,7 @@ function oppTurn() {
   if (over) return;
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
-  else if (belt.length) { oppHeld = belt.shift(); }
+  else if (THEM.queue.length) { oppHeld = THEM.queue.shift(); }
   else { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
 
   oppBusy = true;
@@ -898,16 +1006,35 @@ function oppScan() {
   beltNoise(THEM);
   move(THEM, THEM.work, X.parkOut, 1250, oppAfterScan);
   later(oppQueueNext, 420);
-  later(() => { if (!over && oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
+  if (M.lamp) later(() => { if (!over && oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
 }
 
 function oppQueueNext() {
-  if (over || oppDeck || !belt.length) return;
-  oppDeck = belt.shift();
+  if (over || oppDeck || !THEM.queue.length) return;
+  oppDeck = THEM.queue.shift();
   THEM.deck = takeTray(THEM, oppDeck.front);
   THEM.deck.el.classList.add('waiting');
   drawQueue();
   roll(THEM, THEM.deck, X.parkIn, 1200);
+}
+
+/* With no lamp B is in the same position you are: all they have to go on is
+   how fat the bag looks, and whatever the mode lets them spend. */
+function oppWantsSearch(size) {
+  if (M.lamp) return true;                       /* the lamp already told them */
+  if (M.budget) {
+    const spare = M.budget - opp.checks;
+    if (spare <= 0) return false;
+    if (spare >= THEM.queue.length + 1) return true;   /* can afford the lot */
+    return size >= 4 ? Math.random() < 0.85 : Math.random() < 0.3;
+  }
+  if (M.clock) {
+    const left = timeLeft();
+    if (left < 25000) return size >= 5 && Math.random() < 0.4;
+    if (left < 70000) return Math.random() < (size >= 4 ? 0.7 : 0.35);
+    return Math.random() < (size >= 3 ? 0.92 : 0.65);
+  }
+  return true;
 }
 
 function oppAfterScan() {
@@ -916,18 +1043,25 @@ function oppAfterScan() {
   const size = oppHeld.bag.items.length;
   const rush = oppRush();
 
-  if (!contraband.length) {
+  if (M.lamp && !contraband.length) {
     oppSay('No light — tray kept');
     later(() => oppFile([]), Math.round(rnd(600, 1100)));
     return;
   }
 
+  if (!oppWantsSearch(size)) {
+    oppSay(size >= 5 ? 'Waved a heavy one through' : 'Waved a bag through');
+    later(() => oppFile(contraband), Math.round(rnd(500, 950)));
+    return;
+  }
+  if (M.budget) opp.checks++;
+
   /* bouncing costs a tray, so an officer who is behind stops doing it */
-  const bounceOdds = 0.4 * (1 - rush) * (size >= 5 ? 1 : 0.3);
+  const bounceOdds = M.bounce ? 0.4 * (1 - rush) * (size >= 5 ? 1 : 0.3) : 0;
   if (oppHeld.bounces < BOUNCE_CAP && Math.random() < bounceOdds) {
     oppSay('Pushed a tray back');
     oppHeld.bounces++;
-    belt.push(oppHeld);
+    THEM.queue.push(oppHeld);
     drawQueue();
     const t = THEM.work; THEM.work = null;
     move(THEM, t, X.exit, 900, () => {
@@ -1068,30 +1202,43 @@ function oppFile(missed) {
 /* ---------- score ---------- */
 
 function wantedTaken(p) { return p.seized.filter(isWanted).length; }
+
+/* The final figure. Everything counts. */
 function scoreOf(p) {
   return p.trays * VP_TRAY
     + p.seized.filter(bad).length * VP_SEIZED
     + wantedTaken(p) * VP_WANTED
-    + p.missed.length * VP_MISSED;
+    + p.missed.length * VP_MISSED
+    + leftovers * VP_LEFT;
+}
+
+/* What the scoreboard is allowed to show mid-shift. Without a detector you do
+   not know what went past you, so the running total does not either. */
+function shown(p) {
+  return M.reveal ? scoreOf(p)
+    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wantedTaken(p) * VP_WANTED;
 }
 
 function drawTally() {
   $('youTrays').textContent = you.trays;
   $('youSeized').textContent = you.seized.filter(bad).length;
-  $('youScore').textContent = scoreOf(you);
+  $('youScore').textContent = shown(you);
   $('oppTrays').textContent = opp.trays;
   $('oppSeized').textContent = opp.seized.filter(bad).length;
-  $('oppScore').textContent = scoreOf(opp);
+  $('oppScore').textContent = shown(opp);
   $('seizeN').textContent = you.seized.length;
   $('seizeNB').textContent = opp.seized.length;
-  $('hudYou').textContent = scoreOf(you);
-  $('hudOpp').textContent = scoreOf(opp);
+  $('hudYou').textContent = shown(you);
+  $('hudOpp').textContent = shown(opp);
+  const bud = $('budget');
+  bud.hidden = !M.budget;
+  if (M.budget) bud.textContent = (M.budget - you.checks) + ' checks left';
   drawHud();
 }
 
 function checkEnd() {
   if (over) return;
-  if (belt.length === 0 && !held && !onDeck && !oppHeld && !oppDeck && !oppBusy) finish();
+  if (!YOU.queue.length && !THEM.queue.length && !held && !onDeck && !oppHeld && !oppDeck && !oppBusy) finish();
 }
 
 function finish() {
@@ -1114,6 +1261,8 @@ function finish() {
       '<tr><td>Restricted seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
       '<tr><td>Stolen goods recovered — ' + wantedTaken(p) + ' × ' + VP_WANTED + '</td><td>' + (wantedTaken(p) * VP_WANTED) + '</td></tr>' +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED + '</td><td>' + (p.missed.length * VP_MISSED) + '</td></tr>' +
+      (leftovers ? '<tr class="neg"><td>Belt not cleared — ' + leftovers + ' × ' + VP_LEFT + '</td><td>' + (leftovers * VP_LEFT) + '</td></tr>' : '') +
+      (M.budget ? '<tr><td>Inspections used</td><td>' + p.checks + ' / ' + M.budget + '</td></tr>' : '') +
       '<tr class="total"><td>Total</td><td>' + scoreOf(p) + '</td></tr></table>' +
       (p.missed.length ? '<p class="missed">Walked straight through: ' + p.missed.map(i => i.name.toLowerCase()).join(', ') + '</p>' : '') +
       '</div>';
@@ -1121,20 +1270,41 @@ function finish() {
 
   $('result').innerHTML =
     '<div class="result-inner"><h2>' + verdict + '</h2>' +
-    '<p class="verdict">Reported stolen this shift: ' +
+    '<p class="verdict">' + M.name + '. ' +
+    (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
+    'Reported stolen this shift: ' +
     wanted.map(x => x.name.toLowerCase()).join(', ') + '. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
-    '<div class="controls again"><button class="go" id="again">Run another shift</button></div></div>';
+    '<div class="controls again"><button class="go" id="again">Run another shift</button>' +
+    '<button class="check" id="menuBtn">Change the rules</button></div></div>';
   $('result').hidden = false;
-  $('again').onclick = () => { $('clock').textContent = '0:00'; oppSay('Walking to the lane'); start(); };
+  $('again').onclick = () => { oppSay('Walking to the lane'); start(); };
+  $('menuBtn').onclick = () => { $('result').hidden = true; showMenu(); };
   $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ---------- wiring ---------- */
 
+function showMenu() {
+  clearTimers(); clearInterval(tick);
+  over = true;                       /* nothing may run behind the menu */
+  if (ambience) ambience.pause();
+  $('menu').hidden = false;
+}
+
+function startMode(key) {
+  M = MODES[key] || MODES.classic;
+  $('menu').hidden = true;
+  start();
+}
+
 loadSfx();
+$('menu').hidden = false;
+[].forEach.call(document.querySelectorAll('.mode'), b => {
+  b.onclick = () => startMode(b.getAttribute('data-mode'));
+});
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
 $('btnCheck').onclick = checkPressed;
@@ -1149,4 +1319,5 @@ $('sheetClose').onclick = () => { $('sheetover').hidden = true; };
 $('sheetover').onclick = e => { if (e.target === $('sheetover')) $('sheetover').hidden = true; };
 setMuted(false);
 start();
+showMenu();
 })();

@@ -454,3 +454,84 @@ body.compact.portrait .rotate {
 }
 .rotate p { margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.6rem; }
 .rotate span { font-size: .9rem; color: #a9b6b4; }
+
+/* ================= the start screen ================= */
+.menu{
+  position:fixed;inset:0;z-index:120;overflow-y:auto;
+  background:var(--steel);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 2px, transparent 2px 7px),
+    radial-gradient(120% 90% at 50% 0%, #3a474a 0%, #222c2e 70%);
+  color:#e6ebe9;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(1rem,4vw,2.5rem);
+}
+.menu-inner{width:min(940px,100%);text-align:center}
+.menu-kicker{
+  margin:0;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;
+  letter-spacing:.34em;text-transform:uppercase;color:#8d9d9b;
+}
+.menu-title{
+  margin:.15rem 0 0;font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  font-size:clamp(3rem,11vw,6.5rem);line-height:.9;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--tray);
+  text-shadow:0 4px 0 #8a6208, 0 10px 26px rgba(0,0,0,.45);
+}
+.menu-sub{
+  margin:.5rem 0 0;font-family:'Barlow Condensed',sans-serif;font-size:clamp(.85rem,2.2vw,1.1rem);
+  letter-spacing:.24em;text-transform:uppercase;color:#aab8b6;
+}
+.menu-sub::before,.menu-sub::after{content:"—";margin:0 .6rem;color:#5d6c6e}
+.menu-modes{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:.8rem;margin:clamp(1.2rem,4vw,2.2rem) 0 1rem;text-align:left;
+}
+.mode{
+  display:flex;flex-direction:column;gap:.3rem;
+  background:#222d2f;border:2px solid #45565a;border-radius:8px;
+  padding:.9rem 1rem 1rem;color:inherit;text-align:left;
+  touch-action:manipulation;transition:border-color .15s, background .15s, transform .1s;
+}
+.mode:hover{border-color:var(--tray);background:#273436}
+.mode:active{transform:translateY(1px)}
+.mode-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.5rem;
+  line-height:1;color:var(--tray);
+}
+.mode-tag{
+  font-family:'Barlow Condensed',sans-serif;font-size:.9rem;letter-spacing:.06em;
+  text-transform:uppercase;color:#8fa09e;
+}
+.mode-body{font-size:.86rem;line-height:1.45;color:#b9c5c3;margin-top:.2rem}
+.menu-foot{margin:0;font-size:.8rem;color:#7d8c8a}
+
+.budget{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1rem;
+  color:var(--tray);background:rgba(0,0,0,.25);border-radius:4px;padding:.05rem .45rem;
+}
+.clock.low{color:#ff9a9a}
+.clock.out{color:var(--alarm)}
+
+body.compact .menu-modes{grid-template-columns:repeat(3,1fr);gap:.5rem}
+body.compact .mode{padding:.55rem .6rem}
+body.compact .mode-body{display:none}
+body.compact .menu-inner{width:min(940px,100%)}
+body.compact.portrait .menu{display:none}
+body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:5px;padding:.12rem .4rem;font-size:.82rem}
+
+/* ---- weight ----
+   With the lamp gone, the one honest thing you can know about a closed bag is
+   how heavy it is, because you are holding it. Three bands, deliberately
+   coarse: a heavy bag hides more, and it also costs more to work. */
+.weigh{
+  position:absolute;left:706px;top:602px;z-index:6;
+  display:flex;flex-direction:column;gap:2px;align-items:flex-start;
+  background:rgba(22,31,30,.72);border-radius:5px;padding:4px 7px;
+}
+.weigh-bars{display:flex;gap:3px}
+.weigh-bars i{display:block;width:13px;height:9px;border-radius:2px;background:#4d5c5e}
+.weigh-bars i.on{background:var(--tray)}
+.weigh-word{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.95rem;
+  letter-spacing:.08em;text-transform:uppercase;color:#dbe3e1;line-height:1;
+}
