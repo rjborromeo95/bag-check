@@ -6,6 +6,7 @@ const BOUNCE_CAP = 2;
 const VP_TRAY = 1;
 const VP_SEIZED = 2;
 const VP_MISSED = -3;
+const FREEZE_MS = 2000;   /* the hold after letting something through */
 
 const SW = 760, SH = 540;
 const TRAY = { w: 200, h: 170, top: 82 };
@@ -20,10 +21,12 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
 const bad = it => it.restricted;
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 
-let belt, held, phase, opened, cards, started, t0, tick, oppTimer, over, scale = 1;
+let belt, held, onDeck, phase, opened, cards, started, t0, tick, oppTimer, over, scale = 1;
 const you = { trays: 0, seized: [], missed: [] };
 const opp = { trays: 0, seized: [], missed: [] };
 let oppBusy = false;
+let moving = 0;
+let hudShown = 0, hudAnim = null;
 
 /* ---------- stage fitting ---------- */
 
@@ -42,12 +45,12 @@ function toStage(e) {
 
 /* ---------- setup ---------- */
 
-/* The physical deal: the 18 suitcase cards are shuffled into the item deck,
-   and whatever sits under a suitcase is what's in that bag. The shuffle does
-   the work, so bag sizes vary wildly — that variance is the point. Anything
-   above the topmost suitcase wraps round to the last one so no card is lost. */
+/* The physical deal: the suitcase cards are shuffled into the item deck, and
+   whatever sits under a suitcase is what's in that bag. The shuffle does the
+   work, so bag sizes vary — that variance is the point. Anything above the
+   topmost suitcase wraps round to the last one so no card is lost. */
 function deal() {
-  const stream = shuffle(buildItemDeck().concat(new Array(18).fill(null)));
+  const stream = shuffle(buildItemDeck().concat(new Array(trayCount()).fill(null)));
   const bags = [];
   let cur = null, orphans = [];
   stream.forEach(c => {
@@ -66,7 +69,7 @@ function deal() {
     if (big.items.length < 2) break;
     small.items.push(big.items.pop());
   }
-  /* five designs appear twice in the deck; if both copies land in one bag they
+  /* six designs appear twice in the deck; if both copies land in one bag they
      stack into what looks like a single card, so swap one out */
   bags.forEach(b => {
     b.items.forEach((it, i) => {
@@ -85,15 +88,18 @@ function deal() {
 }
 
 function start() {
-  belt = deal(); held = null; phase = 'idle'; opened = false; cards = [];
+  belt = deal(); held = null; onDeck = null; phase = 'idle'; opened = false; cards = [];
   you.trays = opp.trays = 0; you.seized = []; you.missed = []; opp.seized = []; opp.missed = [];
-  started = false; over = false; oppBusy = false;
+  started = false; over = false; oppBusy = false; moving = 0;
   clearCards();
-  $('tray').hidden = true;
-  $('tray').style.transition = 'none';
-  $('tray').style.left = OFFSTAGE + 'px';
+  ['tray', 'tray2'].forEach(id => {
+    const t = $(id);
+    t.hidden = true; t.style.transition = 'none'; t.style.left = OFFSTAGE + 'px';
+  });
+  $('freeze').hidden = true;
   $('result').hidden = true;
   lamp(false);
+  hudShown = 0; $('hudScore').textContent = '0';
   fit(); drawQueue(); drawTally(); render();
 }
 
@@ -128,9 +134,45 @@ function lamp(on, flashing) {
 
 function rolling(on) { $('stage').classList.toggle('running', !!on); }
 
-function trayTo(x, ms, then) {
-  $('tray').style.left = x + 'px';
-  if (then) setTimeout(then, ms);
+/* Every tray movement goes through here, so the rollers turn whenever
+   anything is actually moving — there can be two trays in the lane now. */
+function move(el, x, ms, then) {
+  moving++; rolling(true);
+  el.style.left = x + 'px';
+  setTimeout(() => {
+    moving = Math.max(0, moving - 1);
+    if (!moving) rolling(false);
+    if (then) then();
+  }, ms);
+}
+
+/* ---------- score feedback ---------- */
+
+/* a number that lifts off whatever just earned it */
+function pop(x, y, text, kind) {
+  const el = document.createElement('span');
+  el.className = 'pop' + (kind ? ' ' + kind : '');
+  el.textContent = text;
+  el.style.left = Math.round(x) + 'px';
+  el.style.top = Math.round(y) + 'px';
+  $('stage').appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+/* the headline counter ticks up to the new total rather than jumping to it */
+function drawHud() {
+  const target = scoreOf(you);
+  if (target === hudShown) return;
+  cancelAnimationFrame(hudAnim);
+  const from = hudShown, delta = target - from, at = performance.now(), dur = 420;
+  const el = $('hudScore');
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  const step = now => {
+    const k = Math.min(1, (now - at) / dur);
+    el.textContent = Math.round(from + delta * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) hudAnim = requestAnimationFrame(step); else hudShown = target;
+  };
+  hudAnim = requestAnimationFrame(step);
 }
 
 /* ---------- cards ---------- */
@@ -218,7 +260,7 @@ function bindDrag(card) {
     if (drag.moved > 12 && card.kind === 'item') card.inCase = false;
   });
 
-  const finish = () => {
+  const release = () => {
     if (!drag || drag.card !== card) return;
     el.classList.remove('lift');
     $('bin').classList.remove('hot');
@@ -228,8 +270,8 @@ function bindDrag(card) {
     if (card.kind === 'item' && inBin(card)) seize(card);
     if (card.kind === 'lid' && onTray(card)) closeCase();
   };
-  el.addEventListener('pointerup', finish);
-  el.addEventListener('pointercancel', finish);
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
 }
 
 function centreOf(card) {
@@ -277,11 +319,13 @@ function openCase() {
 function seize(card) {
   if (card.seized) return;
   card.seized = true;
+  const c = centreOf(card);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
+  if (card.item.restricted) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
   card.el.classList.add('binned');
   setTimeout(() => card.el.remove(), 320);
-  cards = cards.filter(c => c !== card);
+  cards = cards.filter(other => other !== card);
   drawTally();
 }
 
@@ -297,10 +341,15 @@ function closeCase() {
   setTimeout(() => fileTray(true), 620);
 }
 
-/* ---------- flow ---------- */
+/* ---------- lane flow ----------
+   Two parking spots. PARK_IN, left of the arch, is where a closed tray waits.
+   PARK_OUT, right of it, is where a scanned one sits while you work. Sending a
+   tray through vacates PARK_IN, so the next one rolls straight in and there is
+   always something waiting on your left. */
 
-function pull() {
-  beginClock();
+function feedLane() {
+  if (over || held) return;
+  if (!belt.length) { phase = 'idle'; $('tray').hidden = true; render(); checkEnd(); return; }
   held = belt.shift();
   opened = false;
   clearCards();
@@ -314,15 +363,49 @@ function pull() {
   void t.offsetWidth;
   t.style.transition = '';
   phase = 'rolling';
-  rolling(true);
   drawQueue(); render();
-  trayTo(PARK_IN, 1200, () => { rolling(false); phase = 'ready'; render(); });
+  move(t, PARK_IN, 1200, () => { if (!over && phase === 'rolling') { phase = 'ready'; render(); } });
+}
+
+/* the on-deck tray, rolling into the spot the scanned one just left */
+function queueNext() {
+  if (over || onDeck || !belt.length) return;
+  onDeck = belt.shift();
+  const t = $('tray2');
+  $('tray2Case').innerHTML = suitcaseFace(onDeck.front);
+  t.hidden = false;
+  t.style.transition = 'none';
+  t.style.left = OFFSTAGE + 'px';
+  void t.offsetWidth;
+  t.style.transition = '';
+  drawQueue();
+  move(t, PARK_IN, 1200);
+}
+
+/* the tray you were working has gone; whatever is waiting becomes yours */
+function promote() {
+  if (over) return;
+  if (!onDeck) { feedLane(); return; }
+  held = onDeck; onDeck = null;
+  opened = false;
+  clearCards();
+  lamp(false);
+  $('tray2').hidden = true;
+  const t = $('tray');
+  $('trayCase').innerHTML = suitcaseFace(held.front);
+  $('trayCase').hidden = false;
+  t.style.transition = 'none';
+  t.style.left = PARK_IN + 'px';
+  t.hidden = false;
+  void t.offsetWidth;
+  t.style.transition = '';
+  phase = 'ready';
+  drawQueue(); render();
 }
 
 function scan() {
-  phase = 'scanning'; render(); rolling(true);
-  trayTo(PARK_OUT, 1250, () => {
-    rolling(false);
+  phase = 'scanning'; render();
+  move($('tray'), PARK_OUT, 1250, () => {
     if (over) return;
     const dirty = held.bag.items.some(bad);
     lamp(dirty, dirty);
@@ -331,6 +414,7 @@ function scan() {
     spawnCards();
     render();
   });
+  setTimeout(queueNext, 420);
   setTimeout(() => { if (!over && held) lamp(held.bag.items.some(bad), true); }, 600);
 }
 
@@ -338,27 +422,59 @@ function bounce() {
   held.bounces++;
   belt.push(held);
   clearCards();
-  phase = 'leaving'; render(); rolling(true);
-  trayTo(EXIT, 900, () => {
-    rolling(false);
+  phase = 'leaving'; render();
+  move($('tray'), EXIT, 900, () => {
     $('tray').hidden = true;
-    held = null; phase = 'idle'; lamp(false);
-    drawQueue(); render(); wakeOpp(); checkEnd();
+    held = null; lamp(false);
+    drawQueue(); wakeOpp();
+    promote();
   });
 }
 
+/* Closing a case files it. Anything restricted still inside goes through, and
+   you get held at the bench for it. */
 function fileTray(wasOpened) {
   you.trays++;
-  if (wasOpened) held.bag.items.filter(bad).forEach(it => you.missed.push(it));
-  phase = 'leaving'; render(); rolling(true);
-  cards.forEach(c => c.el.classList.add('binned'));
+  const slipped = wasOpened ? held.bag.items.filter(bad) : [];
+  slipped.forEach(it => you.missed.push(it));
+  const c = trayCentre();
+  if (slipped.length) pop(c.x - 22, c.y - 86, String(VP_MISSED * slipped.length), 'bad');
+  else pop(c.x - 12, c.y - 86, '+' + VP_TRAY, 'good');
+
+  phase = 'leaving'; render();
+  cards.forEach(cd => cd.el.classList.add('binned'));
   setTimeout(() => clearCards(), 320);
-  trayTo(EXIT, 900, () => {
-    rolling(false);
+  move($('tray'), EXIT, 900, () => {
     $('tray').hidden = true;
-    held = null; opened = false; phase = 'idle'; lamp(false);
-    drawTally(); render(); checkEnd();
+    held = null; opened = false; lamp(false);
+    drawTally();
+    if (slipped.length) freeze(slipped.length); else promote();
   });
+}
+
+/* ---------- the hold ----------
+   Letting something through costs points at the end anyway. The freeze is the
+   part you feel during the shift: two seconds at the bench while the belt keeps
+   moving and Officer B keeps working. */
+
+function freeze(n) {
+  phase = 'frozen';
+  const box = $('freeze');
+  box.hidden = false;
+  $('freezeWhy').textContent = n === 1
+    ? 'One restricted item went through'
+    : n + ' restricted items went through';
+  render();
+  const end = Date.now() + FREEZE_MS;
+  const t = setInterval(() => {
+    const left = Math.max(0, end - Date.now());
+    $('freezeCount').textContent = (left / 1000).toFixed(1) + 's';
+    if (left <= 0) {
+      clearInterval(t);
+      box.hidden = true;
+      if (!over) promote();
+    }
+  }, 80);
 }
 
 /* ---------- controls + copy ---------- */
@@ -377,10 +493,12 @@ function render() {
   if (over) { p.textContent = 'Shift over.'; return; }
 
   if (phase === 'idle') {
-    p.innerHTML = belt.length
-      ? 'Trays are shared. Whatever you leave on the belt, <strong>Officer B can take</strong>.'
-      : 'Belt empty. Waiting on the other lane.';
-    if (belt.length) c.appendChild(btn('Pull next tray', pull, true));
+    if (!started) {
+      p.innerHTML = 'Two officers, one belt. Trays keep arriving until it is empty — whatever you leave on it, <strong>Officer B can take</strong>.';
+      c.appendChild(btn('Start the shift', () => { beginClock(); feedLane(); }, true));
+    } else {
+      p.textContent = 'Belt empty. Waiting on the other lane.';
+    }
     return;
   }
   if (phase === 'rolling') { p.textContent = 'Tray coming down the belt.'; return; }
@@ -414,12 +532,20 @@ function render() {
 
   if (phase === 'closing') { p.textContent = 'Closing it up.'; return; }
   if (phase === 'leaving') { p.textContent = 'Tray away.'; return; }
+  if (phase === 'frozen') { p.textContent = 'Held at the bench. The belt does not wait for you.'; return; }
 }
 
-/* ---------- opponent ---------- */
+/* ---------- opponent ----------
+   Officer B is not fast, but they are methodical: they work a bag in passes,
+   and a thin bag gets picked clean. What breaks them is falling behind on
+   trays. Being buried makes them hurry — one pass instead of two, less time
+   on each bag, and no appetite for pushing anything back. */
 
 function wakeOpp() { if (!over && started && !oppBusy && belt.length) setTimeout(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; }
+
+/* 0 = comfortable, 1 = being buried by the other lane */
+function oppRush() { return clamp((you.trays - opp.trays) / 5, 0, 1); }
 
 function oppTurn() {
   if (over) return;
@@ -427,7 +553,8 @@ function oppTurn() {
   oppBusy = true;
   const tray = belt.shift();
   drawQueue();
-  oppSay('Scanning a tray');
+  const rush = oppRush();
+  oppSay(rush > 0.55 ? 'Hurrying a tray through' : 'Scanning a tray');
 
   setTimeout(() => {
     if (over) return;
@@ -436,23 +563,34 @@ function oppTurn() {
 
     if (!contraband.length) {
       oppSay('No light — tray kept');
-      setTimeout(() => { opp.trays++; drawTally(); oppBusy = false; oppTurn(); }, 900);
+      setTimeout(() => { opp.trays++; drawTally(); oppBusy = false; oppTurn(); }, 800);
       return;
     }
-    if (tray.bounces < BOUNCE_CAP && size >= 4 && Math.random() < 0.4) {
+
+    /* bouncing costs a tray, so an officer who is behind stops doing it */
+    const bounceOdds = 0.45 * (1 - rush) * (size >= 5 ? 1 : 0.35);
+    if (tray.bounces < BOUNCE_CAP && Math.random() < bounceOdds) {
       oppSay('Pushed a tray back');
       tray.bounces++;
       setTimeout(() => { belt.push(tray); drawQueue(); oppBusy = false; oppTurn(); }, 1000);
       return;
     }
-    oppSay('Searching a bag');
-    const hitRate = Math.max(0.45, 0.97 - 0.10 * (size - 1));
+
+    /* one sweep of a bag: thin bags read easily, fat ones hide things.
+       A calm officer gets two sweeps, a hurrying one gets a single look. */
+    const perPass = clamp(0.82 - 0.05 * (size - 1) - 0.22 * rush, 0.28, 0.92);
+    const passes = rush < 0.5 ? 2 : 1;
+    const odds = 1 - Math.pow(1 - perPass, passes);
+    const dwell = (1600 + size * 820) * (1 - 0.45 * rush);
+    oppSay(passes === 2 ? 'Going through a bag properly' : 'Skimming a bag');
+
     setTimeout(() => {
       if (over) return;
-      contraband.forEach(it => { if (Math.random() < hitRate) opp.seized.push(it); else opp.missed.push(it); });
-      opp.trays++; drawTally(); oppSay('Filed a bag');
+      contraband.forEach(it => { if (Math.random() < odds) opp.seized.push(it); else opp.missed.push(it); });
+      opp.trays++; drawTally();
+      oppSay(rush > 0.55 ? 'Filed it and moved on' : 'Filed a bag');
       oppBusy = false; oppTurn();
-    }, 1400 + size * 900);
+    }, dwell);
   }, 1100);
 }
 
@@ -463,10 +601,11 @@ function scoreOf(p) { return p.trays * VP_TRAY + p.seized.filter(bad).length * V
 function drawTally() {
   $('youTrays').textContent = you.trays;
   $('youSeized').textContent = you.seized.filter(bad).length;
-  $('youScore').textContent = you.trays * VP_TRAY + you.seized.filter(bad).length * VP_SEIZED;
+  $('youScore').textContent = scoreOf(you);
   $('oppTrays').textContent = opp.trays;
   $('oppSeized').textContent = opp.seized.filter(bad).length;
-  $('oppScore').textContent = opp.trays * VP_TRAY + opp.seized.filter(bad).length * VP_SEIZED;
+  $('oppScore').textContent = scoreOf(opp);
+  drawHud();
 
   const rail = $('evidence');
   rail.innerHTML = you.seized.length
@@ -476,12 +615,13 @@ function drawTally() {
 
 function checkEnd() {
   if (over) return;
-  if (belt.length === 0 && !held && !oppBusy) finish();
+  if (belt.length === 0 && !held && !onDeck && !oppBusy) finish();
 }
 
 function finish() {
   over = true;
   clearInterval(tick); clearTimeout(oppTimer);
+  $('freeze').hidden = true;
   render();
 
   const ys = scoreOf(you), os = scoreOf(opp);
@@ -501,7 +641,7 @@ function finish() {
 
   $('result').innerHTML =
     '<div class="result-inner"><h2>' + verdict + '</h2>' +
-    '<p class="verdict">The belt is empty, so the shift ends and the paperwork starts. ' +
+    '<p class="verdict">The belt is empty, so the shift ends. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +

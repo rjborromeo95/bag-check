@@ -15,7 +15,8 @@
 <header class="signage">
   <span class="mark">Bag check</span>
   <span class="lane">Lane 4</span>
-  <span class="belt-count" id="beltCount">18 trays on the belt</span>
+  <span class="belt-count" id="beltCount">24 trays on the belt</span>
+  <span class="scoreboard"><span class="scoreboard-label">Score</span><span class="scoreboard-num" id="hudScore">0</span></span>
   <span class="clock" id="clock">0:00</span>
 </header>
 
@@ -42,7 +43,14 @@
         <div class="bin" id="bin"><span>Seized</span></div>
         <p class="bench-note">Inspection bench</p>
 
+        <div class="tray waiting" id="tray2" hidden><div class="tray-lip"></div><div class="tray-case" id="tray2Case"></div></div>
         <div class="tray" id="tray" hidden><div class="tray-lip"></div><div class="tray-case" id="trayCase" hidden></div></div>
+
+        <div class="freeze" id="freeze" hidden>
+          <span class="freeze-head">Held at the bench</span>
+          <span class="freeze-why" id="freezeWhy"></span>
+          <span class="freeze-count" id="freezeCount">2.0s</span>
+        </div>
 
       </div>
     </div>
@@ -55,7 +63,6 @@
     <div class="pane pane-you">
       <p class="pane-who">You</p>
       <p class="pane-score" id="youScore">0</p>
-      <p class="pane-caveat">before paperwork</p>
       <dl class="pane-lines">
         <div><dt>Trays</dt><dd id="youTrays">0</dd></div>
         <div><dt>Seized</dt><dd id="youSeized">0</dd></div>
@@ -64,7 +71,6 @@
     <div class="pane pane-opp">
       <p class="pane-who">Officer B</p>
       <p class="pane-score" id="oppScore">0</p>
-      <p class="pane-caveat">before paperwork</p>
       <dl class="pane-lines">
         <div><dt>Trays</dt><dd id="oppTrays">0</dd></div>
         <div><dt>Seized</dt><dd id="oppSeized">0</dd></div>

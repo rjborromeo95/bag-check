@@ -3,20 +3,22 @@
 ## Kit
 
 - 1 detector per player
-- 1 conveyor holding 18 security trays
-- 18 security trays
-- 18 suitcase cards, printed opaque, across six designs
-- 79 item cards, printed on clear stock so only the object shows, with the
+- 1 conveyor holding 24 security trays
+- 24 security trays
+- 32 suitcase cards, printed opaque, no two alike — 24 go on the belt in any
+  one shift
+- 112 item cards, printed on clear stock so only the object shows, with the
   object in a different position on every card
 
-59 item cards are permitted. 20 are restricted: five each of knives, bombs,
+92 item cards are permitted. 20 are restricted: five each of knives, bombs,
 poison and flammable liquid. Every restricted card prints its object somewhere
 different, and they are all small — a knife takes up about a twentieth of the
 card, so nearly anything sitting on top of it will hide it completely.
 
 ## Setup
 
-Shuffle the 18 suitcase cards into the 79 item cards and deal the lot out.
+Deal twenty-four of the 32 suitcase cards at random and put the other eight
+back in the box. Shuffle those 24 into the 112 item cards and deal the lot out.
 Don't straighten the item cards as you go — whichever way up one comes out of
 the shuffle is the way it goes in the bag, which is what stops the same object
 always turning up in the same corner.
@@ -24,13 +26,15 @@ Whatever sits under a suitcase is what's in that bag, so some come out holding
 one card and some holding eight. Nobody looks. If a suitcase ends up empty, or
 with more than it can cover, move cards between it and the fattest pile until
 every suitcase holds between one and eight. Close each one, drop it in a tray,
-load all 18 trays onto the conveyor.
+load all 24 trays onto the conveyor.
 
 ## The shift
 
 There are no turns. Everyone plays at once, off the same belt.
 
-Take the tray at the head of the conveyor and send it through your detector.
+There is always a tray at your elbow. Send the one in front of you through your
+detector and the next rolls into its place straight away — the belt does not
+pause while you work.
 
 **Green.** Nothing restricted inside. Bin the suitcase and keep the tray.
 
@@ -61,16 +65,24 @@ then score.
 Open every suitcase in your pile to find out what you missed. Highest total
 wins.
 
-## Two rules this build had to invent
+## Three rules this build had to invent
 
-Neither was in the brief. Both were needed to stop the game breaking, and both
-are worth arguing about.
+None of them was in the brief. All three were needed to stop the game breaking
+or going slack, and all three are worth arguing about.
 
 **A tray can only be sent back twice.** Without a cap, two officers can bounce
 the same nasty suitcase at each other forever and the belt never empties. The
 tray carries a marker showing how many times it's been round; on its third
 appearance somebody has to deal with it. A cleaner physical version might be
 "you can't send back two trays in a row".
+
+**Letting something through holds you at the bench for two seconds.** Minus
+three at the end of the shift is a number on a sheet — it does nothing to you
+while you are playing, so there was no felt reason to be thorough. The hold is
+that reason: the belt keeps moving and the other lane keeps working while you
+stand there. It has a side effect worth arguing about, which is that you learn
+you missed something the moment it happens rather than when the suitcases are
+opened at the end. That is a real change to what the rules say you know.
 
 **Seizing something permitted costs you nothing but time.** Pull the
 sunglasses out and you've wasted seconds you can't get back while the other

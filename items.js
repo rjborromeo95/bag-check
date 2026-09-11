@@ -68,17 +68,50 @@ const PERMITTED = [
   { file: 'recorder.png',      name: 'Recorder' },
   { file: 'ripped_jeans.png',  name: 'Ripped jeans' },
   { file: 'scarf_1.png',       name: 'Green scarf' },
-  { file: 'scarf_2.png',       name: 'Yellow scarf' }
+  { file: 'scarf_2.png',       name: 'Yellow scarf' },
+  { file: 'scarf_4.png',       name: 'Red scarf' },
+  { file: 'shirt_folded.png',  name: 'Folded shirt, blue' },
+  { file: 'shirt_folded_2.png',name: 'Folded shirt, grey' },
+  { file: 'shirt_folded_34.png', name: 'Folded shirt, pale' },
+  { file: 'shirting.png',      name: 'Striped shirt' },
+  { file: 'shoes_1.png',       name: 'Battered plimsolls' },
+  { file: 'shoes_2.png',       name: 'White trainer' },
+  { file: 'shoes_3.png',       name: 'Oxblood brogue' },
+  { file: 'skirt_1.png',       name: 'Houndstooth skirt' },
+  { file: 'skirt_2.png',       name: 'Grey skirt' },
+  { file: 'stripy_trousers.png', name: 'Striped trousers' },
+  { file: 't_shirt_1.png',     name: 'Blue t-shirt' },
+  { file: 't_shirt_2.png',     name: 'Pink t-shirt' },
+  { file: 'toothbrush_1.png',  name: 'Electric toothbrush' },
+  { file: 'toothbrush_2.png',  name: 'Blue toothbrush' },
+  { file: 'toothbrush_3.png',  name: 'Black toothbrush' },
+  { file: 'toothpaste.png',    name: 'Toothpaste' },
+  { file: 'toothpaste_2.png',  name: 'Toothpaste, small' },
+  { file: 'tote_1.png',        name: 'Tote bag' },
+  { file: 'tote_2.png',        name: 'Dream Big tote' },
+  { file: 'tote_3.png',        name: 'Sunflower tote' },
+  { file: 'umbrella_1.png',    name: 'Teal umbrella' },
+  { file: 'umbrella_2.png',    name: 'Red umbrella' },
+  { file: 'umbrella_3.png',    name: 'Blue umbrella' },
+  { file: 'underwear_1.png',   name: 'Navy briefs' },
+  { file: 'underwear_2.png',   name: 'Superhero trunks' },
+  { file: 'underwear_3.png',   name: 'Lace knickers' },
+  { file: 'vase.png',          name: 'Carved vase' },
+  { file: 'washbag_1.png',     name: 'Striped wash bag' },
+  { file: 'washbag_2.png',     name: 'Blue wash bag' },
+  { file: 'washbag_3.png',     name: 'Bronze wash bag' },
+  { file: 'yellow_bag.png',    name: 'Yellow tote' },
+  { file: 'yellow_t_shirt.png',name: 'Mustard t-shirt' }
 ];
 
-/* 59 permitted designs, one card each, plus 20 restricted = a 79-card item
+/* 92 permitted designs, one card each, plus 20 restricted = a 112-card item
    deck. Each card is dealt either way up, at random. */
 
 /* --- restricted --------------------------------------------------------
    Fourteen designs: four knives, three bombs, three poisons, four liquids.
    Six are doubled to bring the restricted count to 20, five of each kind.
 
-   These objects are small — 2.5% to 10.4% of the card, against 21% for the
+   These objects are small — 2.6% to 10.4% of the card, against 19% for the
    average permitted item — so almost anything printed above will cover one.
    That size gap is where the difficulty lives. */
 
@@ -103,15 +136,32 @@ const RESTRICTED = [
 ];
 
 /* --- suitcase fronts ---------------------------------------------------
-   Six designs, three copies each, one for every tray. The front is what you
-   look at before the scan, so it is the only part of a bag you can see while
-   deciding whether to bother with it. */
-const SUITCASES = ['case_black.jpg', 'case_burgundy.jpg', 'case_beige.jpg',
-                   'case_navy.jpg', 'case_labels.jpg', 'case_orange.jpg'];
+   Thirty-two designs, twenty-four of which go on the belt in any one shift.
+   Every tray therefore gets a front nobody else has, which matters because
+   the front is the only part of a bag you can see before the scan — and the
+   only way to recognise a tray that has already been round the belt once.
+   The eight that sit out are a different eight every game. */
+const TRAYS = 24;
+function trayCount() { return TRAYS; }
 
+const SUITCASES = ['case_black.jpg', 'case_burgundy.jpg', 'case_beige.jpg',
+                   'case_navy.jpg', 'case_labels.jpg', 'case_orange.jpg',
+                   'case_mustard.jpg', 'case_silver.jpg', 'case_white.jpg',
+                   'case_stripes.jpg', 'case_floral.jpg', 'case_red.jpg',
+                   'case_purple.jpg', 'case_leather.jpg', 'case_stickers.jpg',
+                   'case_olive.jpg', 'case_slate.jpg', 'case_pocket.jpg',
+                   'case_denim.jpg', 'case_cowprint.jpg', 'case_candy.jpg',
+                   'case_bronze.jpg', 'case_shard.jpg', 'case_amber.jpg',
+                   'case_onyx.jpg', 'case_ivory.jpg', 'case_nylon.jpg',
+                   'case_duffel.jpg', 'case_quilt.jpg', 'case_charcoal.jpg',
+                   'case_croc.jpg', 'case_scarlet.jpg'];
+
+/* The dealer takes TRAYS of them. With fewer designs than that in the list it
+   pads with repeats rather than leaving a tray without a front, so the array
+   above can be trimmed freely. */
 function buildSuitcaseDeck() {
-  const d = [];
-  SUITCASES.forEach(f => { d.push(f); d.push(f); d.push(f); });
+  const d = SUITCASES.slice();
+  for (let i = 0; d.length < TRAYS; i++) d.push(SUITCASES[i % SUITCASES.length]);
   return d;
 }
 
