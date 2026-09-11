@@ -1,13 +1,18 @@
 (function () {
 'use strict';
 
-const BAG_CAP = 8;   /* most a suitcase card can physically cover */
 const BOUNCE_CAP = 2;
 const VP_TRAY = 1;
-const VP_SEIZED = 2;
-const VP_MISSED = -3;
-const VP_WANTED = 3;    /* a reported-stolen item, found in a bag you opened */
-const WANTED_N = 3;
+const VP_SEIZED = 3;      /* a forbidden item, taken off the belt */
+const VP_WRONG = -5;      /* somebody's hairdryer, taken off the belt */
+const VP_MISSED = -3;     /* a forbidden item you let through, per item */
+const VP_DIRTY_BAG = -10; /* or, on the budget shift, per bag rather than per item */
+
+/* Stolen goods are squared: one is worth 1, three is worth 9, five is 25.
+   Nothing else in the game rewards a run like that, which is what makes
+   remembering the list the thing worth doing. */
+const WANTED_N = 10;      /* on the table in total, both modes */
+const WANTED_EACH = 5;    /* on the budget shift, planted five a side */
 const FREEZE_MS = 2000;   /* the hold after letting something through */
 const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
@@ -27,8 +32,8 @@ const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
    at the end. */
 const MODES = {
   classic: { key: 'classic', name: 'Detector',          lamp: true,  hold: true,  reveal: true,  shared: true,  clock: 0,      budget: 0,  bounce: true },
-  clock:   { key: 'clock',   name: 'Clock shift',       lamp: false, hold: false, reveal: false, shared: true,  clock: 240000, budget: 0,  bounce: true },
-  budget:  { key: 'budget',  name: 'Inspection budget', lamp: false, hold: false, reveal: false, shared: false, clock: 0,      budget: 10, bounce: false }
+  clock:   { key: 'clock',   name: 'Clock shift',       lamp: false, hold: false, reveal: false, shared: true,  clock: 120000, budget: 0,  bounce: true },
+  budget:  { key: 'budget',  name: 'Inspection budget', lamp: false, hold: false, reveal: false, shared: false, clock: 0,      budget: 10, bounce: false, planted: true, bagMiss: true }
 };
 let M = MODES.classic;
 
@@ -59,7 +64,7 @@ const LENS_YOU  = { x: 1152, y: 418, w: 196, h: 123 };
 const LENS_THEM = { x: 1152, y: 160, w: 196, h: 123 };
 const STOW = { scale: 0.42, cols: 9, dx: 42, dy: 46, ox: 8, oy: 18 };
 
-const SLOTS = [266, 378, 490, 602, 714, 826, 938, 1050];
+const SLOTS = [266, 446, 626, 806, 986];
 /* the front gets set down on the belt next to the tray, not on the bench —
    the right-hand end of each bench row belongs to the notice board */
 function lidPark(lane) { return { x: 760, y: lane.top - 8 }; }
@@ -76,7 +81,8 @@ const you = { trays: 0, seized: [], missed: [], checks: 0 };
 const opp = { trays: 0, seized: [], missed: [], checks: 0 };
 let oppHeld = null, oppDeck = null, oppCards = [], oppBusy = false;
 let stowYou = [], stowThem = [];
-let wanted = [], wantedSet = null;
+let wanted = [], wantedThem = [];   /* stolen goods, yours to find and theirs */
+let briefed = false;
 let hudShown = 0, hudAnim = null;
 const timers = [];
 
@@ -190,7 +196,7 @@ function deal() {
   const by = k => bags.slice().sort((a, b) => k * (a.items.length - b.items.length))[0];
   for (let guard = 0; guard < 400; guard++) {
     const big = by(-1), small = by(1);
-    if (small.items.length >= 1 && big.items.length <= BAG_CAP) break;
+    if (small.items.length >= 1 && big.items.length <= bagCap()) break;
     if (big.items.length < 2) break;
     small.items.push(big.items.pop());
   }
@@ -231,15 +237,14 @@ function start() {
   oppHeld = null; oppDeck = null; oppBusy = false;
   you.trays = opp.trays = 0; you.seized = []; you.missed = []; opp.seized = []; opp.missed = [];
   you.checks = opp.checks = 0;
+  you.dirtyBags = opp.dirtyBags = 0;
   started = false; over = false;
   clearCards(); clearOppCards();
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
   initLane(YOU); initLane(THEM);
-  wanted = pickWanted(WANTED_N);
-  wantedSet = {};
-  wanted.forEach(w => { wantedSet[w.file] = true; });
-  drawBoard();
+  plantGoods();
+  briefed = false;
   $('freeze').hidden = true;
   $('weigh').hidden = true;
   showLens('you', null); showLens('them', null);
@@ -255,40 +260,69 @@ function start() {
   fit(); drawQueue(); drawTally(); render();
 }
 
-/* ---------- the notice board ---------- */
+/* ---------- stolen goods ----------
+   Ten of them, and they are chosen out of the bags rather than off the
+   catalogue, so every one is guaranteed to be on the belt somewhere. One per
+   suitcase, ten different suitcases.
 
-/* A card is mostly empty space, so a thumbnail of the whole thing shows very
-   little. CROP says where the object actually sits; this scales and offsets
-   the card art inside a small tile so the object fills it. */
-function tile(file, tw, th) {
-  const c = cropOf(file);
-  const W = 440, H = 617;
-  const k = Math.min(tw / (c[2] * W), th / (c[3] * H));
-  const iw = W * k, ih = H * k;
-  const left = -c[0] * iw + (tw - c[2] * iw) / 2;
-  const top  = -c[1] * ih + (th - c[3] * ih) / 2;
-  return '<span class="ptile" style="width:' + tw + 'px;height:' + th + 'px">' +
-    '<img src="assets/cards/' + file + '" alt="" style="width:' + Math.round(iw) +
-    'px;height:' + Math.round(ih) + 'px;left:' + Math.round(left) + 'px;top:' +
-    Math.round(top) + 'px">' + '</span>';
+   On the budget shift they are planted rather than reported: five in your
+   queue by Officer B, five in theirs by you, which is why you get told five
+   and not ten. That is the physical game too — the other player picks them
+   and tells you what they are.
+
+   You are told once, in words, at the start. No picture, no list to check
+   against later. Remembering is the mechanic. */
+
+function plantInto(trays, n, taken) {
+  const out = [];
+  const pool = shuffle(trays.slice()).filter(t => t.bag.items.some(it => !bad(it)));
+  for (let i = 0; i < pool.length && out.length < n; i++) {
+    const options = pool[i].bag.items.filter(it => !bad(it) && !taken[it.design]);
+    if (!options.length) continue;
+    const pickOne = options[Math.floor(Math.random() * options.length)];
+    taken[pickOne.design] = true;
+    out.push({ file: pickOne.design, name: pickOne.name });
+  }
+  return out;
 }
 
-function isWanted(item) { return !!(wantedSet && wantedSet[item.design]); }
+function plantGoods() {
+  const taken = {};
+  if (M.planted) {
+    wanted = plantInto(YOU.queue, WANTED_EACH, taken);
+    wantedThem = plantInto(THEM.queue, WANTED_EACH, taken);
+  } else {
+    wanted = plantInto(YOU.queue, WANTED_N, taken);
+    wantedThem = wanted;
+  }
+  you.wantSet = {}; wanted.forEach(x => { you.wantSet[x.file] = true; });
+  opp.wantSet = {}; wantedThem.forEach(x => { opp.wantSet[x.file] = true; });
 
-function foundWanted(who, file) {
-  return who.seized.some(it => it.design === file);
+  /* Officer B has to remember them too, and does not manage all of them */
+  opp.recall = {};
+  wantedThem.forEach(x => { if (Math.random() < OPP_RECALL) opp.recall[x.file] = true; });
 }
 
-function drawBoard() {
-  $('boardList').innerHTML = wanted.map(w => {
-    const mine = foundWanted(you, w.file);
-    const theirs = foundWanted(opp, w.file);
-    const tag = mine ? '<span class="poster-got">Recovered</span>'
-              : theirs ? '<span class="poster-got">B recovered it</span>' : '';
-    return '<div class="poster' + (mine || theirs ? ' found' : '') + '">' +
-      tile(w.file, 56, 50) +
-      '<span class="poster-name">' + w.name + tag + '</span></div>';
-  }).join('');
+function isWantedFor(p, item) { return !!(p.wantSet && p.wantSet[item.design]); }
+
+function briefText() {
+  const lines = wanted.map(x => '<li>' + x.name + '</li>').join('');
+  const mine = M.planted
+    ? 'Officer B has hidden <strong>' + wanted.length + ' stolen items</strong> in your queue, one to a suitcase, and has told you what they are.'
+    : '<strong>' + wanted.length + ' items</strong> have been reported stolen. They are ordinary things, they are somewhere on the belt, and both of you are looking for them.';
+  const plantedBack = M.planted && wantedThem.length
+    ? '<p class="brief-foot">You have hidden ' + wantedThem.map(x => x.name.toLowerCase()).join(', ') + ' in theirs.</p>'
+    : '';
+  return '<p class="brief-lede">' + mine + '</p>' +
+    '<p class="brief-warn">Read them now. You will not be shown them again.</p>' +
+    '<ul class="brief-list">' + lines + '</ul>' +
+    '<p class="brief-score">Recovering them scores the <strong>square</strong> of how many you get — ' +
+    'one is 1 point, three is 9, five is 25.</p>' + plantedBack;
+}
+
+function showBriefing() {
+  $('briefBody').innerHTML = briefText();
+  $('brief').hidden = false;
 }
 
 /* ---------- queue ---------- */
@@ -404,6 +438,7 @@ const SFX = {
 };
 const SFX_VOL = 0.65;
 const SFX_THEM = 0.2;
+const OPP_RECALL = 0.6;   /* how much of the stolen list Officer B actually remembers */
 const AMBIENCE_VOL = 0.17;
 
 const sfxBank = {};
@@ -689,8 +724,9 @@ function seize(card) {
   const c = centreOf(card.el);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
-  if (isWanted(card.item)) { pop(c.x - 14, c.y - 28, '+' + VP_WANTED, 'good'); drawBoard(); }
+  if (isWantedFor(you, card.item)) pop(c.x - 14, c.y - 28, 'Stolen', 'good');
   else if (card.item.restricted) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
+  else pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
   playItem(card.item);
   cards = cards.filter(other => other !== card);
   stow(card.el, SEIZE_YOU, stowYou);
@@ -771,8 +807,9 @@ function promote() {
    it for you. A heavy bag is likelier to be hiding something and costs more to
    work, which is the whole trade in one number you are allowed to know. */
 function weighBand(n) {
-  if (n <= 3) return ['Light', 1];
-  if (n <= 6) return ['Medium', 2];
+  const cap = bagCap();
+  if (n <= cap - 3) return ['Light', 1];
+  if (n <= cap - 2) return ['Medium', 2];
   return ['Heavy', 3];
 }
 
@@ -852,6 +889,7 @@ function fileTray() {
   you.trays++;
   const slipped = held.bag.items.filter(bad);
   slipped.forEach(it => you.missed.push(it));
+  if (slipped.length) you.dirtyBags++;
   const c = trayCentre(YOU);
   if (slipped.length && M.reveal) pop(c.x - 22, c.y - 96, String(VP_MISSED * slipped.length), 'bad');
   else pop(c.x - 12, c.y - 96, '+' + VP_TRAY, 'good');
@@ -972,7 +1010,7 @@ function render() {
    spacing was the thing that made them read as a machine. */
 
 function wakeOpp() { if (!over && started && !oppBusy && THEM.queue.length) later(oppTurn, 900); }
-function oppSay(t) { $('oppDoing').textContent = t; $('sheetDoing').textContent = 'Officer B: ' + t.toLowerCase(); }
+function oppSay(t) { $('oppDoing').textContent = t; }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
 function oppRush() { return clamp((you.trays - opp.trays) / 6, 0, 1); }
@@ -1128,7 +1166,7 @@ function oppSearch(contraband, size, rush) {
   contraband.forEach(it => (Math.random() < odds ? found : missed).push(it));
   /* B is looking at the same notice board you are */
   oppCards.forEach(cd => {
-    if (cd.item && isWanted(cd.item) && Math.random() < odds) found.push(cd.item);
+    if (cd.item && opp.recall[cd.item.design] && Math.random() < odds) found.push(cd.item);
   });
 
   let t = 0;
@@ -1144,8 +1182,7 @@ function oppSearch(contraband, size, rush) {
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
-          '+' + (isWanted(it) ? VP_WANTED : VP_SEIZED), 'theirs');
-      if (isWanted(it)) drawBoard();
+          isWantedFor(opp, it) ? 'Stolen' : '+' + VP_SEIZED, 'theirs');
       drawTally();
     }, t);
   });
@@ -1183,6 +1220,7 @@ function oppFile(missed) {
   if (over) return;
   opp.trays++;
   missed.forEach(it => opp.missed.push(it));
+  if (missed.length) opp.dirtyBags++;
   const c = trayCentre(THEM);
   if (missed.length) pop(c.x - 22, c.y + 92, String(VP_MISSED * missed.length), 'bad');
   else pop(c.x - 12, c.y + 92, '+' + VP_TRAY, 'theirs');
@@ -1201,14 +1239,19 @@ function oppFile(missed) {
 
 /* ---------- score ---------- */
 
-function wantedTaken(p) { return p.seized.filter(isWanted).length; }
+function wantedTaken(p) { return p.seized.filter(it => isWantedFor(p, it)).length; }
+function wrongGrabs(p) { return p.seized.filter(it => !it.restricted && !isWantedFor(p, it)).length; }
+/* squared, which is why four is worth more than twice two */
+function wantedScore(p) { const k = wantedTaken(p); return k * k; }
+function missPenalty(p) { return M.bagMiss ? p.dirtyBags * VP_DIRTY_BAG : p.missed.length * VP_MISSED; }
 
 /* The final figure. Everything counts. */
 function scoreOf(p) {
   return p.trays * VP_TRAY
     + p.seized.filter(bad).length * VP_SEIZED
-    + wantedTaken(p) * VP_WANTED
-    + p.missed.length * VP_MISSED
+    + wantedScore(p)
+    + wrongGrabs(p) * VP_WRONG
+    + missPenalty(p)
     + leftovers * VP_LEFT;
 }
 
@@ -1216,7 +1259,7 @@ function scoreOf(p) {
    not know what went past you, so the running total does not either. */
 function shown(p) {
   return M.reveal ? scoreOf(p)
-    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wantedTaken(p) * VP_WANTED;
+    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wantedScore(p) + wrongGrabs(p) * VP_WRONG;
 }
 
 function drawTally() {
@@ -1252,15 +1295,19 @@ function finish() {
 
   const ys = scoreOf(you), os = scoreOf(opp);
   const verdict = ys > os ? 'You win the shift.' : ys < os ? 'Officer B wins the shift.' : 'Dead heat.';
-  const falseGrabs = you.seized.filter(it => !it.restricted && !isWanted(it)).length;
+  const falseGrabs = wrongGrabs(you);
 
   const sheet = (who, p) => {
     const s = p.seized.filter(bad).length;
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
-      '<tr><td>Restricted seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
-      '<tr><td>Stolen goods recovered — ' + wantedTaken(p) + ' × ' + VP_WANTED + '</td><td>' + (wantedTaken(p) * VP_WANTED) + '</td></tr>' +
-      '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED + '</td><td>' + (p.missed.length * VP_MISSED) + '</td></tr>' +
+      '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
+      '<tr><td>Stolen goods — ' + wantedTaken(p) + ' recovered, squared</td><td>' + wantedScore(p) + '</td></tr>' +
+      (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
+      '<tr class="neg"><td>' + (M.bagMiss
+        ? 'Bags through with something in — ' + p.dirtyBags + ' × ' + VP_DIRTY_BAG
+        : 'Let through — ' + p.missed.length + ' × ' + VP_MISSED) +
+        '</td><td>' + missPenalty(p) + '</td></tr>' +
       (leftovers ? '<tr class="neg"><td>Belt not cleared — ' + leftovers + ' × ' + VP_LEFT + '</td><td>' + (leftovers * VP_LEFT) + '</td></tr>' : '') +
       (M.budget ? '<tr><td>Inspections used</td><td>' + p.checks + ' / ' + M.budget + '</td></tr>' : '') +
       '<tr class="total"><td>Total</td><td>' + scoreOf(p) + '</td></tr></table>' +
@@ -1272,8 +1319,10 @@ function finish() {
     '<div class="result-inner"><h2>' + verdict + '</h2>' +
     '<p class="verdict">' + M.name + '. ' +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
-    'Reported stolen this shift: ' +
-    wanted.map(x => x.name.toLowerCase()).join(', ') + '. ' +
+    'You were looking for: ' +
+    wanted.map(x => (you.seized.some(it => it.design === x.file)
+      ? '<b>' + x.name.toLowerCase() + '</b>' : x.name.toLowerCase())).join(', ') +
+    ' — bold is what you got. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
@@ -1298,6 +1347,7 @@ function startMode(key) {
   M = MODES[key] || MODES.classic;
   $('menu').hidden = true;
   start();
+  showBriefing();
 }
 
 loadSfx();
@@ -1311,12 +1361,7 @@ $('btnCheck').onclick = checkPressed;
 $('btnBounce').onclick = () => { if (phase === 'scanned') bounce(); };
 $('mute').onclick = () => setMuted(!muted);
 $('hudMute').onclick = () => setMuted(!muted);
-$('hudInfo').onclick = () => {
-  $('boardMirror').innerHTML = $('boardList').innerHTML;
-  $('sheetover').hidden = false;
-};
-$('sheetClose').onclick = () => { $('sheetover').hidden = true; };
-$('sheetover').onclick = e => { if (e.target === $('sheetover')) $('sheetover').hidden = true; };
+$('briefGo').onclick = () => { $('brief').hidden = true; briefed = true; render(); };
 setMuted(false);
 start();
 showMenu();

@@ -16,13 +16,10 @@ const PERMITTED = [
   { file: 'beach_towel.png',        name: 'Beach towel',                sound: 'cloth' },
   { file: 'belt_1.png',             name: 'Striped belt',               sound: 'cloth' },
   { file: 'belt_2.png',             name: 'Brown belt',                 sound: 'cloth' },
-  { file: 'belt_3.png',             name: 'Tan belt',                   sound: 'cloth' },
   { file: 'belt_4.png',             name: 'Webbing belt',               sound: 'cloth' },
   { file: 'bobblehead_1.png',       name: 'Vault Boy bobblehead',       sound: 'plastic' },
   { file: 'bobblehead_2.png',       name: 'Baseball bobblehead',        sound: 'plastic' },
   { file: 'book_1.png',             name: 'Leather book',               sound: 'book' },
-  { file: 'book_2.png',             name: 'Book, flat',                 sound: 'book' },
-  { file: 'book_spine.png',         name: 'Book spine',                 sound: 'book' },
   { file: 'bowl.png',               name: 'Wooden bowl',                sound: 'glass' },
   { file: 'bowling_bll.png',        name: 'Bowling ball',               sound: 'hardcase' },
   { file: 'bra.png',                name: 'Bra',                        sound: 'cloth' },
@@ -30,7 +27,6 @@ const PERMITTED = [
   { file: 'cards.png',              name: 'Playing cards',              sound: 'light' },
   { file: 'cash.png',               name: 'Roll of cash',               sound: 'light' },
   { file: 'charger_1.png',          name: 'Black charger',              sound: 'plastic' },
-  { file: 'charger_2.png',          name: 'White charger',              sound: 'plastic' },
   { file: 'flippers.png',           name: 'Flippers',                   sound: 'plastic' },
   { file: 'game_boy.png',           name: 'Game Boy',                   sound: 'hardcase' },
   { file: 'gardening.png',          name: 'Gardening book',             sound: 'book' },
@@ -43,13 +39,8 @@ const PERMITTED = [
   { file: 'inflatable_knife.png', name: 'Inflatable knife',    sound: 'plastic' },
   { file: 'hoodie.png',             name: 'Hoodie',                     sound: 'cloth' },
   { file: 'jeans_1.png',            name: 'Folded jeans',               sound: 'cloth' },
-  { file: 'jeans_2.png',            name: 'Jeans, corner',              sound: 'cloth' },
-  { file: 'jeans_3.png',            name: 'Stack of jeans',             sound: 'cloth' },
-  { file: 'jeans_4.png',            name: 'Row of jeans',               sound: 'cloth' },
   { file: 'keyboard.png',           name: 'Keyboard',                   sound: 'hardcase' },
   { file: 'laptop.png',             name: 'Laptop, high',               sound: 'hardcase' },
-  { file: 'laptop_2.png',           name: 'Laptop, low',                sound: 'hardcase' },
-  { file: 'laptop_3.png',           name: 'Laptop, right',              sound: 'hardcase' },
   { file: 'leather_bag_1.png',      name: 'Leather satchel',            sound: 'cloth' },
   { file: 'ms_wiz_1.png',           name: 'The Secret Life of Ms Wiz',  sound: 'book' },
   { file: 'ms_wiz_2.png',           name: 'Ms Wiz paperback',           sound: 'book' },
@@ -73,27 +64,21 @@ const PERMITTED = [
   { file: 'scarf_4.png',            name: 'Red scarf',                  sound: 'cloth' },
   { file: 'shirt_folded.png',       name: 'Folded shirt, blue',         sound: 'cloth' },
   { file: 'shirt_folded_2.png',     name: 'Folded shirt, grey',         sound: 'cloth' },
-  { file: 'shirt_folded_34.png',    name: 'Folded shirt, pale',         sound: 'cloth' },
   { file: 'shirting.png',           name: 'Striped shirt',              sound: 'cloth' },
   { file: 'shoes_1.png',            name: 'Battered plimsolls',         sound: 'cloth' },
-  { file: 'shoes_2.png',            name: 'White trainer',              sound: 'cloth' },
-  { file: 'shoes_3.png',            name: 'Oxblood brogue',             sound: 'light' },
+  { file: 'shoes_2.png',            name: 'White trainer',              sound: 'hardcase' },
+  { file: 'shoes_3.png',            name: 'Oxblood brogue',             sound: 'hardcase' },
   { file: 'skirt_1.png',            name: 'Houndstooth skirt',          sound: 'cloth' },
   { file: 'skirt_2.png',            name: 'Grey skirt',                 sound: 'cloth' },
   { file: 'stripy_trousers.png',    name: 'Striped trousers',           sound: 'cloth' },
-  { file: 't_shirt_1.png',          name: 'Blue t-shirt',               sound: 'cloth' },
   { file: 't_shirt_2.png',          name: 'Pink t-shirt',               sound: 'cloth' },
   { file: 'toothbrush_1.png',       name: 'Electric toothbrush',        sound: 'light' },
   { file: 'toothbrush_2.png',       name: 'Blue toothbrush',            sound: 'light' },
-  { file: 'toothbrush_3.png',       name: 'Black toothbrush',           sound: 'light' },
   { file: 'toothpaste.png',         name: 'Toothpaste',                 sound: 'plastic' },
-  { file: 'toothpaste_2.png',       name: 'Toothpaste, small',          sound: 'plastic' },
   { file: 'tote_1.png',             name: 'Tote bag',                   sound: 'rustle' },
   { file: 'tote_2.png',             name: 'Dream Big tote',             sound: 'rustle' },
   { file: 'tote_3.png',             name: 'Sunflower tote',             sound: 'rustle' },
   { file: 'umbrella_1.png',         name: 'Teal umbrella',              sound: 'plastic' },
-  { file: 'umbrella_2.png',         name: 'Red umbrella',               sound: 'plastic' },
-  { file: 'umbrella_3.png',         name: 'Blue umbrella',              sound: 'plastic' },
   { file: 'underwear_1.png',        name: 'Navy briefs',                sound: 'cloth' },
   { file: 'underwear_2.png',        name: 'Superhero trunks',           sound: 'cloth' },
   { file: 'underwear_3.png',        name: 'Lace knickers',              sound: 'cloth' },
@@ -101,8 +86,29 @@ const PERMITTED = [
   { file: 'washbag_1.png',          name: 'Striped wash bag',           sound: 'rustle' },
   { file: 'washbag_2.png',          name: 'Blue wash bag',              sound: 'hardcase' },
   { file: 'washbag_3.png',          name: 'Bronze wash bag',            sound: 'rustle' },
-  { file: 'yellow_bag.png',         name: 'Yellow tote',                sound: 'rustle' },
-  { file: 'yellow_t_shirt.png',     name: 'Mustard t-shirt',            sound: 'cloth' }
+  { file: 'yellow_t_shirt.png',     name: 'Mustard t-shirt',            sound: 'cloth' },
+
+  /* the ordinary end of a suitcase: snacks, souvenirs, holiday tat */
+  { file: 'balaclava.png',           name: 'Balaclava',                   sound: 'cloth'     },
+  { file: 'bath_salt.png',           name: 'Jar of bath salts',           sound: 'glass'     },
+  { file: 'camera_digital.png',      name: 'Compact camera',              sound: 'hardcase'  },
+  { file: 'card.png',                name: 'Brown envelope',              sound: 'book'      },
+  { file: 'clock.png',               name: 'Wall clock',                  sound: 'hardcase'  },
+  { file: 'croissants.png',          name: 'Pack of croissants',          sound: 'rustle'    },
+  { file: 'disposable_camera.png',   name: 'Disposable camera',           sound: 'plastic'   },
+  { file: 'fidget_spinner.png',      name: 'Fidget spinner',              sound: 'plastic'     },
+  { file: 'foot_cream.png',          name: 'Tube of foot cream',          sound: 'plastic'   },
+  { file: 'fountain_pen.png',        name: 'Fountain pen',                sound: 'light'     },
+  { file: 'frying_pan.png',          name: 'Frying pan',                  sound: 'hardcase'  },
+  { file: 'high_heels.png',          name: 'Black high heels',            sound: 'hardcase'     },
+  { file: 'magazine.png',            name: 'Fashion magazine',            sound: 'book'      },
+  { file: 'mask.png',                name: 'Carved wooden mask',          sound: 'hardcase'      },
+  { file: 'paintbrush.png',          name: 'Paintbrush',                  sound: 'light'     },
+  { file: 'peanuts.png',             name: 'Bag of chocolate peanuts',    sound: 'rustle'    },
+  { file: 'red_crisps.png',          name: 'Bag of crisps',               sound: 'plastic'    },
+  { file: 'saffron.png',             name: 'Jar of saffron',              sound: 'glass'     },
+  { file: 'sweets.png',              name: 'Bag of gummy worms',          sound: 'plastic'    },
+  { file: 'teddy_bear.png',          name: 'Purple teddy bear',           sound: 'cloth'     }
 ];
 
 /* 92 permitted designs, one card each, plus 20 restricted = a 112-card item
@@ -160,8 +166,19 @@ const RESTRICTED = [
    one shift, drawn at random and one card each. Ten sit out, so what counts as
    contraband this round is never quite what it was last round — and nobody can
    learn the deck by heart. */
-const RESTRICTED_N = 16;
+const RESTRICTED_N = 15;
+
+/* --- how much of it is dealt ------------------------------------------
+   Not the whole box. 75 of the 93 permitted designs and 15 of the 26
+   forbidden ones go into a shift: 90 cards under 24 suitcases, so a bag holds
+   three or four on average and never more than five. Everything sitting out is
+   what stops a deck you have played twenty times from being a memory test. */
+const PERMITTED_N = 75;
+const BAG_CAP = 5;
+
 function restrictedCount() { return RESTRICTED_N; }
+function permittedCount() { return PERMITTED_N; }
+function bagCap() { return BAG_CAP; }
 
 /* --- suitcase fronts ---------------------------------------------------
    Thirty-two designs, twenty-four of which go on the belt in any one shift.
@@ -229,6 +246,8 @@ const CROP = {
   'artwork_1.png': [0.139, 0.086, 0.786, 0.728],
   'artwork_2.png': [0.032, 0.193, 0.857, 0.797],
   'artwork_3.png': [0.041, 0.015, 0.945, 0.363],
+  'balaclava.png': [0.045, 0.665, 0.666, 0.280],
+  'bath_salt.png': [0.445, 0.807, 0.227, 0.183],
   'beach_towel.png': [0.068, 0.016, 0.843, 0.457],
   'belt_1.png': [0.184, 0.298, 0.509, 0.687],
   'belt_2.png': [0.493, 0.113, 0.325, 0.156],
@@ -244,14 +263,23 @@ const CROP = {
   'bowl.png': [0.600, 0.318, 0.382, 0.407],
   'bowling_bll.png': [0.020, 0.382, 0.541, 0.387],
   'bra.png': [0.091, 0.018, 0.825, 0.413],
+  'camera_digital.png': [0.032, 0.345, 0.250, 0.311],
   'camo_trousers.png': [0.418, 0.083, 0.568, 0.611],
+  'card.png': [0.389, 0.186, 0.500, 0.332],
   'cards.png': [0.327, 0.849, 0.473, 0.141],
   'cash.png': [0.843, 0.305, 0.143, 0.156],
   'charger_1.png': [0.384, 0.175, 0.525, 0.295],
   'charger_2.png': [0.014, 0.746, 0.305, 0.230],
+  'clock.png': [0.343, 0.300, 0.555, 0.400],
+  'croissants.png': [0.114, 0.535, 0.775, 0.321],
+  'disposable_camera.png': [0.507, 0.742, 0.316, 0.126],
+  'fidget_spinner.png': [0.359, 0.120, 0.125, 0.091],
   'flammable_bottle.png': [0.261, 0.298, 0.180, 0.323],
   'flammable_liquid.png': [0.652, 0.587, 0.227, 0.342],
   'flippers.png': [0.064, 0.036, 0.895, 0.916],
+  'foot_cream.png': [0.709, 0.436, 0.189, 0.316],
+  'fountain_pen.png': [0.136, 0.535, 0.373, 0.047],
+  'frying_pan.png': [0.014, 0.010, 0.618, 0.588],
   'game_boy.png': [0.486, 0.301, 0.330, 0.387],
   'gardening.png': [0.368, 0.037, 0.516, 0.460],
   'gasoline.png': [0.243, 0.280, 0.364, 0.413],
@@ -263,6 +291,7 @@ const CROP = {
   'hat_2.png': [0.375, 0.010, 0.611, 0.634],
   'hat_3.png': [0.139, 0.386, 0.827, 0.595],
   'hat_4.png': [0.239, 0.010, 0.748, 0.592],
+  'high_heels.png': [0.482, 0.569, 0.505, 0.421],
   'hoodie.png': [0.014, 0.057, 0.916, 0.833],
   'hydrochloric_acid.png': [0.457, 0.485, 0.402, 0.371],
   'inflatable_knife.png': [0.382, 0.157, 0.341, 0.802],
@@ -282,6 +311,8 @@ const CROP = {
   'lighter.png': [0.520, 0.277, 0.193, 0.115],
   'lighter_2.png': [0.232, 0.710, 0.082, 0.135],
   'lighter_fluid.png': [0.214, 0.178, 0.591, 0.172],
+  'magazine.png': [0.043, 0.039, 0.930, 0.613],
+  'mask.png': [0.014, 0.316, 0.627, 0.674],
   'ms_wiz_1.png': [0.014, 0.527, 0.386, 0.350],
   'ms_wiz_2.png': [0.318, 0.363, 0.432, 0.382],
   'ms_wiz_3.png': [0.386, 0.292, 0.380, 0.417],
@@ -291,6 +322,8 @@ const CROP = {
   'mug_2.png': [0.130, 0.136, 0.470, 0.348],
   'newspapers.png': [0.039, 0.019, 0.727, 0.963],
   'paddle.png': [0.334, 0.323, 0.441, 0.545],
+  'paintbrush.png': [0.759, 0.543, 0.086, 0.287],
+  'peanuts.png': [0.014, 0.272, 0.386, 0.214],
   'pencil_case.png': [0.350, 0.627, 0.636, 0.337],
   'perfume_1.png': [0.216, 0.491, 0.459, 0.220],
   'perfume_2.png': [0.384, 0.010, 0.168, 0.167],
@@ -304,7 +337,9 @@ const CROP = {
   'poison_2.png': [0.832, 0.042, 0.155, 0.194],
   'poison_34.png': [0.248, 0.010, 0.273, 0.086],
   'recorder.png': [0.695, 0.173, 0.120, 0.653],
+  'red_crisps.png': [0.405, 0.076, 0.561, 0.287],
   'ripped_jeans.png': [0.443, 0.254, 0.543, 0.446],
+  'saffron.png': [0.614, 0.571, 0.180, 0.143],
   'scarf_1.png': [0.336, 0.243, 0.573, 0.399],
   'scarf_2.png': [0.298, 0.559, 0.652, 0.420],
   'scarf_4.png': [0.050, 0.230, 0.470, 0.428],
@@ -322,8 +357,10 @@ const CROP = {
   'skirt_1.png': [0.043, 0.454, 0.655, 0.536],
   'skirt_2.png': [0.257, 0.010, 0.730, 0.457],
   'stripy_trousers.png': [0.014, 0.399, 0.591, 0.420],
+  'sweets.png': [0.020, 0.543, 0.434, 0.376],
   't_shirt_1.png': [0.014, 0.010, 0.743, 0.485],
   't_shirt_2.png': [0.075, 0.298, 0.911, 0.692],
+  'teddy_bear.png': [0.095, 0.130, 0.441, 0.271],
   'toothbrush_1.png': [0.861, 0.324, 0.109, 0.462],
   'toothbrush_2.png': [0.077, 0.627, 0.198, 0.363],
   'toothbrush_3.png': [0.014, 0.042, 0.111, 0.546],
@@ -357,14 +394,6 @@ function pick(list, n) {
   return pool.slice(0, n);
 }
 
-function pickWanted(n) {
-  const pool = PERMITTED.slice();
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
-  }
-  return pool.slice(0, n);
-}
 
 function buildItemDeck() {
   const deck = [];
@@ -379,7 +408,7 @@ function buildItemDeck() {
       });
     }
   };
-  PERMITTED.forEach(c => add(c, false));
+  pick(PERMITTED, PERMITTED_N).forEach(c => add(c, false));
   pick(RESTRICTED, RESTRICTED_N).forEach(c => add(c, true));
   return deck;
 }

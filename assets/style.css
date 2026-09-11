@@ -535,3 +535,48 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.95rem;
   letter-spacing:.08em;text-transform:uppercase;color:#dbe3e1;line-height:1;
 }
+
+/* ---- the briefing ----
+   The stolen list, once, in words. There is no board to check against later
+   and no picture at any point: the whole mechanic is that you have to carry
+   ten short descriptions in your head for the length of a shift. */
+.brief{
+  position:fixed;inset:0;z-index:130;overflow-y:auto;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(1rem,4vw,2rem);
+  background:rgba(18,25,26,.93);
+}
+.brief-inner{
+  width:min(560px,100%);background:#e7e3d6;border-radius:8px;
+  border:2px solid #b6ae98;box-shadow:0 20px 50px rgba(0,0,0,.5);
+  padding:1.1rem 1.3rem 1.2rem;
+}
+.brief-kicker{
+  margin:0;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;
+  letter-spacing:.3em;text-transform:uppercase;color:#8a7f64;
+}
+.brief-head{
+  margin:.1rem 0 .6rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  font-size:2.1rem;line-height:1;color:#3c372a;text-transform:uppercase;letter-spacing:.02em;
+}
+.brief-lede{margin:0 0 .5rem;color:#4a442f;font-size:.95rem;line-height:1.45}
+.brief-warn{
+  margin:0 0 .7rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:#a33c12;font-size:.95rem;
+}
+.brief-list{
+  margin:0 0 .8rem;padding:0;list-style:none;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.3rem .8rem;
+}
+.brief-list li{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.15rem;
+  color:#2f2b20;border-bottom:1px dotted #c4bca6;padding:.1rem 0;
+}
+.brief-score{margin:0 0 .5rem;font-size:.88rem;color:#4a442f}
+.brief-foot{margin:0 0 .8rem;font-size:.8rem;color:#8a7f64;font-style:italic}
+.brief-go{
+  width:100%;background:var(--tray);border:2px solid var(--tray-edge);color:#241a01;
+  border-radius:5px;padding:.6rem;touch-action:manipulation;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.25rem;
+}
+.brief-go:hover{background:#ffc528}
