@@ -433,6 +433,22 @@ const SFX = {
   rustle:   ['rustle_1', 'rustle_2'],
   open:     ['open_1', 'open_2', 'open_3', 'open_4'],
   shut:     ['shut_1'],
+
+  /* ten objects that got their own noise rather than a group's. All of them
+     are permitted, so none of this tells you anything about contraband — but
+     a stolen item with a sound of its own is one you can find by ear, which
+     is the first help the memory mechanic has had. */
+  balaclava:  ['obj_balaclava'],
+  bathsalt:   ['obj_bathsalt'],
+  camera:     ['obj_camera'],
+  card:       ['obj_card'],
+  clock:      ['obj_clock'],
+  croissants: ['obj_croissants'],
+  dispcam:    ['obj_dispcam'],
+  spinner:    ['obj_spinner'],
+  saffron:    ['obj_saffron'],
+  sweets:     ['obj_sweets'],
+
   beep:     ['beep'],
   conveyor: ['conveyor']
 };
