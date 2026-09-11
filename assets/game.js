@@ -72,7 +72,35 @@ function lidPark(lane) { return { x: 760, y: lane.top - 8 }; }
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const bad = it => it.restricted;
+/* What counts as contraband is not fixed. Two signs go up every shift and they
+   beat the standing list both ways: a banned category is contraband today even
+   though it is a t-shirt, and an allowed one is legal today even though it is a
+   gun. Everything in the game that asks "is this bad" comes through here, which
+   is why the opponent, the scoring and the stolen-goods picker all obey the
+   signs without being told about them separately. */
+let signsToday = [], banToday = {}, okToday = {};
+
+function bad(it) {
+  if (banToday[it.design]) return true;
+  if (okToday[it.design]) return false;
+  return it.restricted;
+}
+
+function applySigns() {
+  signsToday = pickSigns(2);
+  banToday = {}; okToday = {};
+  signsToday.forEach(sg => {
+    const into = sg.kind === 'ban' ? banToday : okToday;
+    sg.designs.forEach(d => { into[d] = true; });
+  });
+}
+
+function drawSigns() {
+  $('signRow').innerHTML = signsToday.map(sg =>
+    '<span class="sign sign-' + sg.kind + '">' +
+    '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
+    '<b>' + sg.label + '</b></span>').join('');
+}
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
@@ -251,6 +279,8 @@ function start() {
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
   initLane(YOU); initLane(THEM);
+  applySigns();
+  drawSigns();
   plantGoods();
   briefed = false;
 
@@ -323,7 +353,14 @@ function briefText() {
   const plantedBack = M.planted && wantedThem.length
     ? '<p class="brief-foot">You have hidden ' + wantedThem.map(x => x.name.toLowerCase()).join(', ') + ' in theirs.</p>'
     : '';
-  return '<p class="brief-lede">' + mine + '</p>' +
+  const amend = '<div class="brief-signs">' + signsToday.map(sg =>
+      '<span class="brief-sign sign-' + sg.kind + '">' +
+      '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
+      '<span><b>' + sg.label + '</b>' + sg.blurb + '</span></span>').join('') + '</div>';
+
+  return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
+    amend +
+    '<p class="brief-lede">' + mine + '</p>' +
     '<p class="brief-warn">Read them now. You will not be shown them again.</p>' +
     '<ul class="brief-list">' + lines + '</ul>' +
     '<p class="brief-score">Recovering them scores the <strong>square</strong> of how many you get — ' +
@@ -745,7 +782,7 @@ function seize(card) {
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
   if (isWantedFor(you, card.item)) pop(c.x - 14, c.y - 28, 'Stolen', 'good');
-  else if (card.item.restricted) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
+  else if (bad(card.item)) pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good');
   else pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
   playItem(card.item);
   cards = cards.filter(other => other !== card);
@@ -1288,7 +1325,7 @@ function oppFile(missed) {
 /* ---------- score ---------- */
 
 function wantedTaken(p) { return p.seized.filter(it => isWantedFor(p, it)).length; }
-function wrongGrabs(p) { return p.seized.filter(it => !it.restricted && !isWantedFor(p, it)).length; }
+function wrongGrabs(p) { return p.seized.filter(it => !bad(it) && !isWantedFor(p, it)).length; }
 /* squared, which is why four is worth more than twice two */
 function wantedScore(p) { const k = wantedTaken(p); return k * k; }
 function missPenalty(p) { return p.missed.length * VP_MISSED; }

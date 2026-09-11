@@ -376,6 +376,51 @@ const CROP = {
 };
 function cropOf(file) { return CROP[file] || [0, 0, 1, 1]; }
 
+/* --- the day's amendments --------------------------------------------
+   Two signs go up on the wall every shift and they override the standing
+   list. A ban turns an ordinary category contraband; an OK turns a forbidden
+   one legal. Both change what a seizure is worth, so a sign you did not read
+   is five points every time you get it wrong.
+
+   Categories are deliberately blunt — all shoes means all shoes, heels
+   included; trousers means trousers and not skirts — because a rule you have
+   to adjudicate is no use with ten seconds on the clock. */
+const SIGNS = [
+  { file: 'no_books.png', kind: 'ban', label: 'No books',
+    blurb: 'Books, novels and magazines are contraband today.',
+    designs: ['book_1.png', 'gardening.png', 'girl_with_dragon_tattoo.png',
+              'ms_wiz_1.png', 'ms_wiz_3.png', 'ms_wiz_4.png', 'ms_wiz_5.png',
+              'magazine.png'] },
+
+  { file: 'no_shoes.png', kind: 'ban', label: 'No shoes',
+    blurb: 'All footwear is contraband today, heels included.',
+    designs: ['shoes_1.png', 'shoes_2.png', 'shoes_3.png', 'high_heels.png'] },
+
+  { file: 'no_trousers.png', kind: 'ban', label: 'No trousers',
+    blurb: 'Trousers of any kind are contraband today. Skirts are fine.',
+    designs: ['camo_trousers.png', 'jeans_1.png', 'ripped_jeans.png',
+              'stripy_trousers.png'] },
+
+  { file: 'no_toothbrushes.png', kind: 'ban', label: 'No toothbrushes',
+    blurb: 'Toothbrushes are contraband today. Toothpaste is fine.',
+    designs: ['toothbrush_1.png', 'toothbrush_2.png', 'toothbrush_3.png'] },
+
+  { file: 'no_bowling_balls.png', kind: 'ban', label: 'No bowling balls',
+    blurb: 'Bowling balls are contraband today.',
+    designs: ['bowling_bll.png'] },
+
+  { file: 'knife_ok.png', kind: 'ok', label: 'Knives permitted',
+    blurb: 'Knives are allowed today. Scissors still are not.',
+    designs: ['knife.png', 'knife_2.png', 'knife_3.png', 'knife_5.png',
+              'zombie_knife.png'] },
+
+  { file: 'guns_ok.png', kind: 'ok', label: 'Firearms permitted',
+    blurb: 'Handguns are allowed today.',
+    designs: ['handgun.png'] }
+];
+
+function pickSigns(n) { return pick(SIGNS, n); }
+
 function pick(list, n) {
   const pool = list.slice();
   for (let i = pool.length - 1; i > 0; i--) {

@@ -176,7 +176,8 @@ button,.card,.stage{cursor:var(--glove)}
   box-shadow:0 3px 0 rgba(0,0,0,.12), inset 0 0 0 4px rgba(255,255,255,.4);
   padding:3px 6px 5px;
 }
-.notice-banned{top:250px;height:196px;text-align:center}
+.notice-signs{top:150px;height:152px}
+.notice-banned{top:312px;height:196px;text-align:center}
 .notice-head{
   margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.02rem;
@@ -600,3 +601,36 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
   margin:.9rem auto 0;max-width:56ch;font-size:.92rem;line-height:1.5;color:#b9c5c3;
 }
 .menu-modes-two{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:720px;margin-left:auto;margin-right:auto}
+
+/* ---- the day's amendments ----
+   Two signs on the wall, and they win. A ban makes an ordinary category
+   contraband; an OK makes a forbidden one legal. They are read at a glance or
+   not at all, so they are big and they are the first thing on the wall. */
+.sign-row{display:flex;gap:8px;justify-content:center;margin-top:2px}
+.sign{
+  display:flex;flex-direction:column;align-items:center;gap:1px;width:108px;
+  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:5px;padding:3px 2px 2px;
+}
+.sign img{width:78px;height:78px;display:block}
+.sign b{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.82rem;
+  line-height:1.02;text-align:center;color:#3c372a;
+}
+.sign-ban b{color:#9c2626}
+.sign-ok b{color:#25703f}
+
+.brief-rules{
+  margin:0 0 .5rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;color:#6a5f46;font-size:.95rem;
+}
+.brief-signs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:0 0 .9rem}
+.brief-sign{
+  display:flex;align-items:center;gap:.5rem;
+  background:#f4f1e7;border:1px solid #cdc5ae;border-radius:5px;padding:.35rem .5rem;
+}
+.brief-sign img{width:52px;height:52px;flex:0 0 auto}
+.brief-sign span{font-size:.8rem;line-height:1.25;color:#4a442f}
+.brief-sign b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:1.02rem;color:#3c372a}
+.brief-sign.sign-ban b{color:#9c2626}
+.brief-sign.sign-ok b{color:#25703f}
+@media(max-width:520px){.brief-signs{grid-template-columns:1fr}}
