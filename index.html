@@ -7,26 +7,64 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bag check">
+<meta name="apple-mobile-web-app-title" content="Border Force">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/ui/icon-180.png">
 <link rel="icon" href="assets/ui/icon-192.png" sizes="192x192">
-<title>Bag check — playtest rig</title>
+<title>Border Force — playtest rig</title>
 <meta name="description" content="A digital playtest rig for Bag Check, a card game about airport security screening.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=15">
+<link rel="stylesheet" href="assets/style.css?v=17">
 </head>
 <body>
 
+<div class="menu" id="menu">
+  <div class="menu-inner">
+    <p class="menu-kicker">Lane 4 &middot; playtest rig</p>
+    <h1 class="menu-title">Border Force</h1>
+    <p class="menu-sub">The first border game board game</p>
+
+    <div class="menu-modes">
+      <button class="mode" type="button" data-mode="clock">
+        <span class="mode-name">Clock shift</span>
+        <span class="mode-tag">4 minutes &middot; shared belt &middot; no detector</span>
+        <span class="mode-body">No lamp, so every bag has to be opened to know. One belt of 24 trays
+          between the two of you and four minutes on the shift. Whatever is still on the belt at the
+          end costs you both a point each. You find out what you missed when the cases are opened.</span>
+      </button>
+
+      <button class="mode" type="button" data-mode="budget">
+        <span class="mode-name">Inspection budget</span>
+        <span class="mode-tag">12 trays each &middot; 10 checks &middot; no detector</span>
+        <span class="mode-body">No lamp and no clock. Twelve trays of your own, and you may open ten
+          of them. Trays arrive one at a time and you commit on the spot, so the last decision is
+          made with one check in hand and three bags you cannot see inside.</span>
+      </button>
+
+      <button class="mode" type="button" data-mode="classic">
+        <span class="mode-name">Detector</span>
+        <span class="mode-tag">24 trays &middot; shared belt &middot; red lamp</span>
+        <span class="mode-body">The original. The arch tells you whether there is something
+          restricted in the bag before you open it, and letting one through holds you at the bench
+          for two seconds. Here to play the other two against.</span>
+      </button>
+    </div>
+
+    <p class="menu-foot">Every rule here is a proposal you can argue with.</p>
+  </div>
+</div>
+
 <header class="signage">
-  <span class="mark">Bag check</span>
+  <span class="mark">Border Force</span>
+  <span class="lane" id="modeName">Detector</span>
   <span class="belt-count" id="beltCount">24 trays on the belt</span>
   <span class="scoreboard"><span class="scoreboard-label">Score</span><span class="scoreboard-num" id="hudScore">0</span></span>
   <button class="mute" id="mute" type="button" aria-pressed="false">Sound on</button>
+  <span class="budget" id="budget" hidden>10 checks left</span>
   <span class="clock" id="clock">0:00</span>
 </header>
 
@@ -89,6 +127,12 @@
         <div class="tray lane-tray-you" id="tya" hidden><div class="tray-lip"></div><div class="tray-case" id="tyac"></div></div>
         <div class="tray lane-tray-you" id="tyb" hidden><div class="tray-lip"></div><div class="tray-case" id="tybc"></div></div>
         <div class="tray lane-tray-you" id="tyc" hidden><div class="tray-lip"></div><div class="tray-case" id="tycc"></div></div>
+
+        <!-- no lamp means weight is the only tell you get before deciding -->
+        <div class="weigh" id="weigh" hidden>
+          <span class="weigh-bars" id="weighBars"></span>
+          <span class="weigh-word" id="weighWord"></span>
+        </div>
 
         <div class="freeze" id="freeze" hidden>
           <span class="freeze-head">Held at the bench</span>
@@ -164,8 +208,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=15"></script>
-<script src="assets/game.js?v=15"></script>
+<script src="assets/items.js?v=17"></script>
+<script src="assets/game.js?v=17"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

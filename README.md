@@ -47,6 +47,8 @@ No build step, no dependencies, no framework. Three files and a stylesheet.
 
 ```
 index.html
+manifest.webmanifest   the phone app definition
+sw.js                  offline cache
 assets/style.css
 assets/items.js     the deck definition
 assets/cards/       the item card designs (PNG, clear stock)
@@ -322,6 +324,65 @@ stop pushing trays back — which drops them to 58–79%. Get well ahead and thi
 start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
+
+## Weight
+
+With the lamp gone there has to be *something* to decide on, or the inspection
+budget is arithmetic rather than judgement. Weight is that something, and it is
+the only thing about a closed bag you could honestly know at a real bench,
+because you are holding it.
+
+Three coarse bands — Light (1-3 cards), Medium (4-6), Heavy (7+) — shown on the
+tray before you commit. Coarse on purpose: it should narrow the guess, not make
+it. The trade it creates is real, because the two things a heavy bag does pull
+against each other. Measured on the current deck: bags over six cards are 25%
+of the shift and hold 43% of all the contraband — so a heavy bag is much more
+likely to be worth opening, and much more expensive to work through. A light
+bag is cheap and usually nothing. Neither is the obvious answer, which is the
+point.
+
+It only shows in the two modes without a lamp. Detector mode is the baseline
+you play the others against, so it stays as it was.
+
+## Playing it on a phone
+
+There is no app store build and there doesn't need to be one. This is a PWA:
+open the deployed URL on a phone, add it to the home screen, and it launches
+full-screen with its own icon and works with no signal.
+
+- **iPhone:** open in Safari (not Chrome — only Safari can install on iOS),
+  Share → *Add to Home Screen*.
+- **Android:** open in Chrome, menu → *Install app* / *Add to Home screen*.
+
+It has to be served over https for any of that to work, which Vercel does by
+default. Opening `index.html` off the disk gives you the game but not the
+install or the offline cache.
+
+**What changes on a touch screen.** `checkCompact()` looks for a coarse pointer
+on a small screen, and when it finds one the header, belt bar, sidebar and
+prompt all come off. The stage takes the entire screen and the few numbers
+worth having — both scores, the belt count, one line of prompt — sit over it,
+along with the Go / Pass / Check row floating at the bottom. The stolen-goods
+board becomes a button that opens a sheet.
+
+That is the whole trick, and it is worth understanding why. The bench is
+1360 × 712. On a landscape iPhone, page chrome and all, it scales to about
+0.3 and a card is 26px, which is not a game. Full-screen it scales to 0.55 and
+a card is 48px, which is. The chrome was costing more than half the bench.
+
+**Portrait is refused**, not shrunk: 1360 across a phone's portrait width would
+be a 0.28 scale. The app asks you to turn the phone instead, and the manifest
+requests landscape so it usually does it for you.
+
+Everything already worked by touch — cards have had a tap path since the first
+build, and the magnifier is a drag, which is exactly what a finger does.
+
+**The service worker** is split deliberately. HTML, CSS and JS are
+network-first, so a deploy actually lands rather than being shadowed by a stale
+cache; artwork and audio are cache-first, since they never change without also
+changing name. `CACHE` at the top of `sw.js` must be bumped alongside the `?v=`
+in `index.html`, or a phone that has already installed the app keeps the old
+shell.
 
 ## Knobs worth turning
 
