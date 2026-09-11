@@ -36,20 +36,21 @@ into the same one — what you take out of a bag goes in front of the other
 officer as well, so they can see how your shift is going.
 
 There is always a tray at your elbow. Send the one in front of you through your
-detector and the next rolls into its place straight away — the belt does not
-pause while you work.
+detector and the next rolls into its place straight away — the belt only pauses
+when you stop it to search something.
 
 **Green.** Nothing restricted inside. Bin the suitcase and keep the tray.
 
 **Red.** At least one restricted item is in there. The detector will not tell
 you how many. Now choose:
 
-- **Search it.** Lift the suitcase front off and slide the item cards out onto
-  the bench. The cards are clear and the object sits somewhere different on
+- **Search it.** Stop your belt, lift the suitcase front off, and slide the item
+  cards out onto the bench. The cards are clear and the object sits somewhere different on
   each one, so a stack reads as a jumble of loose objects — and anything
   printed on a card above hides whatever is under it. Pull out what's
-  restricted, put the rest back, and close the case with the front card. **There
-  is no second scan.** Whatever you left in there goes into your pile with the
+  restricted into your own seize tray — there is one each, in the middle of the
+  bench, and what goes in stays in view — put the rest back, and close the case
+  with the front card. **There is no second scan.** Whatever you left in there goes into your pile with the
   case.
 - **Send it back.** Put the whole tray on the tail of the conveyor and take
   the next one instead. It'll come round to somebody eventually.
@@ -86,6 +87,14 @@ that reason: the belt keeps moving and the other lane keeps working while you
 stand there. It has a side effect worth arguing about, which is that you learn
 you missed something the moment it happens rather than when the suitcases are
 opened at the end. That is a real change to what the rules say you know.
+
+**Things make a noise when you move them.** A card coming out of a bag or
+going back into it sounds like the object printed on it. Physically this is
+free — cardboard on a table is cardboard on a table — so it is a rig-only
+affordance with no tabletop equivalent, and it does leak a little: a group like
+glass is contraband a bit under half the time. It also means a card buried
+completely under another one announces itself when you pull it, which on a
+table it would not.
 
 **Seizing something permitted costs you nothing but time.** Pull the
 sunglasses out and you've wasted seconds you can't get back while the other

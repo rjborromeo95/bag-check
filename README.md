@@ -15,18 +15,25 @@ work opposite sides of one bench: their lane runs across the top of the stage
 right to left, yours runs along the bottom left to right, and the seized bin
 sits in the middle where both of you can reach it.
 
-- A tray rolls in from the left and stops in front of the machine. There is
-  always one waiting there: sending a tray through frees the spot and the next
-  one rolls straight into it.
-- **Send it through** and it travels into the tunnel. Red lamp, or no lamp.
-- On a red, **drag the suitcase front off the tray** to open the case.
+Three buttons sit under your detector and never move. **Go** runs the belt:
+the first press fetches a tray, every press after that sends the waiting one
+through the detector. **Check** stops the belt and hands you the suitcase.
+**Pass** files the tray and moves on. A fourth, **Back on the belt**, appears
+only while the rules allow a bounce.
+
+- Nothing happens until you press Go. The first press pushes a tray down to you.
+- Go again and it travels into the tunnel. Red lamp, or no lamp.
+- On a red, press **Check**. Your belt stops and the suitcase becomes yours to
+  open — **drag the front off the tray**.
 - **Drag the item cards out** onto the bench to read them. They're clear, so
   the ink prints over itself while they're stacked and only separates when you
   pull them apart.
-- **Drag anything restricted into the bin** in the middle of the bench.
-- **Put the suitcase front back on the tray** to close it, which files the tray
-  and whatever you failed to spot. If anything restricted was still in there you
-  are held at the bench for two seconds while the belt keeps moving.
+- **Drag anything restricted into your seize tray** in the middle of the bench.
+  It stays there, in view, for the rest of the shift.
+- **Put the suitcase front back on the tray** to pack the bag up, then press
+  **Pass**. That files the tray and whatever you failed to spot. If anything
+  restricted was still in there you are held at the bench for two seconds while
+  the belt keeps moving.
 
 On a touchscreen or with a keyboard, tapping works too: tap the front to lift
 it, tap a card to slide it out of the case, tap it again on the bench to seize
@@ -40,6 +47,7 @@ assets/style.css
 assets/items.js     the deck definition
 assets/cards/       the item card designs (PNG, clear stock)
 assets/suitcases/   the 32 suitcase fronts (JPG, opaque)
+assets/sfx/         the bench foley and the ambience loop (MP3, mono)
 assets/game.js      dealing, conveyor, detector, opponent, scoring
 RULES.md            the rules exactly as this build implements them
 ```
@@ -71,6 +79,14 @@ Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub, and import
 - Root directory: leave as `./`
 
 Click *Deploy*. You get a live URL in under a minute.
+
+**A note on caching**
+
+`index.html` loads the stylesheet and scripts with `?v=10` on the end. Bump
+that number whenever you change `style.css` or `game.js`. Without it a browser
+— and Vercel's edge cache — will happily serve you last week's stylesheet with
+this week's HTML, which looks like the layout has broken rather than like a
+caching problem.
 
 **4. Changing things later**
 
@@ -163,6 +179,12 @@ the tabletop rules don't: on a table you find out at the end.
 thing to watch in playtest is whether it makes people thorough or just makes
 them slow.
 
+**Two seize trays, always in view.** One each, side by side between the two
+lanes. Whatever either of you takes out of a bag is laid out in your own tray
+and stays there — you can see how many things B has found without reading a
+number, and they can see yours. Each tray lays out sixteen cards before it
+starts stacking; the count in the corner is always right.
+
 **You can watch Officer B work.** They are not a status line any more. Their
 tray rolls in, goes through their arch, their lamp lights, they lift the front
 off, lay the cards out across their bench a card at a time, and carry what they
@@ -174,6 +196,35 @@ as well as to the column, leaving room for the prompt and buttons underneath.
 Without that the stage fills the viewport, you scroll down to reach the
 controls, and B's half slides off the top — which defeats the point of putting
 them in front of you. `reserve` in `fit()` is how much room the controls get.
+
+**The bench makes a noise.** Every card in the catalogue names the sound it
+makes — `book`, `cloth`, `glass`, `light`, `hardcase`, `plastic` or `rustle` —
+and plays it when it comes out of the tray onto the bench and again when it
+goes back in. Groups with more than one take pick one at random, never the same
+take twice running, with a little pitch wobble on top so a small group doesn't
+sound like a machine. `light` has six takes, `cloth` four, `hardcase` and
+`glass` three. The suitcase front has four opening takes and one closing thud,
+and the detector beeps when the lamp goes red.
+
+Under all of it, a checkpoint ambience loops at `AMBIENCE_VOL` (0.17). It is
+cut at 115 seconds with a two-and-a-half second crossfade so the loop point
+doesn't click, and it starts on the first Go, because browsers refuse to play
+audio before the page has been clicked. Closing a bag stages the cards 70ms apart so a full one sounds
+like repacking rather than a single clatter. Officer B's case is audible at
+`SFX_THEM` (0.2) so you can hear the other lane working; set it to 0 for
+silence. There's a Sound on/off toggle in the signage.
+
+The knife and bomb takes went into `light` and `hardcase` rather than getting
+groups of their own, which is the rule the sound map has to keep: no group
+belongs to contraband alone. Glass is the mugs, the perfumes, the plate, the bowl and the vase as
+well as the poisons; hardcase is the laptops, the Game Boy and the bowling ball
+as well as the bombs. As dealt, glass is contraband 43% of the time, hardcase
+41%, plastic 31%, light 25%, and book, cloth and rustle never. That is a hint
+rather than an answer, and it only reaches you once you have already pulled the
+card out and can see it — the exception being a card that landed completely
+hidden under another, which you would now hear even though you cannot see it.
+Whether that's a help too far is a playtest question. `sound:` in
+`assets/items.js` is where to argue with it.
 
 **You cannot reach across.** Every card on B's side carries `.theirs`, which is
 `pointer-events: none` and never gets a drag handler bound to it. Clicking their

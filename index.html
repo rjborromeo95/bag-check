@@ -8,7 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+<!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes,
+     or a browser (and Vercel's edge cache) will keep serving the old file. -->
+<link rel="stylesheet" href="assets/style.css?v=10">
 </head>
 <body>
 
@@ -17,6 +19,7 @@
   <span class="lane">Lane 4</span>
   <span class="belt-count" id="beltCount">24 trays on the belt</span>
   <span class="scoreboard"><span class="scoreboard-label">Score</span><span class="scoreboard-num" id="hudScore">0</span></span>
+  <button class="mute" id="mute" type="button" aria-pressed="false">Sound on</button>
   <span class="clock" id="clock">0:00</span>
 </header>
 
@@ -30,7 +33,8 @@
     <div class="stagewrap" id="stagewrap">
       <div class="stage" id="stage">
 
-        <!-- Officer B, working the other side of the same bench -->
+        <!-- Officer B, across the bench. Their arch is mirrored: the head sits
+             below the mouth because they are standing on the other side. -->
         <div class="lane lane-b">
           <div class="conveyor"><div class="rollers"></div></div>
           <div class="arch">
@@ -44,11 +48,9 @@
         <div class="tray waiting" id="trayB2" hidden><div class="tray-lip"></div><div class="tray-case" id="trayB2Case"></div></div>
         <div class="tray" id="trayB" hidden><div class="tray-lip"></div><div class="tray-case" id="trayBCase" hidden></div></div>
 
-        <!-- shared -->
-        <div class="bench-line"></div>
-        <p class="lane-tag tag-b">Officer B</p>
-        <p class="lane-tag tag-you">You</p>
-        <div class="bin" id="bin"><span>Seized — shared</span></div>
+        <!-- the two seize trays, one each, in the middle where you both see them -->
+        <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span></div>
+        <div class="seize seize-you" id="seizeYou"><span class="seize-tag">You seized</span><span class="seize-n" id="seizeN">0</span></div>
 
         <!-- your side -->
         <div class="lane lane-you">
@@ -73,8 +75,13 @@
       </div>
     </div>
 
-    <p class="prompt" id="prompt">Two officers, one belt. It ends when the belt is empty.</p>
-    <div class="controls" id="controls"></div>
+    <div class="controls" id="controls">
+      <button class="go" id="btnGo" type="button">Go</button>
+      <button class="pass" id="btnPass" type="button">Pass</button>
+      <button class="check" id="btnCheck" type="button">Check</button>
+      <button class="ghost" id="btnBounce" type="button" hidden>Back on the belt</button>
+    </div>
+    <p class="prompt" id="prompt">Press Go to start the belt.</p>
   </section>
 
   <aside class="tally">
@@ -109,7 +116,7 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js"></script>
-<script src="assets/game.js"></script>
+<script src="assets/items.js?v=10"></script>
+<script src="assets/game.js?v=10"></script>
 </body>
 </html>

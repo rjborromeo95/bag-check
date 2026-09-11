@@ -35,6 +35,12 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .lane,.belt-count,.clock{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1.05rem;color:#a9b6b4}
 .belt-count{margin-left:auto}
 .clock{min-width:3.2rem;text-align:right;color:#e6ebe9}
+.mute{
+  border:1px solid #5b6a6c;background:transparent;color:#a9b6b4;border-radius:3px;
+  padding:.15rem .5rem;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.95rem;
+}
+.mute:hover{background:rgba(255,255,255,.08);color:#e6ebe9}
+.mute.off{color:#6f7c7e;border-color:#3f4d50;text-decoration:line-through}
 .scoreboard{display:flex;align-items:baseline;gap:.4rem}
 .scoreboard-label{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1.05rem;color:#a9b6b4}
 .scoreboard-num{
@@ -72,7 +78,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
    The seized bin sits between you and both of you reach into it. */
 .stagewrap{position:relative;width:100%;overflow:hidden;border-radius:6px}
 .stage{
-  position:absolute;top:0;left:0;width:820px;height:752px;transform-origin:top left;
+  position:absolute;top:0;left:0;width:820px;height:768px;transform-origin:top left;
   background:var(--concrete-2);
   background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);
   background-size:7px 7px;
@@ -81,8 +87,8 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 }
 
 .lane{position:absolute;left:0;right:0}
-.lane-b{top:38px;height:172px}
-.lane-you{top:576px;height:172px}
+.lane-b{top:0;height:172px}
+.lane-you{top:588px;height:172px}
 
 .conveyor{position:absolute;left:0;right:0;height:130px;z-index:0;background:#333f42;border-top:2px solid #202a2c;border-bottom:2px solid #202a2c}
 .lane-b .conveyor{top:0}
@@ -121,30 +127,32 @@ button,.card,.stage,.bin{cursor:var(--glove)}
   box-shadow:inset 0 0 0 6px rgba(0,0,0,.1);
   transition:left 1.15s cubic-bezier(.3,.05,.2,1);
 }
-#trayB,#trayB2{top:42px}
-#tray,#tray2{top:622px}
+#trayB,#trayB2{top:4px}
+#tray,#tray2{top:634px}
 .tray.waiting{filter:brightness(.93) saturate(.9)}
 .tray-lip{position:absolute;inset:8px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
 
-/* ---- the shared bench ----
-   The dashed line is the middle of the bench. Your side is below it, B's is
-   above, and the bin straddles it because you both reach into the same one. */
-.bench-line{position:absolute;left:0;right:0;top:390px;border-top:2px dashed rgba(0,0,0,.16)}
-.bin{
-  position:absolute;left:310px;top:350px;width:200px;height:80px;
-  border:3px dashed #8d9691;border-radius:8px;background:rgba(255,255,255,.2);
-  display:flex;align-items:center;justify-content:center;
+/* ---- the seize trays ----
+   One each, side by side in the middle of the bench, and what goes in stays
+   in: seized cards are laid out in them for the rest of the shift so both
+   officers can see how the other is doing. */
+.seize{
+  position:absolute;top:312px;width:350px;height:128px;
+  border:2px solid #9aa39d;border-radius:8px;background:rgba(255,255,255,.26);
+  box-shadow:inset 0 0 0 5px rgba(0,0,0,.05);
 }
-.bin span{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;color:#6d7873}
-.bin.hot{border-color:var(--alarm);background:rgba(224,49,49,.12)}
-.bin.hot span{color:#9c2626}
-
-.lane-tag{
-  position:absolute;left:20px;margin:0;
-  font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;color:#8b948f;
+.seize-b{left:36px}
+.seize-you{left:434px;border-color:var(--steel);background:rgba(255,255,255,.38)}
+.seize-tag{
+  position:absolute;left:10px;top:4px;
+  font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#6d7873;
 }
-.tag-b{top:352px}
-.tag-you{top:398px;color:var(--ink-soft);font-weight:500}
+.seize-you .seize-tag{color:var(--ink-soft);font-weight:500}
+.seize-n{
+  position:absolute;right:10px;top:2px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.1rem;color:#6d7873;
+}
+.seize-you.hot{border-color:var(--alarm);background:rgba(224,49,49,.14)}
 
 /* ---- cards ----
    Clear stock. Only the printed object is opaque, so a card above hides part
@@ -166,6 +174,8 @@ button,.card,.stage,.bin{cursor:var(--glove)}
   box-shadow:0 12px 24px rgba(0,0,0,.34), inset 0 0 0 1px rgba(22,34,31,.35);
 }
 .card.settle{transition:left .32s ease,top .32s ease,transform .32s ease}
+.card.stowed{pointer-events:none;transform-origin:0 0;box-shadow:none;background:rgba(255,255,255,.14)}
+.card.stowed:hover{box-shadow:none}
 .card.binned{transition:opacity .3s,transform .3s;opacity:0;transform:scale(.7)}
 
 .card.lid{
@@ -208,7 +218,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 /* ---- the hold ----
    Only your half of the bench freezes. B keeps working, which is the point. */
 .freeze{
-  position:absolute;left:0;right:0;top:436px;bottom:0;z-index:60;
+  position:absolute;left:0;right:0;top:448px;bottom:0;z-index:60;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.25rem;text-align:center;
   background:rgba(224,49,49,.17);border:5px solid var(--alarm);border-radius:6px;
@@ -218,17 +228,26 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .freeze-count{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.5rem;color:#8c1d1d}
 
 /* ---- controls ---- */
-.prompt{margin:.7rem .1rem .6rem;color:var(--ink-soft);font-size:.92rem;max-width:74ch;min-height:2.6em}
+.prompt{margin:.6rem auto .2rem;color:var(--ink-soft);font-size:.92rem;max-width:70ch;min-height:2.6em;text-align:center}
 .prompt strong{color:var(--ink);font-weight:600}
-.controls{display:flex;flex-wrap:wrap;gap:.5rem}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:.85rem 0 0}
 .controls button{
-  border:1px solid var(--ink-soft);background:transparent;color:var(--ink);
-  border-radius:3px;padding:.5rem 1rem;
-  font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1.1rem;
+  border:2px solid var(--ink-soft);background:transparent;color:var(--ink);
+  border-radius:4px;padding:.55rem 0;min-width:8.5rem;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.25rem;
+  letter-spacing:.02em;
 }
-.controls button:hover{background:rgba(0,0,0,.06)}
+.controls button:hover:not(:disabled){filter:brightness(1.06)}
+.controls button:disabled{opacity:.32;cursor:default}
 .controls button.go{background:var(--tray);border-color:var(--tray-edge);color:#241a01}
-.controls button.go:hover{background:#ffc528}
+.controls button.pass{background:#2f7a4b;border-color:#1d5533;color:#eafaf0}
+.controls button.check{background:var(--steel);border-color:var(--ink);color:#e6ebe9}
+.controls button.ghost{
+  min-width:0;padding:.55rem .9rem;font-size:1rem;font-weight:500;
+  border-width:1px;border-style:dashed;color:var(--ink-soft);
+}
+.controls button.active{box-shadow:0 0 0 3px rgba(43,54,57,.25)}
+.controls .again button{min-width:0}
 
 /* ---- tally ---- */
 .tally{display:grid;gap:.75rem}
