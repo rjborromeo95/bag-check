@@ -72,7 +72,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
    The seized bin sits between you and both of you reach into it. */
 .stagewrap{position:relative;width:100%;overflow:hidden;border-radius:6px}
 .stage{
-  position:absolute;top:0;left:0;width:820px;height:856px;transform-origin:top left;
+  position:absolute;top:0;left:0;width:820px;height:752px;transform-origin:top left;
   background:var(--concrete-2);
   background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);
   background-size:7px 7px;
@@ -81,12 +81,12 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 }
 
 .lane{position:absolute;left:0;right:0}
-.lane-b{top:44px;height:196px}
-.lane-you{top:650px;height:196px}
+.lane-b{top:38px;height:172px}
+.lane-you{top:576px;height:172px}
 
-.conveyor{position:absolute;left:0;right:0;height:150px;z-index:0;background:#333f42;border-top:2px solid #202a2c;border-bottom:2px solid #202a2c}
+.conveyor{position:absolute;left:0;right:0;height:130px;z-index:0;background:#333f42;border-top:2px solid #202a2c;border-bottom:2px solid #202a2c}
 .lane-b .conveyor{top:0}
-.lane-you .conveyor{top:46px}
+.lane-you .conveyor{top:42px}
 .rollers{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#3d4a4d 0 22px,#2c3739 22px 26px)}
 .running-b .lane-b .rollers{animation:roll .7s linear infinite}
 .running-you .lane-you .rollers{animation:roll .7s linear infinite}
@@ -94,17 +94,17 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 
 /* the arch is mirrored on B's side: the head sits below the mouth, because
    they are standing on the other side of it */
-.arch{position:absolute;left:304px;width:212px;height:196px;z-index:5}
+.arch{position:absolute;left:304px;width:212px;height:172px;z-index:5}
 .lane-b .arch{top:0}
 .lane-you .arch{top:0}
-.arch-mouth{position:absolute;left:0;right:0;height:150px;background:#4a585b;border:3px solid #26302f;border-radius:6px}
+.arch-mouth{position:absolute;left:0;right:0;height:130px;background:#4a585b;border:3px solid #26302f;border-radius:6px}
 .lane-b .arch-mouth{top:0}
 .lane-you .arch-mouth{bottom:0}
 .arch-mouth::before,.arch-mouth::after{content:"";position:absolute;top:6px;bottom:6px;width:16px;background:#1d2526;border-radius:3px}
 .arch-mouth::before{left:6px}
 .arch-mouth::after{right:6px}
 .arch-head{
-  position:absolute;left:14px;right:14px;height:46px;background:#26302f;border-radius:5px;
+  position:absolute;left:14px;right:14px;height:42px;background:#26302f;border-radius:5px;
   display:flex;align-items:center;gap:10px;padding:0 12px;
 }
 .lane-b .arch-head{bottom:0}
@@ -116,19 +116,22 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 @keyframes flash{50%{background:#3c4a4b;box-shadow:none}}
 
 .tray{
-  position:absolute;left:-240px;width:190px;height:142px;
+  position:absolute;left:-240px;width:180px;height:118px;
   background:var(--tray);border:2px solid var(--tray-edge);border-radius:7px;
   box-shadow:inset 0 0 0 6px rgba(0,0,0,.1);
   transition:left 1.15s cubic-bezier(.3,.05,.2,1);
 }
-#trayB,#trayB2{top:48px}
-#tray,#tray2{top:700px}
+#trayB,#trayB2{top:42px}
+#tray,#tray2{top:622px}
 .tray.waiting{filter:brightness(.93) saturate(.9)}
-.tray-lip{position:absolute;inset:9px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
+.tray-lip{position:absolute;inset:8px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
 
-/* ---- the shared bin ---- */
+/* ---- the shared bench ----
+   The dashed line is the middle of the bench. Your side is below it, B's is
+   above, and the bin straddles it because you both reach into the same one. */
+.bench-line{position:absolute;left:0;right:0;top:390px;border-top:2px dashed rgba(0,0,0,.16)}
 .bin{
-  position:absolute;left:310px;top:392px;width:200px;height:100px;
+  position:absolute;left:310px;top:350px;width:200px;height:80px;
   border:3px dashed #8d9691;border-radius:8px;background:rgba(255,255,255,.2);
   display:flex;align-items:center;justify-content:center;
 }
@@ -140,8 +143,8 @@ button,.card,.stage,.bin{cursor:var(--glove)}
   position:absolute;left:20px;margin:0;
   font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;color:#8b948f;
 }
-.tag-b{top:396px}
-.tag-you{top:446px;color:var(--ink-soft);font-weight:500}
+.tag-b{top:352px}
+.tag-you{top:398px;color:var(--ink-soft);font-weight:500}
 
 /* ---- cards ----
    Clear stock. Only the printed object is opaque, so a card above hides part
@@ -151,7 +154,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
   border:none;padding:0;background:none;
 }
 .card.item{
-  width:92px;height:129px;border-radius:5px;overflow:hidden;
+  width:88px;height:123px;border-radius:5px;overflow:hidden;
   background:rgba(255,255,255,.11);
   box-shadow:inset 0 0 0 1px rgba(22,34,31,.15);
 }
@@ -166,7 +169,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 .card.binned{transition:opacity .3s,transform .3s;opacity:0;transform:scale(.7)}
 
 .card.lid{
-  width:92px;height:129px;border-radius:5px;overflow:hidden;
+  width:88px;height:123px;border-radius:5px;overflow:hidden;
   box-shadow:0 3px 0 rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.28);
 }
 .card.lid img{width:100%;height:100%;display:block;object-fit:cover;pointer-events:none;user-select:none}
@@ -179,7 +182,7 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 
 .tray-case{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:92px;height:129px;border-radius:5px;overflow:hidden;
+  width:88px;height:123px;border-radius:5px;overflow:hidden;
   box-shadow:0 3px 0 rgba(0,0,0,.35), 0 6px 12px rgba(0,0,0,.25);
 }
 .tray-case img{width:100%;height:100%;display:block;object-fit:cover}
@@ -205,17 +208,17 @@ button,.card,.stage,.bin{cursor:var(--glove)}
 /* ---- the hold ----
    Only your half of the bench freezes. B keeps working, which is the point. */
 .freeze{
-  position:absolute;left:0;right:0;top:498px;bottom:0;z-index:60;
+  position:absolute;left:0;right:0;top:436px;bottom:0;z-index:60;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.25rem;text-align:center;
   background:rgba(224,49,49,.17);border:5px solid var(--alarm);border-radius:6px;
 }
-.freeze-head{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:2.1rem;color:#8c1d1d;line-height:1}
+.freeze-head{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.9rem;color:#8c1d1d;line-height:1}
 .freeze-why{font-size:.95rem;color:#6d2020}
 .freeze-count{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.5rem;color:#8c1d1d}
 
 /* ---- controls ---- */
-.prompt{margin:.9rem .1rem .8rem;color:var(--ink-soft);font-size:.95rem;max-width:64ch;min-height:2.8em}
+.prompt{margin:.7rem .1rem .6rem;color:var(--ink-soft);font-size:.92rem;max-width:74ch;min-height:2.6em}
 .prompt strong{color:var(--ink);font-weight:600}
 .controls{display:flex;flex-wrap:wrap;gap:.5rem}
 .controls button{

@@ -13,16 +13,16 @@ const FREEZE_MS = 2000;   /* the hold after letting something through */
    their trays running right to left; you work the bottom half, left to right.
    The seized bin sits in the middle and both of you reach into it. */
 
-const SW = 820, SH = 856;
-const TRAY = { w: 190, h: 142 };
-const ITEM = { w: 92, h: 129 };
-const LID  = { w: 92, h: 129 };   /* the suitcase front is the same size — it covers the stack exactly */
-const BIN = { x: 310, y: 392, w: 200, h: 100 };
+const SW = 820, SH = 752;
+const TRAY = { w: 180, h: 118 };
+const ITEM = { w: 88, h: 123 };
+const LID  = { w: 88, h: 123 };   /* the suitcase front is the same size — it covers the stack exactly */
+const BIN = { x: 310, y: 350, w: 200, h: 80 };
 
 /* your lane */
-const YOU = { top: 700, offstage: -240, parkIn: 20, parkOut: 560, exit: 880, bench: 506 };
+const YOU = { top: 622, offstage: -240, parkIn: 20, parkOut: 566, exit: 880, bench: 442 };
 /* theirs, mirrored */
-const THEM = { top: 48, offstage: 880, parkIn: 610, parkOut: 30, exit: -240, bench: 248 };
+const THEM = { top: 42, offstage: 880, parkIn: 610, parkOut: 30, exit: -240, bench: 216 };
 
 const SLOTS = [14, 114, 214, 314, 414, 514, 614, 714];
 
@@ -45,9 +45,17 @@ function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
 
 /* ---------- stage fitting ---------- */
 
+/* The whole point of the two-lane bench is seeing both stations at once, so
+   the stage is fitted to the window as well as to the column. Reserve is the
+   prompt and the buttons underneath it — without that the stage fills the
+   viewport, you scroll down to reach the controls, and Officer B's half
+   disappears off the top of the screen. */
 function fit() {
   const wrap = $('stagewrap');
-  scale = Math.min(1, wrap.clientWidth / SW);
+  const top = wrap.getBoundingClientRect().top + window.scrollY;
+  const reserve = 140;
+  const room = Math.max(320, window.innerHeight - top - reserve);
+  scale = Math.min(1, wrap.clientWidth / SW, room / SH);
   $('stage').style.transform = 'scale(' + scale + ')';
   wrap.style.height = Math.round(SH * scale) + 'px';
 }

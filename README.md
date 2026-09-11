@@ -169,6 +169,12 @@ off, lay the cards out across their bench a card at a time, and carry what they
 find into the shared bin in the middle. Their detector and rollers run
 independently of yours, so you can tell at a glance which side is busy.
 
+**The whole bench fits on one screen.** The stage scales to the window height
+as well as to the column, leaving room for the prompt and buttons underneath.
+Without that the stage fills the viewport, you scroll down to reach the
+controls, and B's half slides off the top — which defeats the point of putting
+them in front of you. `reserve` in `fit()` is how much room the controls get.
+
 **You cannot reach across.** Every card on B's side carries `.theirs`, which is
 `pointer-events: none` and never gets a drag handler bound to it. Clicking their
 suitcase does nothing at all. This is purely so playtesting doesn't turn into
