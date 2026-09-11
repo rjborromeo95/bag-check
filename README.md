@@ -94,6 +94,13 @@ that number whenever you change `style.css` or `game.js`. Without it a browser
 this week's HTML, which looks like the layout has broken rather than like a
 caching problem.
 
+**If the buttons ever appear inside the board, check the tags.** Removing the
+hold overlay took `#stage`'s and `#stagewrap`'s closing `</div>` with it, which
+put the controls inside the scaled stage: Go ended up behind the detector arch
+with a `z-index` of 5 on top of it, so the game looked frozen when it was only
+hidden. Nothing in the console, nothing in the logic. If the page ever goes
+strange after an edit, count the divs before you look anywhere else.
+
 **Two things that look like bugs and aren't**
 
 `index.html` loads the stylesheet and scripts with `?v=` on the end. Bump that
