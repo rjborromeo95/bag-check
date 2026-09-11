@@ -168,8 +168,7 @@ item deck, whatever lands under a suitcase is what's in it. 109 cards across 24
 suitcases averages 4.5 a bag: median 4, and 51% of bags completely clean.
 That last number is the one to watch: dropping from 20 restricted cards to 16
 took clean bags from 43% to 51%, so half your trays are now a green lamp and a
-Pass. Fewer searches also means fewer chances at the stolen goods, since those
-can only be found in a bag you open. `RESTRICTED_N` is the dial if the shift
+Pass, before the amendments are applied. `RESTRICTED_N` is the dial if a shift
 starts feeling quiet. Going from 18 trays to 24 is what pulled that back
 into shape — at 18 the median bag was 6 and a third of them were pinned at the
 cap. `BAG_CAP` (8) is a physical limit, not a balance knob: it's the most a
@@ -224,31 +223,7 @@ it matters more now that the forbidden pool has lighters and pliers in it at
 it, which is what reading a bag looks like from the other side of a bench.
 
 **The wall.** The standing chart of what is forbidden, pinned on the left of
-the bench. The stolen-goods board used to sit under it and doesn't any more:
-it is read, not handled, so it was taking bench space from the half of the
-stage you actually work in. It lives in the sidebar now, where the posters are
-big enough to read properly.
-
-**Three things are reported stolen every shift.** `pickWanted(3)` in
-`assets/items.js` draws three permitted designs at random and pins them on the
-board in the sidebar, above the scores, where they stay legible all
-shift. Each poster crops the card art down to the object's bounding box —
-`CROP` in `assets/items.js` — because a thumbnail of a whole card is mostly
-empty space. Recovering one is worth `VP_WANTED` (3), and the poster crosses
-itself off when either of you finds it.
-
-They are deliberately ordinary — a hat, a book, a mug — so nothing about the
-bag or the lamp gives them away. The only way to find one is to be looking
-properly at a bag you already had a reason to open, which is what the mechanic
-is for: it gives a red tray a second payoff, it makes seizing a permitted item
-worth doing for the first time, and it means the deck plays differently every
-round without changing the deck. Restricted designs are never eligible — a
-wanted knife would just be a knife.
-
-The side effect worth watching in playtest: a wanted item can easily sit in a
-bag that never flags, in which case nobody gets it. That is the intended shape
-— three leads, and you are lucky to see two of them — but if it feels like
-wasted print, `WANTED_N` is the number to turn.
+the bench, with the day's two amendments pinned above it.
 
 **Two seize trays, always in view.** One each, side by side between the two
 lanes. Whatever either of you takes out of a bag is laid out in your own tray
@@ -297,9 +272,9 @@ Ten objects now have a noise of their own rather than a group's — the
 balaclava, the bath salts, both cameras, the envelope, the clock, the
 croissants, the fidget spinner, the saffron and the sweets. All ten are
 permitted, so none of it tells you anything about contraband. What it does do
-is make those ten findable by ear, which is the first help the stolen-goods
-memory mechanic has had: if the thing you are hunting happens to be one of
-them, you will hear it land whether or not you were looking at it.
+is make those ten findable by ear, which matters on an amendment shift: if
+today's ban happens to cover one of them, you will hear it land whether or not
+you were looking at it.
 
 That thinned the shared groups, so three cards moved to keep the shared sounds
 honest — chocolate peanuts, the pencil case and the striped wash bag now sound
@@ -346,72 +321,52 @@ start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
 
-## The two games
+## The game
 
-Both are the ten-second shift. They differ in one thing: whose bag you are
-holding.
-
-**Your own bench.** Bags arrive on your belt and you work them. Five stolen
-goods each, hidden in the other's queue before the shift and named to you once.
-
-**Across the table.** Your passengers' bags go straight over to Officer B and
-theirs come down to you, so you are checking each other's queue — blind, since
-neither of you has seen inside either. The tray you search visibly travels down
-from their belt and back up to leave when you pass it.
-
-That change does two things worth having. It gives the cut an object: ending
-their bag is no longer a countdown on something abstract, it is you cutting off
-a search you handed them. And it makes the stolen goods redundant, because the
-thing that made them fun — reaching into the other player's material before the
-clock starts — is now the core loop. So that shift has no stolen goods and no
-second list to remember, only the amendments.
-
-The queue swap is one line at each draw point; the crossing is a `top`
-transition on the tray. Everything else — the clock, the cut, the amendments,
-the scoring — is shared.
-
-## Ten seconds
-
- The detector shift, the clock shift and the inspection budget
-were all built, all played and all cut: the detector answered the question the
-cards exist to ask, the clock had no direction to its pressure, and the budget
-was the better of the two but slower. What is left is the one where the other
-officer can reach across the table.
-
-**Twelve trays each, ten seconds a bag.** The belt runs itself — Go is pressed
-once and never again. The countdown sits on the tray, turns red at three and
-beeps. At zero the bag files itself with whatever is still in it.
-
-**Five stolen goods each, planted.** You hide five in their queue, they hide
-five in yours, and they tell you what yours are — once, in words, on a card you
-dismiss before the shift. Recovering them is squared, so three is worth nine.
+Twelve trays each, ten seconds a bag, no detector. The belt runs itself — Go is
+pressed once and never again. The countdown sits on the tray, turns red at three
+and beeps. At zero the bag files itself with whatever is still in it.
 
 **The cut.** Finish searching and pass with time left and Officer B has to pass
 too, wherever they have got to: mid-search, cards on the bench. They do it to
 you and your clock says CUT. Passing a bag you never opened does not count as
-finishing it and cuts nobody, which is what stops Pass-spamming from being a
-way to deny the whole game.
+finishing it and cuts nobody, which is what stops Pass-spamming from being a way
+to deny the whole game.
 
 **Best of one or best of three.** A round is a shift. The match goes to whoever
 takes two rounds, so a three can finish in two. Every round deals a fresh deck
-and plants fresh stolen goods, which means a fresh list to memorise. A drawn
-round counts for nobody; a match level on rounds is settled on points across
-all of them.
+and posts fresh amendments. A drawn round counts for nobody; a match level on
+rounds is settled on points across all of them.
+
+**What was cut, and why.** The detector shift, the clock shift and the
+inspection budget were all built and all played: the detector answered the
+question the cards exist to ask, the clock had no direction to its pressure, the
+budget was slower. An across-the-table variant where you searched each other's
+bags was built and cut too — the gesture is the whole point of it and a screen
+cannot deliver the gesture, so it read as the same game with a confusing
+animation. It is worth trying with real cards.
+
+**Stolen goods went last, and they were the closest call.** Five ordinary
+objects hidden in your queue, named to you once, scored squared. The problem was
+that the amendments arrived afterwards and did the same job better: both ask you
+to remember a list of ordinary objects, and with ten seconds a bag nobody keeps
+two lists apart. The amendments are also the theme rather than a second fiction
+bolted alongside it. One list, not two.
 
 **The cut may still be too strong.** Measured: a player who searches properly
 and passes as soon as they are done cuts B on every single tray. B seized
 nothing across twelve and finished 12 to 37. B does four to six seconds of
-visible work a bag by design, so against anyone competent they never finish
-one. The levers are making the cut leave two seconds rather than none, or
-capping how many cuts you get a shift.
+visible work a bag by design, so against anyone competent they never finish one.
+The levers are making the cut leave two seconds rather than none, or capping how
+many cuts you get a shift.
 
-**The cut needed a generation counter, not a flag.** Officer B's turn is a
-chain of a dozen delayed steps. A boolean cleared when their next bag starts
-lets every stale step from the cut bag fire into it: a tray gets filed twice,
-the lane empties, and B stands there doing nothing for the rest of the shift.
-Every bag of theirs now carries a number, every scheduled step remembers which
-bag it belonged to, and anything from an older one is dropped. `oppLater`,
-`oppMove` and `oppRoll` are the whole fix.
+**The cut needed a generation counter, not a flag.** Officer B's turn is a chain
+of a dozen delayed steps. A boolean cleared when their next bag starts lets every
+stale step from the cut bag fire into it: a tray gets filed twice, the lane
+empties, and B stands there doing nothing for the rest of the shift. Every bag of
+theirs now carries a number, every scheduled step remembers which bag it belonged
+to, and anything from an older one is dropped. `oppLater`, `oppMove` and `oppRoll`
+are the whole fix.
 
 ## The day's amendments
 
@@ -422,10 +377,8 @@ shoes, trousers, toothbrushes, bowling balls. An OK makes a forbidden one legal
 worth −5, and the only reason you know is that you read the wall.
 
 Everything that asks "is this bad" goes through one function, which is why the
-opponent, the scoring, the misses and the stolen-goods picker all obey the signs
-without being told about them separately. A card the signs have just banned can
-never also be a stolen good, because the goods are planted after the amendments
-are applied.
+opponent, the scoring and the misses all obey the signs without being told
+about them separately.
 
 **Two of the sixteen change no rule at all.** Tote bags permitted, and
 underwear permitted — both of which were always permitted. They are worth more
@@ -508,22 +461,6 @@ a hairdryer used to cost you nothing but seconds, and now it costs more than
 catching a knife earns. Letting something through is −3 an item on the clock
 shift, and **−10 a bag** on the budget shift.
 
-**Stolen goods are squared.** Ten on the table. One is worth 1, three is 9, five
-is 25 — nothing else in the game pays a run like that, and it is the only thing
-that makes carrying ten descriptions in your head worth the effort. They are
-drawn out of the bags after the deal rather than off the catalogue, so every one
-of them is guaranteed to be somewhere on the belt, one to a suitcase.
-
-**No picture, and no list to check.** You are told once, in words, on a card you
-have to dismiss before the shift starts. That is the whole mechanic. On the
-budget shift they are planted rather than reported — five in your queue by
-Officer B, five in theirs by you — which is why you get told five and not ten,
-and it is what the physical game does: the other player picks them and tells
-you what they are.
-
-Officer B has the same problem and is not perfect at it: `OPP_RECALL` (0.6) is
-how much of the list they actually hold on to.
-
 ## Weight
 
 With the lamp gone there has to be *something* to decide on, or the inspection
@@ -561,8 +498,7 @@ install or the offline cache.
 on a small screen, and when it finds one the header, belt bar, sidebar and
 prompt all come off. The stage takes the entire screen and the few numbers
 worth having — both scores, the belt count, one line of prompt — sit over it,
-along with the Go / Pass / Check row floating at the bottom. The stolen-goods
-board becomes a button that opens a sheet.
+along with the Go / Pass / Check row floating at the bottom.
 
 That is the whole trick, and it is worth understanding why. The bench is
 1360 × 712. On a landscape iPhone, page chrome and all, it scales to about

@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=28">
+<link rel="stylesheet" href="assets/style.css?v=29">
 </head>
 <body>
 
@@ -32,17 +32,21 @@
       pass too, wherever they have got to.</p>
 
     <div class="menu-modes menu-modes-two">
-      <div class="mode-card">
-        <span class="mode-name">Your own bench</span>
-        <span class="mode-tag">12 trays each &middot; 10s a bag &middot; stolen goods</span>
-        <span class="mode-body">Bags arrive on your belt and you work them. Before the shift you each hide
-          five stolen items in the other's queue and tell them what they are — once, in words. Recovering
-          them scores the square of how many you get.</span>
-        <span class="mode-picks">
-          <button class="mode" type="button" data-game="home" data-best="1">One shift</button>
-          <button class="mode" type="button" data-game="home" data-best="3">Best of three</button>
-        </span>
-      </div>
+      <button class="mode" type="button" data-best="1">
+        <span class="mode-name">Best of one</span>
+        <span class="mode-tag">One shift &middot; about two minutes</span>
+        <span class="mode-body">Twelve trays each, ten seconds a bag, two amendments on the wall.
+          One shift, highest score, done. The quick version and the one to teach somebody on.</span>
+      </button>
+
+      <button class="mode" type="button" data-best="3">
+        <span class="mode-name">Best of three</span>
+        <span class="mode-tag">First to two rounds</span>
+        <span class="mode-body">The same shift, up to three times, and the match goes to whoever takes
+          two of them — so it can be over in two. Fresh amendments every round, so what counts as
+          contraband changes under you. A level match is settled on points.</span>
+      </button>
+    </div>
 
       <div class="mode-card">
         <span class="mode-name">Across the table</span>
@@ -188,7 +192,7 @@
 <div class="brief" id="brief" hidden>
   <div class="brief-inner">
     <p class="brief-kicker">Before the shift</p>
-    <h2 class="brief-head">Reported stolen</h2>
+    <h2 class="brief-head">Today’s amendments</h2>
     <div id="briefBody"></div>
     <button class="brief-go" id="briefGo" type="button">I've memorised them</button>
   </div>
@@ -205,8 +209,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=28"></script>
-<script src="assets/game.js?v=28"></script>
+<script src="assets/items.js?v=29"></script>
+<script src="assets/game.js?v=29"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

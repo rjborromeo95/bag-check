@@ -46,23 +46,11 @@ officer has to pass too, immediately, wherever they have got to.** They can do
 the same to you. Passing a bag you never opened does not count as finishing it
 and cuts nobody.
 
-## Two shifts to choose from
-
-**Your own bench.** The suitcases on your belt are yours to open. Five stolen
-goods have been hidden in your queue by the other officer, and five of theirs
-by you.
-
-**Across the table.** You do not open your own. Each suitcase that arrives on
-your belt goes straight across to the other officer, and theirs comes to you —
-so you are searching each other's queue, and neither of you has seen inside.
-You pass it back when you are done. There are no stolen goods on this shift:
-the bags are already the other player's problem.
-
 ## The match
 
 A round is one shift. Play **best of one**, or **best of three** — first to two
 rounds takes the match, so a three can finish in two. Every round is a fresh
-deal with fresh stolen goods, so there is a new list to memorise each time. A
+deal with fresh amendments, so what counts as contraband changes under you. A
 drawn round counts for nobody; a match level on rounds goes to whoever has more
 points across all of them.
 
@@ -85,32 +73,12 @@ reading, and they are still a waste of your time.
 Categories are read broadly and literally. All shoes means all shoes, heels
 included. Trousers means trousers; skirts are not trousers.
 
-## Stolen goods
-
-Three ordinary items are reported stolen at the start of every shift and pinned
-up where both officers can see them. Nothing marks them out in a bag and the
-detector does not care about them, so the only way to recover one is to notice
-it in a case you have opened for some other reason. **+3** each. A restricted
-item is never one of them.
-
-## The ten-second shift
-
-Twelve trays each and ten seconds a bag, timed from the moment it is in front
-of you. The belt does not wait: at zero the suitcase is closed and filed with
-whatever is still inside.
-
-If you finish searching and pass with time still on the clock, **the other
-officer has to pass too, immediately**, wherever they have got to. They can do
-it to you. Passing a bag you never opened does not count as finishing it and
-does not cut anybody.
-
 ## Scoring
 
 | | |
 |---|---|
 | Each tray you kept | **+1** |
 | Each forbidden item you seized | **+3** |
-| Stolen goods recovered | **squared** — 1, 4, 9, 16, 25… |
 | Anything else you took off a passenger | **−5** |
 | Each restricted item you let through | **−3** |
 
