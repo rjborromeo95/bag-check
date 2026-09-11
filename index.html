@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=23">
+<link rel="stylesheet" href="assets/style.css?v=24">
 </head>
 <body>
 
@@ -27,41 +27,24 @@
     <p class="menu-kicker">Lane 4 &middot; playtest rig</p>
     <h1 class="menu-title">Border Force</h1>
     <p class="menu-sub">The first border game board game</p>
+    <p class="menu-blurb">Twelve trays each and ten seconds a bag. No detector — the only way to
+      know is to open it. Finish searching and pass with time left and the other officer has to
+      pass too, wherever they have got to.</p>
 
-    <div class="menu-modes">
-      <button class="mode" type="button" data-mode="clock">
-        <span class="mode-name">Clock shift</span>
-        <span class="mode-tag">2 minutes &middot; shared belt &middot; no detector</span>
-        <span class="mode-body">No lamp, so the only way to know is to open it. One belt of 24 trays
-          between the two of you and two minutes on the shift. Anything still on the belt at the end
-          costs you both a point each. Ten stolen goods are out there, and you only get told what
-          they are once. You find out what you missed when the cases are opened.</span>
+    <div class="menu-modes menu-modes-two">
+      <button class="mode" type="button" data-best="1">
+        <span class="mode-name">Best of one</span>
+        <span class="mode-tag">One shift &middot; about two minutes</span>
+        <span class="mode-body">Twelve trays each, ten seconds a bag. One shift, highest score, done.
+          The quick version, and the one to teach somebody on.</span>
       </button>
 
-      <button class="mode" type="button" data-mode="budget">
-        <span class="mode-name">Inspection budget</span>
-        <span class="mode-tag">12 trays each &middot; 10 checks &middot; planted goods</span>
-        <span class="mode-body">No lamp and no clock. Twelve trays of your own and ten inspections to
-          spend on them, committed one at a time as they arrive. You have each hidden five stolen
-          items in the other's queue and told them what to look for. A bag that goes through with
-          something forbidden still in it costs ten.</span>
-      </button>
-
-      <button class="mode" type="button" data-mode="rapid">
-        <span class="mode-name">Ten seconds</span>
-        <span class="mode-tag">12 trays each &middot; 10s a bag &middot; planted goods</span>
-        <span class="mode-body">Ten seconds a tray and the belt runs itself — at zero the bag goes
-          whether you are done or not. Pass early and you do not just bank the tray, you end
-          Officer B's tray too, and they will do the same to you. Five stolen items each, hidden in
-          the other's queue.</span>
-      </button>
-
-      <button class="mode" type="button" data-mode="classic">
-        <span class="mode-name">Detector</span>
-        <span class="mode-tag">24 trays &middot; shared belt &middot; red lamp</span>
-        <span class="mode-body">The original. The arch tells you whether there is something
-          restricted in the bag before you open it, and letting one through holds you at the bench
-          for two seconds. Here to play the other two against.</span>
+      <button class="mode" type="button" data-best="3">
+        <span class="mode-name">Best of three</span>
+        <span class="mode-tag">First to two rounds</span>
+        <span class="mode-body">The same shift, up to three times, and the match goes to whoever
+          takes two of them — so it can be over in two. New stolen goods every round, which means a
+          new list to memorise each time. A level match is settled on points.</span>
       </button>
     </div>
 
@@ -147,13 +130,6 @@
           <span class="weigh-word" id="weighWord"></span>
         </div>
 
-        <div class="freeze" id="freeze" hidden>
-          <span class="freeze-head">Held at the bench</span>
-          <span class="freeze-why" id="freezeWhy"></span>
-          <span class="freeze-count" id="freezeCount">2.0s</span>
-        </div>
-
-      </div>
     </div>
 
     <!-- phone only: the page chrome is hidden and these sit over the stage -->
@@ -169,7 +145,6 @@
       <button class="go" id="btnGo" type="button">Go</button>
       <button class="pass" id="btnPass" type="button">Pass</button>
       <button class="check" id="btnCheck" type="button">Check</button>
-      <button class="ghost" id="btnBounce" type="button" hidden>Back on the belt</button>
     </div>
     <p class="prompt" id="prompt">Press Go to start the belt.</p>
   </section>
@@ -216,8 +191,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=23"></script>
-<script src="assets/game.js?v=23"></script>
+<script src="assets/items.js?v=24"></script>
+<script src="assets/game.js?v=24"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

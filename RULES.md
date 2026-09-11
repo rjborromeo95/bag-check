@@ -36,33 +36,23 @@ load all 24 trays onto the conveyor.
 
 ## The shift
 
-There are no turns. Everyone plays at once, off the same belt, across one
-bench. There is a single seized bin in the middle of it and everybody reaches
-into the same one — what you take out of a bag goes in front of the other
-officer as well, so they can see how your shift is going.
+Twelve trays each and **ten seconds a bag**, timed from the moment it is in
+front of you. There are no turns and there is no detector: the only way to know
+what is in a suitcase is to open it. The belt does not wait — at zero the case
+is closed and filed with whatever is still inside.
 
-There is always a tray at your elbow. Send the one in front of you through your
-detector and the next rolls into its place straight away — the belt only pauses
-when you stop it to search something.
+**If you finish searching and pass with time left on the clock, the other
+officer has to pass too, immediately, wherever they have got to.** They can do
+the same to you. Passing a bag you never opened does not count as finishing it
+and cuts nobody.
 
-**Green.** Nothing restricted inside. Bin the suitcase and keep the tray.
+## The match
 
-**Red.** At least one restricted item is in there. The detector will not tell
-you how many. Now choose:
-
-- **Search it.** Stop your belt, lift the suitcase front off, and slide the item
-  cards out onto the bench. The cards are clear and the object sits somewhere different on
-  each one, so a stack reads as a jumble of loose objects — and anything
-  printed on a card above hides whatever is under it. Pull out what's
-  restricted into your own seize tray — there is one each, in the middle of the
-  bench, and what goes in stays in view — put the rest back, and close the case
-  with the front card. **There is no second scan.** Whatever you left in there goes into your pile with the
-  case.
-- **Send it back.** Put the whole tray on the tail of the conveyor and take
-  the next one instead. It'll come round to somebody eventually.
-
-When the conveyor is empty, the shift is over. Finish the tray in your hands,
-then score.
+A round is one shift. Play **best of one**, or **best of three** — first to two
+rounds takes the match, so a three can finish in two. Every round is a fresh
+deal with fresh stolen goods, so there is a new list to memorise each time. A
+drawn round counts for nobody; a match level on rounds goes to whoever has more
+points across all of them.
 
 ## Stolen goods
 

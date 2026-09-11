@@ -339,52 +339,48 @@ start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
 
-## Ten seconds
+## The game
 
-The fourth mode. Twelve trays each, five stolen goods planted in your queue by
-Officer B and five in theirs by you, and **ten seconds a bag**. The belt runs
-itself: Go is pressed once at the start and never again, trays arrive, go
-through, and leave on their own. The countdown sits on the tray, turns red at
-three and beeps once. At zero the bag files itself with whatever is still in
-it.
+One game now. The detector shift, the clock shift and the inspection budget
+were all built, all played and all cut: the detector answered the question the
+cards exist to ask, the clock had no direction to its pressure, and the budget
+was the better of the two but slower. What is left is the one where the other
+officer can reach across the table.
 
-**The cut is the rule that makes it.** Finish searching and pass with time left
-and you do not only bank your own tray, you end Officer B's tray where it
-stands — mid-search, cards still on the bench. They do the same to you, and
-when they do, your clock says CUT and your bag goes. Both sides run their own
-ten seconds; the first to finish stops the other. It is the only rule in any of
-the four where being fast does something *to* the other officer rather than
-merely ahead of them.
+**Twelve trays each, ten seconds a bag.** The belt runs itself — Go is pressed
+once and never again. The countdown sits on the tray, turns red at three and
+beeps. At zero the bag files itself with whatever is still in it.
+
+**Five stolen goods each, planted.** You hide five in their queue, they hide
+five in yours, and they tell you what yours are — once, in words, on a card you
+dismiss before the shift. Recovering them is squared, so three is worth nine.
+
+**The cut.** Finish searching and pass with time left and Officer B has to pass
+too, wherever they have got to: mid-search, cards on the bench. They do it to
+you and your clock says CUT. Passing a bag you never opened does not count as
+finishing it and cuts nobody, which is what stops Pass-spamming from being a
+way to deny the whole game.
+
+**Best of one or best of three.** A round is a shift. The match goes to whoever
+takes two rounds, so a three can finish in two. Every round deals a fresh deck
+and plants fresh stolen goods, which means a fresh list to memorise. A drawn
+round counts for nobody; a match level on rounds is settled on points across
+all of them.
+
+**The cut may still be too strong.** Measured: a player who searches properly
+and passes as soon as they are done cuts B on every single tray. B seized
+nothing across twelve and finished 12 to 37. B does four to six seconds of
+visible work a bag by design, so against anyone competent they never finish
+one. The levers are making the cut leave two seconds rather than none, or
+capping how many cuts you get a shift.
 
 **The cut needed a generation counter, not a flag.** Officer B's turn is a
-chain of a dozen delayed steps. A boolean that gets cleared when their next bag
-starts lets every stale step from the cut bag fire into it: a tray gets filed
-twice, the lane empties, and B stands there doing nothing for the rest of the
-shift. Every bag of theirs now carries a number, every scheduled step remembers
-which bag it belonged to, and anything from an older one is dropped. `oppLater`,
-`oppMove` and `oppRoll` at the top of the opponent section are the whole fix.
-
-**The cut may be too strong.** Measured: a player who searches properly and
-passes as soon as they are done cuts B on *every single tray*. Across twelve
-trays B seized nothing at all and finished on 12 points to 37. B is slower than
-a focused human by design — four to six seconds of visible work a bag — so
-against anyone competent they never finish one. If that holds up in play, the
-lever is making the cut leave two seconds rather than none, or capping how many
-times a shift you can use it.
-
-**One thing to watch, with numbers.** A player who refuses to engage can force
-a draw. I ran a bot that hammered Pass on every tray without looking: it cut B
-off twelve times out of twelve, B seized nothing, and both finished on 12
-points. Requiring an actual search before the cut counts — which is what
-"finishes searching" says, and what the code now does — kills the crudest
-version of it: the same bot now loses 12 to 61. But a player who presses Check,
-opens the case and immediately passes still denies B every tray at the cost of
-all their own scoring, and still lands on 12-all.
-
-Whether that matters depends on whether a forced draw is a legitimate thing for
-a losing player to reach for. If it is not, the two levers are making the cut
-leave them two seconds rather than none, or making a cut forfeit your own tray
-point so denial actively costs you.
+chain of a dozen delayed steps. A boolean cleared when their next bag starts
+lets every stale step from the cut bag fire into it: a tray gets filed twice,
+the lane empties, and B stands there doing nothing for the rest of the shift.
+Every bag of theirs now carries a number, every scheduled step remembers which
+bag it belonged to, and anything from an older one is dropped. `oppLater`,
+`oppMove` and `oppRoll` are the whole fix.
 
 ## The maths, as it now stands
 
