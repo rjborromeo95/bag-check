@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bag check — playtest rig</title>
+<meta name="description" content="A digital playtest rig for Bag Check, a card game about airport security screening.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
+     browser (and Vercel's edge cache) will keep serving the old file. -->
+<link rel="stylesheet" href="assets/style.css?v=12">
+</head>
+<body>
+
+<header class="signage">
+  <span class="mark">Bag check</span>
+  <span class="belt-count" id="beltCount">24 trays on the belt</span>
+  <span class="scoreboard"><span class="scoreboard-label">Score</span><span class="scoreboard-num" id="hudScore">0</span></span>
+  <button class="mute" id="mute" type="button" aria-pressed="false">Sound on</button>
+  <span class="clock" id="clock">0:00</span>
+</header>
+
+<section class="beltbar" aria-label="Conveyor">
+  <div class="belt" id="belt"></div>
+</section>
+
+<main class="lane-grid">
+
+  <section class="rig">
+    <div class="stagewrap" id="stagewrap">
+      <div class="stage" id="stage">
+
+        <!-- Officer B, across the bench. Same belt direction as yours; their
+             arch is flipped so the head sits below the mouth, because they
+             are standing on the other side of it. -->
+        <div class="lane lane-b">
+          <div class="conveyor"><div class="rollers"></div></div>
+          <div class="donespot"></div>
+          <div class="arch">
+            <div class="arch-mouth"></div>
+            <div class="arch-head">
+              <span class="arch-lamp" id="lampB"></span>
+              <span class="arch-name">Detector B</span>
+            </div>
+          </div>
+        </div>
+        <div class="tray lane-tray-b" id="tba" hidden><div class="tray-lip"></div><div class="tray-case" id="tbac"></div></div>
+        <div class="tray lane-tray-b" id="tbb" hidden><div class="tray-lip"></div><div class="tray-case" id="tbbc"></div></div>
+        <div class="tray lane-tray-b" id="tbc" hidden><div class="tray-lip"></div><div class="tray-case" id="tbcc"></div></div>
+
+        <!-- the two seize trays, one each, in the middle where you both see them -->
+        <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span></div>
+        <div class="seize seize-you" id="seizeYou"><span class="seize-tag">You seized</span><span class="seize-n" id="seizeN">0</span></div>
+
+        <!-- the notice board: three stolen items this shift -->
+        <div class="board" id="board">
+          <p class="board-head">Reported stolen <span>+3 each</span></p>
+          <div class="board-list" id="boardList"></div>
+        </div>
+
+        <!-- your side -->
+        <div class="lane lane-you">
+          <div class="conveyor"><div class="rollers"></div></div>
+          <div class="donespot"></div>
+          <div class="arch">
+            <div class="arch-mouth"></div>
+            <div class="arch-head">
+              <span class="arch-lamp" id="lamp"></span>
+              <span class="arch-name">Detector</span>
+            </div>
+          </div>
+        </div>
+        <div class="tray lane-tray-you" id="tya" hidden><div class="tray-lip"></div><div class="tray-case" id="tyac"></div></div>
+        <div class="tray lane-tray-you" id="tyb" hidden><div class="tray-lip"></div><div class="tray-case" id="tybc"></div></div>
+        <div class="tray lane-tray-you" id="tyc" hidden><div class="tray-lip"></div><div class="tray-case" id="tycc"></div></div>
+
+        <div class="freeze" id="freeze" hidden>
+          <span class="freeze-head">Held at the bench</span>
+          <span class="freeze-why" id="freezeWhy"></span>
+          <span class="freeze-count" id="freezeCount">2.0s</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="controls" id="controls">
+      <button class="go" id="btnGo" type="button">Go</button>
+      <button class="pass" id="btnPass" type="button">Pass</button>
+      <button class="check" id="btnCheck" type="button">Check</button>
+      <button class="ghost" id="btnBounce" type="button" hidden>Back on the belt</button>
+    </div>
+    <p class="prompt" id="prompt">Press Go to start the belt.</p>
+  </section>
+
+  <aside class="tally">
+    <div class="pane pane-you">
+      <p class="pane-who">You</p>
+      <p class="pane-score" id="youScore">0</p>
+      <dl class="pane-lines">
+        <div><dt>Trays</dt><dd id="youTrays">0</dd></div>
+        <div><dt>Seized</dt><dd id="youSeized">0</dd></div>
+      </dl>
+    </div>
+    <div class="pane pane-opp">
+      <p class="pane-who">Officer B</p>
+      <p class="pane-score" id="oppScore">0</p>
+      <dl class="pane-lines">
+        <div><dt>Trays</dt><dd id="oppTrays">0</dd></div>
+        <div><dt>Seized</dt><dd id="oppSeized">0</dd></div>
+      </dl>
+      <p class="pane-doing" id="oppDoing">Walking to the lane</p>
+    </div>
+  </aside>
+
+</main>
+
+<section class="result" id="result" hidden></section>
+
+<footer class="colophon">
+  <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
+</footer>
+
+<script src="assets/items.js?v=12"></script>
+<script src="assets/game.js?v=12"></script>
+</body>
+</html>
