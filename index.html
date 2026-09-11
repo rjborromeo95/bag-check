@@ -2,7 +2,15 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b3639">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bag check">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/ui/icon-180.png">
+<link rel="icon" href="assets/ui/icon-192.png" sizes="192x192">
 <title>Bag check — playtest rig</title>
 <meta name="description" content="A digital playtest rig for Bag Check, a card game about airport security screening.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=14">
+<link rel="stylesheet" href="assets/style.css?v=15">
 </head>
 <body>
 
@@ -91,6 +99,16 @@
       </div>
     </div>
 
+    <!-- phone only: the page chrome is hidden and these sit over the stage -->
+    <div class="hud" id="hud">
+      <span class="hud-score"><b id="hudYou">0</b><i>you</i></span>
+      <span class="hud-score"><b id="hudOpp">0</b><i>B</i></span>
+      <span class="hud-belt" id="hudBelt">24 on the belt</span>
+      <span class="hud-line" id="hudLine"></span>
+      <button class="hud-btn" id="hudInfo" type="button">Stolen</button>
+      <button class="hud-btn" id="hudMute" type="button">Sound</button>
+    </div>
+
     <div class="controls" id="controls">
       <button class="go" id="btnGo" type="button">Go</button>
       <button class="pass" id="btnPass" type="button">Pass</button>
@@ -126,13 +144,36 @@
 
 </main>
 
+<div class="sheetover" id="sheetover" hidden>
+  <div class="sheetover-inner">
+    <p class="sheetover-head">Reported stolen <span>+3 each</span></p>
+    <div class="board-list" id="boardMirror"></div>
+    <p class="sheetover-doing" id="sheetDoing"></p>
+    <button class="hud-btn" id="sheetClose" type="button">Close</button>
+  </div>
+</div>
+
+<div class="rotate" id="rotate" hidden>
+  <p>Turn your phone sideways</p>
+  <span>The bench is wider than it is tall</span>
+</div>
+
 <section class="result" id="result" hidden></section>
 
 <footer class="colophon">
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=14"></script>
-<script src="assets/game.js?v=14"></script>
+<script src="assets/items.js?v=15"></script>
+<script src="assets/game.js?v=15"></script>
+<script>
+/* Offline + add-to-home-screen. Only registers where it can: a service worker
+   needs https or localhost, so opening the file directly does nothing. */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
 </body>
 </html>

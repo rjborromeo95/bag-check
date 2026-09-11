@@ -1,0 +1,17 @@
+{
+  "name": "Bag check — playtest rig",
+  "short_name": "Bag check",
+  "description": "A real-time card game about airport security screening.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#2b3639",
+  "theme_color": "#2b3639",
+  "icons": [
+    { "src": "assets/ui/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/ui/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/ui/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
