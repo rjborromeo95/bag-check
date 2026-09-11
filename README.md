@@ -339,6 +339,37 @@ start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
 
+## Ten seconds
+
+The fourth mode. Twelve trays each, five stolen goods planted in your queue by
+Officer B and five in theirs by you, and **ten seconds a bag**. The belt runs
+itself: Go is pressed once at the start and never again, trays arrive, go
+through, and leave on their own. The countdown sits on the tray, turns red at
+three and beeps once. At zero the bag files itself with whatever is still in
+it.
+
+**The cut is the rule that makes it.** Finish searching and pass with time left
+and you do not only bank your own tray, you end Officer B's tray where it
+stands — mid-search, cards still on the bench. They do the same to you, and
+when they do, your clock says CUT and your bag goes. Both sides run their own
+ten seconds; the first to finish stops the other. It is the only rule in any of
+the four where being fast does something *to* the other officer rather than
+merely ahead of them.
+
+**One thing to watch, with numbers.** A player who refuses to engage can force
+a draw. I ran a bot that hammered Pass on every tray without looking: it cut B
+off twelve times out of twelve, B seized nothing, and both finished on 12
+points. Requiring an actual search before the cut counts — which is what
+"finishes searching" says, and what the code now does — kills the crudest
+version of it: the same bot now loses 12 to 61. But a player who presses Check,
+opens the case and immediately passes still denies B every tray at the cost of
+all their own scoring, and still lands on 12-all.
+
+Whether that matters depends on whether a forced draw is a legitimate thing for
+a losing player to reach for. If it is not, the two levers are making the cut
+leave them two seconds rather than none, or making a cut forfeit your own tray
+point so denial actively costs you.
+
 ## The maths, as it now stands
 
 **The deck is now exactly what is in `object cards.zip`.** 107 permitted

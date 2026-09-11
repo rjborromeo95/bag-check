@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=21">
+<link rel="stylesheet" href="assets/style.css?v=22">
 </head>
 <body>
 
@@ -45,6 +45,15 @@
           spend on them, committed one at a time as they arrive. You have each hidden five stolen
           items in the other's queue and told them what to look for. A bag that goes through with
           something forbidden still in it costs ten.</span>
+      </button>
+
+      <button class="mode" type="button" data-mode="rapid">
+        <span class="mode-name">Ten seconds</span>
+        <span class="mode-tag">12 trays each &middot; 10s a bag &middot; planted goods</span>
+        <span class="mode-body">Ten seconds a tray and the belt runs itself — at zero the bag goes
+          whether you are done or not. Pass early and you do not just bank the tray, you end
+          Officer B's tray too, and they will do the same to you. Five stolen items each, hidden in
+          the other's queue.</span>
       </button>
 
       <button class="mode" type="button" data-mode="classic">
@@ -131,6 +140,8 @@
         <div class="tray lane-tray-you" id="tyc" hidden><div class="tray-lip"></div><div class="tray-case" id="tycc"></div></div>
 
         <!-- no lamp means weight is the only tell you get before deciding -->
+        <div class="traytime" id="trayTime" hidden>10.0</div>
+
         <div class="weigh" id="weigh" hidden>
           <span class="weigh-bars" id="weighBars"></span>
           <span class="weigh-word" id="weighWord"></span>
@@ -205,8 +216,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=21"></script>
-<script src="assets/game.js?v=21"></script>
+<script src="assets/items.js?v=22"></script>
+<script src="assets/game.js?v=22"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

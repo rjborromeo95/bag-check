@@ -72,6 +72,17 @@ detector does not care about them, so the only way to recover one is to notice
 it in a case you have opened for some other reason. **+3** each. A restricted
 item is never one of them.
 
+## The ten-second shift
+
+Twelve trays each and ten seconds a bag, timed from the moment it is in front
+of you. The belt does not wait: at zero the suitcase is closed and filed with
+whatever is still inside.
+
+If you finish searching and pass with time still on the clock, **the other
+officer has to pass too, immediately**, wherever they have got to. They can do
+it to you. Passing a bag you never opened does not count as finishing it and
+does not cut anybody.
+
 ## Scoring
 
 | | |
