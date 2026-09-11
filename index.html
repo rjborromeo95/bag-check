@@ -30,19 +30,36 @@
     <div class="stagewrap" id="stagewrap">
       <div class="stage" id="stage">
 
-        <div class="conveyor"><div class="rollers" id="rollers"></div></div>
-
-        <div class="arch">
-          <div class="arch-mouth"></div>
-          <div class="arch-head">
-            <span class="arch-lamp" id="lamp"></span>
-            <span class="arch-name">Detector</span>
+        <!-- Officer B, working the other side of the same bench -->
+        <div class="lane lane-b">
+          <div class="conveyor"><div class="rollers"></div></div>
+          <div class="arch">
+            <div class="arch-mouth"></div>
+            <div class="arch-head">
+              <span class="arch-lamp" id="lampB"></span>
+              <span class="arch-name">Detector B</span>
+            </div>
           </div>
         </div>
+        <div class="tray waiting" id="trayB2" hidden><div class="tray-lip"></div><div class="tray-case" id="trayB2Case"></div></div>
+        <div class="tray" id="trayB" hidden><div class="tray-lip"></div><div class="tray-case" id="trayBCase" hidden></div></div>
 
-        <div class="bin" id="bin"><span>Seized</span></div>
-        <p class="bench-note">Inspection bench</p>
+        <!-- shared -->
+        <p class="lane-tag tag-b">Officer B</p>
+        <p class="lane-tag tag-you">You</p>
+        <div class="bin" id="bin"><span>Seized — shared</span></div>
 
+        <!-- your side -->
+        <div class="lane lane-you">
+          <div class="conveyor"><div class="rollers"></div></div>
+          <div class="arch">
+            <div class="arch-mouth"></div>
+            <div class="arch-head">
+              <span class="arch-lamp" id="lamp"></span>
+              <span class="arch-name">Detector</span>
+            </div>
+          </div>
+        </div>
         <div class="tray waiting" id="tray2" hidden><div class="tray-lip"></div><div class="tray-case" id="tray2Case"></div></div>
         <div class="tray" id="tray" hidden><div class="tray-lip"></div><div class="tray-case" id="trayCase" hidden></div></div>
 

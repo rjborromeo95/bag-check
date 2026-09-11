@@ -10,7 +10,10 @@ fun?**
 
 ## How it handles
 
-Everything on the bench is a physical object, not a menu.
+Everything on the bench is a physical object, not a menu. You and Officer B
+work opposite sides of one bench: their lane runs across the top of the stage
+right to left, yours runs along the bottom left to right, and the seized bin
+sits in the middle where both of you can reach it.
 
 - A tray rolls in from the left and stops in front of the machine. There is
   always one waiting there: sending a tray through frees the spot and the next
@@ -20,7 +23,7 @@ Everything on the bench is a physical object, not a menu.
 - **Drag the item cards out** onto the bench to read them. They're clear, so
   the ink prints over itself while they're stacked and only separates when you
   pull them apart.
-- **Drag anything restricted into the bin.**
+- **Drag anything restricted into the bin** in the middle of the bench.
 - **Put the suitcase front back on the tray** to close it, which files the tray
   and whatever you failed to spot. If anything restricted was still in there you
   are held at the bench for two seconds while the belt keeps moving.
@@ -160,14 +163,27 @@ the tabletop rules don't: on a table you find out at the end.
 thing to watch in playtest is whether it makes people thorough or just makes
 them slow.
 
+**You can watch Officer B work.** They are not a status line any more. Their
+tray rolls in, goes through their arch, their lamp lights, they lift the front
+off, lay the cards out across their bench a card at a time, and carry what they
+find into the shared bin in the middle. Their detector and rollers run
+independently of yours, so you can tell at a glance which side is busy.
+
+**You cannot reach across.** Every card on B's side carries `.theirs`, which is
+`pointer-events: none` and never gets a drag handler bound to it. Clicking their
+suitcase does nothing at all. This is purely so playtesting doesn't turn into
+fighting the interface.
+
 **Officer B works in passes.** They were previously a flat dice roll per item.
 Now they sweep a bag, and a calm officer gets two sweeps where a hurried one
-gets a single look — so a thin bag gets picked clean and a fat one hides things.
-What breaks them is the tray race: `oppRush()` reads how far behind they are and
-being buried makes them cut to one pass, spend less time per bag, and stop
-pushing trays back. Get ahead and they start letting things through; let them
-settle and they are hard to beat. They are deliberately not fast — the dwell is
-1.6 seconds plus 0.8 a card, halved at most when they're panicking.
+gets a single look, so a thin bag gets picked clean and a fat one hides things.
+Calm, they catch 92–99% of what's in front of them depending on bag size. What
+breaks them is the tray race: `oppRush()` reads how far behind they are, and
+being six trays down makes them cut to one pass, spend less time per bag, and
+stop pushing trays back — which drops them to 58–79%. Get well ahead and things
+start walking past them; let them settle and they are hard to beat. They are
+deliberately unhurried either way: a flagged bag takes them four to six seconds
+of visible work.
 
 ## Knobs worth turning
 

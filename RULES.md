@@ -30,7 +30,10 @@ load all 24 trays onto the conveyor.
 
 ## The shift
 
-There are no turns. Everyone plays at once, off the same belt.
+There are no turns. Everyone plays at once, off the same belt, across one
+bench. There is a single seized bin in the middle of it and everybody reaches
+into the same one — what you take out of a bag goes in front of the other
+officer as well, so they can see how your shift is going.
 
 There is always a tray at your elbow. Send the one in front of you through your
 detector and the next rolls into its place straight away — the belt does not
