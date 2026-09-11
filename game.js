@@ -9,41 +9,42 @@ const VP_MISSED = -3;
 const FREEZE_MS = 2000;   /* the hold after letting something through */
 
 /* ---------- the bench ----------
-   One stage, two lanes facing each other. Officer B works the top half with
-   their trays running right to left and their arch mirrored — head below the
-   mouth, because they are standing on the other side of it. You work the
-   bottom half, left to right, with your detector nearest you. The two seize
-   trays sit between you and neither of them ever empties. */
+   One stage, two lanes facing each other. Both belts run the same way — in
+   from the left, out to the right — because two lanes running opposite ways
+   read as two different machines rather than one bench. Officer B is the top
+   lane with their arch flipped, head below the mouth, since they are standing
+   on the other side of it. A passed tray parks on the right and stays there
+   until the next one pushes it off, one per officer. */
 
-const SW = 820, SH = 768;
-const TRAY = { w: 180, h: 118 };
+const SW = 1150, SH = 712;
+const TRAY = { w: 180, h: 108 };
 const ITEM = { w: 88, h: 123 };
 const LID  = { w: 88, h: 123 };   /* the suitcase front is the same size — it covers the stack exactly */
 
-/* your lane */
-const YOU  = { top: 634, offstage: -240, parkIn: 20, parkOut: 566, exit: 880, bench: 452 };
-/* theirs, mirrored */
-const THEM = { top: 4, offstage: 880, parkIn: 610, parkOut: 30, exit: -240, bench: 180 };
+/* the same x positions for both lanes */
+const X = { offstage: -230, parkIn: 16, parkOut: 500, done: 940, exit: 1260 };
 
-/* the seize trays, and the grid of slots inside one */
-const SEIZE_YOU  = { x: 434, y: 312, w: 350, h: 128 };
-const SEIZE_THEM = { x: 36,  y: 312, w: 350, h: 128 };
-const STOW = { scale: 0.42, cols: 8, dx: 42, dy: 52, ox: 8, oy: 20 };
+const YOU  = { top: 594, bench: 418, mine: true,  lamp: 'lamp',  ids: ['tya', 'tyb', 'tyc'] };
+const THEM = { top: 8,   bench: 160, mine: false, lamp: 'lampB', ids: ['tba', 'tbb', 'tbc'] };
 
-const SLOTS = [14, 114, 214, 314, 414, 514, 614, 714];
-const LID_PARK = 714;
+const SEIZE_YOU  = { x: 595, y: 292, w: 420, h: 116 };
+const SEIZE_THEM = { x: 135, y: 292, w: 420, h: 116 };
+const STOW = { scale: 0.42, cols: 10, dx: 40, dy: 46, ox: 8, oy: 18 };
+
+const SLOTS = [14, 126, 238, 350, 462, 574, 686, 798];
+const LID_PARK = 920;
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const bad = it => it.restricted;
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
 let belt, held, onDeck, phase, opened, cards, started, t0, tick, over, scale = 1;
 const you = { trays: 0, seized: [], missed: [] };
 const opp = { trays: 0, seized: [], missed: [] };
 let oppHeld = null, oppDeck = null, oppCards = [], oppBusy = false;
 let stowYou = [], stowThem = [];
-let movingYou = 0, movingThem = 0;
 let hudShown = 0, hudAnim = null;
 const timers = [];
 
@@ -51,21 +52,50 @@ const timers = [];
 function later(fn, ms) { const id = setTimeout(fn, ms); timers.push(id); return id; }
 function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
 
+/* ---------- tray pool ----------
+   Three tray objects per lane, rotating through four roles: free, on deck at
+   parkIn, being worked at parkOut, and parked on the right after a pass. */
+
+function initLane(lane) {
+  lane.pool = lane.ids.map(id => ({ el: $(id), box: $(id + 'c') }));
+  lane.free = lane.pool.slice();
+  lane.work = null; lane.deck = null; lane.done = null;
+  lane.moving = 0;
+}
+
+function takeTray(lane, front) {
+  const t = lane.free.pop() || lane.pool[0];
+  t.box.innerHTML = suitcaseFace(front);
+  t.el.className = 'tray ' + (lane.mine ? 'lane-tray-you' : 'lane-tray-b');
+  t.el.style.transition = 'none';
+  t.el.style.left = X.offstage + 'px';
+  t.el.hidden = true;
+  return t;
+}
+
+function freeTray(lane, t) {
+  if (!t) return;
+  t.el.hidden = true;
+  t.el.className = 'tray ' + (lane.mine ? 'lane-tray-you' : 'lane-tray-b');
+  if (lane.free.indexOf(t) < 0) lane.free.push(t);
+}
+
 /* ---------- stage fitting ---------- */
 
 /* The point of the two-lane bench is seeing both stations at once, so the
    stage is fitted to the window as well as to the column. Reserve is the
-   buttons and the prompt underneath it — without that the stage fills the
-   viewport, you scroll down to reach the controls, and B's half disappears
-   off the top of the screen. */
+   button row and the prompt underneath it. The stage is deliberately
+   landscape: when the window is short, a wide stage scaled to fit the height
+   still fills the width, which makes the cards bigger than a squarer one. */
 function fit() {
   const wrap = $('stagewrap');
   const top = wrap.getBoundingClientRect().top + window.scrollY;
-  const reserve = 150;
-  const room = Math.max(320, window.innerHeight - top - reserve);
+  const reserve = 96;
+  const room = Math.max(300, window.innerHeight - top - reserve);
   scale = Math.min(1, wrap.clientWidth / SW, room / SH);
   $('stage').style.transform = 'scale(' + scale + ')';
   wrap.style.height = Math.round(SH * scale) + 'px';
+  wrap.style.width = Math.round(SW * scale) + 'px';
 }
 window.addEventListener('resize', fit);
 
@@ -91,8 +121,6 @@ function deal() {
   });
   bags[bags.length - 1].items = bags[bags.length - 1].items.concat(orphans);
 
-  /* every suitcase needs at least one item, and none can hold more than a
-     suitcase card covers — move cards off the fattest onto the thinnest */
   const by = k => bags.slice().sort((a, b) => k * (a.items.length - b.items.length))[0];
   for (let guard = 0; guard < 400; guard++) {
     const big = by(-1), small = by(1);
@@ -125,23 +153,17 @@ function start() {
   held = null; onDeck = null; phase = 'idle'; opened = false; cards = [];
   oppHeld = null; oppDeck = null; oppBusy = false;
   you.trays = opp.trays = 0; you.seized = []; you.missed = []; opp.seized = []; opp.missed = [];
-  started = false; over = false; movingYou = movingThem = 0;
+  started = false; over = false;
   clearCards(); clearOppCards();
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
-  ['tray', 'tray2'].forEach(id => park($(id), YOU.offstage));
-  ['trayB', 'trayB2'].forEach(id => park($(id), THEM.offstage));
+  initLane(YOU); initLane(THEM);
   $('freeze').hidden = true;
   $('result').hidden = true;
-  lamp('lamp', false); lamp('lampB', false);
+  $('stage').classList.remove('running-you', 'running-b');
+  lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
   fit(); drawQueue(); drawTally(); render();
-}
-
-function park(el, x) {
-  el.hidden = true;
-  el.style.transition = 'none';
-  el.style.left = x + 'px';
 }
 
 /* ---------- queue ---------- */
@@ -169,44 +191,48 @@ function beginClock() {
 
 /* ---------- machine ---------- */
 
-function lamp(id, on, flashing) {
-  const el = $(id);
+function lamp(lane, on, flashing) {
+  const el = $(lane.lamp);
   const wasRed = el.classList.contains('red');
   el.className = 'arch-lamp' + (on ? ' red' : '') + (flashing ? ' flash' : '');
-  if (on && !wasRed) play('beep', id === 'lamp' ? 0.5 : SFX_THEM);
+  if (on && !wasRed) play('beep', lane.mine ? 0.5 : SFX_THEM);
 }
 
 /* Each lane's rollers turn only while something in that lane is moving, so you
-   can tell at a glance which side of the bench is busy. Checking a bag stops
-   your belt, because nothing of yours is moving while you work. */
-function move(el, x, ms, then, mine) {
-  if (mine) { movingYou++; $('stage').classList.add('running-you'); }
-  else { movingThem++; $('stage').classList.add('running-b'); }
-  el.hidden = false;
-  el.style.left = x + 'px';
+   can tell at a glance which side of the bench is busy — and checking a bag
+   stops your belt, because nothing of yours is moving while you work. */
+function move(lane, t, x, ms, then) {
+  const cls = lane.mine ? 'running-you' : 'running-b';
+  lane.moving++;
+  $('stage').classList.add(cls);
+  t.el.hidden = false;
+  t.el.style.left = x + 'px';
   later(() => {
-    if (mine) { movingYou = Math.max(0, movingYou - 1); if (!movingYou) $('stage').classList.remove('running-you'); }
-    else { movingThem = Math.max(0, movingThem - 1); if (!movingThem) $('stage').classList.remove('running-b'); }
+    lane.moving = Math.max(0, lane.moving - 1);
+    if (!lane.moving) $('stage').classList.remove(cls);
     if (then) then();
   }, ms);
 }
 
-function roll(el, x, ms, then, mine) {
-  el.style.transition = 'none';
-  void el.offsetWidth;
-  el.style.transition = '';
-  move(el, x, ms, then, mine);
+function roll(lane, t, x, ms, then) {
+  t.el.style.transition = 'none';
+  void t.el.offsetWidth;
+  t.el.style.transition = '';
+  move(lane, t, x, ms, then);
+}
+
+function parkAt(t, x) {
+  t.el.style.transition = 'none';
+  t.el.style.left = x + 'px';
+  t.el.hidden = false;
+  void t.el.offsetWidth;
+  t.el.style.transition = '';
 }
 
 /* ---------- sound ----------
    Foley for the bench. Each group has one or more takes; a take is chosen at
    random and never the same one twice running, with a touch of pitch wobble so
-   repeats of a small group don't sound mechanical.
-
-   Cards speak when they move between the tray and the bench, in either
-   direction, and the suitcase front speaks when it comes off and goes back on.
-   Officer B's case is audible too, quietly, so you can hear the other lane
-   working — SFX_THEM is the volume for that, and 0 turns it off. */
+   repeats of a small group don't sound mechanical. */
 
 const SFX = {
   book:     ['book_1', 'book_2'],
@@ -243,8 +269,8 @@ function loadSfx() {
   ambience.volume = AMBIENCE_VOL;
 }
 
-/* Browsers refuse audio until the page has been clicked, which is exactly what
-   Go is for. */
+/* Browsers refuse audio until the page has been clicked, which is what Go is
+   for. */
 function startAmbience() {
   if (!ambience || muted) return;
   const p = ambience.play();
@@ -281,7 +307,6 @@ function setMuted(on) {
 
 /* ---------- score feedback ---------- */
 
-/* a number that lifts off whatever just earned it */
 function pop(x, y, text, kind) {
   const el = document.createElement('span');
   el.className = 'pop' + (kind ? ' ' + kind : '');
@@ -292,7 +317,6 @@ function pop(x, y, text, kind) {
   later(() => el.remove(), 1100);
 }
 
-/* the headline counter ticks up to the new total rather than jumping to it */
 function drawHud() {
   const target = scoreOf(you);
   if (target === hudShown) return;
@@ -313,7 +337,7 @@ function drawHud() {
 function clearCards() { cards.forEach(c => c.el.remove()); cards = []; }
 function clearOppCards() { oppCards.forEach(c => c.el.remove()); oppCards = []; }
 
-function centreOfTray(lane) { return { x: lane.parkOut + TRAY.w / 2, y: lane.top + TRAY.h / 2 }; }
+function trayCentre(lane) { return { x: X.parkOut + TRAY.w / 2, y: lane.top + TRAY.h / 2 }; }
 
 function makeCard(item, front, theirs) {
   const el = document.createElement(theirs ? 'div' : 'button');
@@ -324,13 +348,12 @@ function makeCard(item, front, theirs) {
 }
 
 function spawnCards() {
-  const c = centreOfTray(YOU);
+  const c = trayCentre(YOU);
   held.bag.items.forEach(it => {
     const el = makeCard(it, null, false);
     el.setAttribute('aria-label', 'Item card, still in the case');
-    const jx = (Math.random() * 6) - 3, jy = (Math.random() * 6) - 3;
-    const rot = (Math.random() * 2.4) - 1.2;
-    place(el, c.x - ITEM.w / 2 + jx, c.y - ITEM.h / 2 + jy, rot);
+    const rot = rnd(-1.2, 1.2);
+    place(el, c.x - ITEM.w / 2 + rnd(-3, 3), c.y - ITEM.h / 2 + rnd(-3, 3), rot);
     $('stage').appendChild(el);
     const card = { el, item: it, kind: 'item', inCase: true, rot };
     cards.push(card);
@@ -352,10 +375,12 @@ function place(el, x, y, rot) {
   el.style.transform = 'rotate(' + (rot || 0).toFixed(1) + 'deg)';
 }
 
-function settle(el, x, y, rot) {
+/* ms is optional: a hand does not move every card at the same speed */
+function settle(el, x, y, rot, ms) {
   el.classList.add('settle');
+  if (ms) el.style.transitionDuration = ms + 'ms';
   place(el, x, y, rot);
-  later(() => el.classList.remove('settle'), 340);
+  later(() => { el.classList.remove('settle'); el.style.transitionDuration = ''; }, (ms || 320) + 30);
 }
 
 function freeSlot() {
@@ -363,7 +388,6 @@ function freeSlot() {
   return SLOTS[taken % SLOTS.length];
 }
 
-/* where the next seized card lands inside a seize tray */
 function stowSpot(tray, n) {
   const i = n % (STOW.cols * 2);
   return {
@@ -438,7 +462,7 @@ function inSeize(el) {
 
 function onTray(el) {
   const c = centreOf(el);
-  return c.x > YOU.parkOut - 60 && c.x < YOU.parkOut + TRAY.w + 60 &&
+  return c.x > X.parkOut - 60 && c.x < X.parkOut + TRAY.w + 60 &&
          c.y > YOU.top - 60 && c.y < YOU.top + TRAY.h + 60;
 }
 
@@ -454,7 +478,7 @@ function onTap(card) {
   if (card.inCase) {
     card.inCase = false;
     playItem(card.item);
-    settle(card.el, freeSlot(), YOU.bench, (Math.random() * 10) - 5);
+    settle(card.el, freeSlot(), YOU.bench, rnd(-5, 5));
     card.el.setAttribute('aria-label', 'Item card on the bench. Select again to seize it.');
   } else {
     seize(card);
@@ -487,51 +511,55 @@ function seize(card) {
    what Pass is for. */
 function closeCase() {
   if (!opened) return;
-  const c = centreOfTray(YOU);
-  let n = 0;
+  const c = trayCentre(YOU);
+  let t = 0;
   cards.forEach(cd => {
     if (cd.kind !== 'item') return;
-    settle(cd.el, c.x - ITEM.w / 2 + (Math.random() * 10 - 5), c.y - ITEM.h / 2, cd.rot);
-    if (!cd.inCase) { const it = cd.item; cd.inCase = true; later(() => playItem(it, SFX_VOL * 0.85), 70 * n++); }
+    const gap = cd.inCase ? 0 : Math.round(rnd(60, 150));
+    t += gap;
+    const it = cd.item, wasOut = !cd.inCase;
+    cd.inCase = true;
+    later(() => {
+      settle(cd.el, c.x - ITEM.w / 2 + rnd(-5, 5), c.y - ITEM.h / 2, cd.rot, Math.round(rnd(230, 360)));
+      if (wasOut) playItem(it, SFX_VOL * 0.85);
+    }, t);
   });
   const lid = cards.find(cd => cd.kind === 'lid');
-  if (lid) settle(lid.el, c.x - LID.w / 2, c.y - LID.h / 2, 0);
-  later(() => play('shut'), 70 * n + 180);
+  later(() => {
+    if (lid) settle(lid.el, c.x - LID.w / 2, c.y - LID.h / 2, 0);
+    play('shut');
+  }, t + 220);
   opened = false;
   render();
 }
 
-/* ---------- lane flow ----------
-   Two parking spots. parkIn, before the arch, is where a closed tray waits.
-   parkOut, past it, is where a scanned one sits while you work. Go moves the
-   belt on one step: it fetches the first tray, and after that it sends
-   whatever is waiting through the detector. */
+/* ---------- your lane flow ----------
+   Go moves the belt on one step: it fetches the first tray, and after that it
+   sends whatever is waiting through the detector. */
 
 function feedLane() {
   if (over || held) return;
-  if (!belt.length) { phase = 'idle'; $('tray').hidden = true; render(); checkEnd(); return; }
+  if (!belt.length) { phase = 'idle'; render(); checkEnd(); return; }
   held = belt.shift();
   opened = false;
   clearCards();
-  lamp('lamp', false);
-  $('trayCase').innerHTML = suitcaseFace(held.front);
-  $('trayCase').hidden = false;
-  $('tray').style.left = YOU.offstage + 'px';
+  lamp(YOU, false);
+  YOU.work = takeTray(YOU, held.front);
   phase = 'rolling';
   drawQueue(); render();
-  roll($('tray'), YOU.parkIn, 1200, () => {
+  roll(YOU, YOU.work, X.parkIn, 1200, () => {
     if (!over && phase === 'rolling') { phase = 'ready'; render(); }
-  }, true);
+  });
 }
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
   if (over || onDeck || !belt.length) return;
   onDeck = belt.shift();
-  $('tray2Case').innerHTML = suitcaseFace(onDeck.front);
-  $('tray2').style.left = YOU.offstage + 'px';
+  YOU.deck = takeTray(YOU, onDeck.front);
+  YOU.deck.el.classList.add('waiting');
   drawQueue();
-  roll($('tray2'), YOU.parkIn, 1200, null, true);
+  roll(YOU, YOU.deck, X.parkIn, 1200);
 }
 
 /* the tray you were working has gone; whatever is waiting becomes yours */
@@ -541,19 +569,13 @@ function promote() {
   held = onDeck; onDeck = null;
   opened = false;
   clearCards();
-  lamp('lamp', false);
-  $('tray2').hidden = true;
-  $('trayCase').innerHTML = suitcaseFace(held.front);
-  $('trayCase').hidden = false;
-  park($('tray'), YOU.parkIn);
-  $('tray').hidden = false;
-  void $('tray').offsetWidth;
-  $('tray').style.transition = '';
+  lamp(YOU, false);
+  YOU.work = YOU.deck; YOU.deck = null;
+  YOU.work.el.classList.remove('waiting');
   phase = 'ready';
   drawQueue(); render();
 }
 
-/* Go */
 function goPressed() {
   if (!started) { beginClock(); feedLane(); return; }
   if (phase === 'ready') scan();
@@ -561,20 +583,20 @@ function goPressed() {
 
 function scan() {
   phase = 'scanning'; render();
-  move($('tray'), YOU.parkOut, 1250, () => {
+  move(YOU, YOU.work, X.parkOut, 1250, () => {
     if (over) return;
     phase = 'scanned';
     render();
-  }, true);
+  });
   later(queueNext, 420);
-  later(() => { if (!over && held) lamp('lamp', held.bag.items.some(bad), true); }, 700);
+  later(() => { if (!over && held) lamp(YOU, held.bag.items.some(bad), true); }, 700);
 }
 
 /* Check — the belt stops and the suitcase becomes yours to open */
 function checkPressed() {
   if (phase !== 'scanned') return;
   phase = 'searching';
-  $('trayCase').hidden = true;
+  YOU.work.box.hidden = true;
   spawnCards();
   render();
 }
@@ -590,33 +612,46 @@ function bounce() {
   belt.push(held);
   clearCards();
   phase = 'leaving'; render();
-  move($('tray'), YOU.exit, 900, () => {
-    $('tray').hidden = true;
-    held = null; lamp('lamp', false);
+  const t = YOU.work; YOU.work = null;
+  move(YOU, t, X.exit, 900, () => {
+    freeTray(YOU, t);
+    held = null; lamp(YOU, false);
     drawQueue(); wakeOpp();
     promote();
-  }, true);
+  });
 }
 
-/* Anything restricted still in the case goes through, and you get held at the
-   bench for it. */
+/* A passed tray slides right and parks. The one already parked gets pushed off
+   the end to make room, so there is exactly one sitting there per officer. */
+function shelve(lane, t) {
+  const old = lane.done;
+  lane.done = t;
+  t.el.classList.add('done');
+  move(lane, t, X.done, 900);
+  if (old) move(lane, old, X.exit, 900, () => freeTray(lane, old));
+}
+
 function fileTray() {
   you.trays++;
   const slipped = held.bag.items.filter(bad);
   slipped.forEach(it => you.missed.push(it));
-  const c = centreOfTray(YOU);
+  const c = trayCentre(YOU);
   if (slipped.length) pop(c.x - 22, c.y - 96, String(VP_MISSED * slipped.length), 'bad');
   else pop(c.x - 12, c.y - 96, '+' + VP_TRAY, 'good');
 
   phase = 'leaving'; render();
   cards.forEach(cd => cd.el.classList.add('binned'));
   later(clearCards, 320);
-  move($('tray'), YOU.exit, 900, () => {
-    $('tray').hidden = true;
-    held = null; opened = false; lamp('lamp', false);
-    drawTally();
+  const t = YOU.work; YOU.work = null;
+  t.box.hidden = false;
+  shelve(YOU, t);
+  held = null; opened = false;
+  lamp(YOU, false);
+  drawTally();
+  later(() => {
+    if (over) return;
     if (slipped.length) freeze(slipped.length); else promote();
-  }, true);
+  }, 700);
 }
 
 /* ---------- the hold ---------- */
@@ -642,17 +677,12 @@ function freeze(n) {
   timers.push(t);
 }
 
-/* ---------- controls + copy ----------
-   Three buttons, always in the same place under your detector, greyed when
-   they don't apply. Go runs the belt, Check stops it and opens the case, Pass
-   sends the tray on. Bounce is the fourth and only shows when the rules allow
-   it — it is a real rule, but not one of the three you press every tray. */
+/* ---------- controls + copy ---------- */
 
 function render() {
   const p = $('prompt');
   const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck'), back = $('btnBounce');
-  const set = (b, on) => { b.disabled = !on; };
-  set(go, false); set(pass, false); set(check, false);
+  go.disabled = pass.disabled = check.disabled = true;
   back.hidden = true;
   check.classList.toggle('active', phase === 'searching');
 
@@ -660,7 +690,7 @@ function render() {
 
   if (phase === 'idle') {
     if (!started) {
-      set(go, true);
+      go.disabled = false;
       p.innerHTML = 'Officer B is across the bench, working the same belt. <strong>Go</strong> starts it and pushes the first tray down to you.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
@@ -670,14 +700,14 @@ function render() {
   if (phase === 'rolling') { p.textContent = 'Tray coming down the belt.'; return; }
 
   if (phase === 'ready') {
-    set(go, true);
+    go.disabled = false;
     p.innerHTML = 'A closed suitcase in a tray. No idea what is under the lid until it goes through. <strong>Go</strong> sends it into the detector.';
     return;
   }
   if (phase === 'scanning') { p.textContent = 'Scanning.'; return; }
 
   if (phase === 'scanned') {
-    set(pass, true); set(check, true);
+    pass.disabled = false; check.disabled = false;
     back.hidden = held.bounces >= BOUNCE_CAP;
     const dirty = held.bag.items.some(bad);
     p.innerHTML = dirty
@@ -688,7 +718,7 @@ function render() {
 
   if (phase === 'searching') {
     if (!opened) {
-      set(pass, true);
+      pass.disabled = false;
       p.innerHTML = 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray — there is no second scan, so whatever is still in there goes with it.';
     } else {
       p.innerHTML = 'The item cards are clear, so they print over each other. Slide them out onto the bench to read them, drag what is restricted into <strong>your seize tray</strong>, then put the front back on the tray to close it.';
@@ -701,11 +731,10 @@ function render() {
 }
 
 /* ---------- Officer B ----------
-   They work the same way you do, in front of you: tray in, scan, lift the
-   front off, lay the cards out, and carry what they find into their own seize
-   tray, where it stays. They are deliberately unhurried. What breaks them is
-   the tray race — falling behind makes them cut a search short, and that is
-   when things get past. */
+   They work the same way you do, in front of you. The timings are all
+   jittered: no two cards come out of a bag at the same rate, they pause on
+   some of them, and everything goes back in one at a time. Even, regular
+   spacing was the thing that made them read as a machine. */
 
 function wakeOpp() { if (!over && started && !oppBusy && belt.length) later(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; }
@@ -716,45 +745,41 @@ function oppRush() { return clamp((you.trays - opp.trays) / 6, 0, 1); }
 function oppTurn() {
   if (over) return;
   const fromDeck = !!oppDeck;
-  if (oppDeck) { oppHeld = oppDeck; oppDeck = null; $('trayB2').hidden = true; }
+  if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
   else if (belt.length) { oppHeld = belt.shift(); }
   else { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
 
   oppBusy = true;
   clearOppCards();
-  lamp('lampB', false);
+  lamp(THEM, false);
   drawQueue();
-  $('trayBCase').innerHTML = suitcaseFace(oppHeld.front);
-  $('trayBCase').hidden = false;
   oppSay(oppRush() > 0.55 ? 'Hurrying a tray in' : 'Taking the next tray');
 
   if (fromDeck) {
-    park($('trayB'), THEM.parkIn);
-    $('trayB').hidden = false;
-    void $('trayB').offsetWidth;
-    $('trayB').style.transition = '';
-    later(oppScan, 700);
+    THEM.work = THEM.deck; THEM.deck = null;
+    THEM.work.el.classList.remove('waiting');
+    later(oppScan, Math.round(rnd(450, 900)));
   } else {
-    $('trayB').style.left = THEM.offstage + 'px';
-    roll($('trayB'), THEM.parkIn, 1200, oppScan, false);
+    THEM.work = takeTray(THEM, oppHeld.front);
+    roll(THEM, THEM.work, X.parkIn, 1200, () => later(oppScan, Math.round(rnd(250, 700))));
   }
 }
 
 function oppScan() {
-  if (over) return;
+  if (over || !THEM.work) return;
   oppSay('Sending it through');
-  move($('trayB'), THEM.parkOut, 1250, oppAfterScan, false);
+  move(THEM, THEM.work, X.parkOut, 1250, oppAfterScan);
   later(oppQueueNext, 420);
-  later(() => { if (!over && oppHeld) lamp('lampB', oppHeld.bag.items.some(bad), true); }, 700);
+  later(() => { if (!over && oppHeld) lamp(THEM, oppHeld.bag.items.some(bad), true); }, 700);
 }
 
 function oppQueueNext() {
   if (over || oppDeck || !belt.length) return;
   oppDeck = belt.shift();
-  $('trayB2Case').innerHTML = suitcaseFace(oppDeck.front);
-  $('trayB2').style.left = THEM.offstage + 'px';
+  THEM.deck = takeTray(THEM, oppDeck.front);
+  THEM.deck.el.classList.add('waiting');
   drawQueue();
-  roll($('trayB2'), THEM.parkIn, 1200, null, false);
+  roll(THEM, THEM.deck, X.parkIn, 1200);
 }
 
 function oppAfterScan() {
@@ -765,7 +790,7 @@ function oppAfterScan() {
 
   if (!contraband.length) {
     oppSay('No light — tray kept');
-    later(() => oppFile([]), 800);
+    later(() => oppFile([]), Math.round(rnd(600, 1100)));
     return;
   }
 
@@ -776,29 +801,29 @@ function oppAfterScan() {
     oppHeld.bounces++;
     belt.push(oppHeld);
     drawQueue();
-    move($('trayB'), THEM.exit, 900, () => {
-      $('trayB').hidden = true;
-      oppHeld = null; lamp('lampB', false);
+    const t = THEM.work; THEM.work = null;
+    move(THEM, t, X.exit, 900, () => {
+      freeTray(THEM, t);
+      oppHeld = null; lamp(THEM, false);
       oppBusy = false;
-      later(oppTurn, 500);
-    }, false);
+      later(oppTurn, Math.round(rnd(400, 900)));
+    });
     return;
   }
 
   oppOpen(contraband, size, rush);
 }
 
-/* lift the front off and lay the bag out, one card at a time */
+/* lift the front off and lay the bag out, a card at a time, unevenly */
 function oppOpen(contraband, size, rush) {
-  const c = centreOfTray(THEM);
-  $('trayBCase').hidden = true;
+  const c = trayCentre(THEM);
+  THEM.work.box.hidden = true;
   oppSay(rush > 0.5 ? 'Skimming a bag' : 'Going through a bag');
   play('open', SFX_THEM);
 
   oppHeld.bag.items.forEach(it => {
     const el = makeCard(it, null, true);
-    const rot = (Math.random() * 2.4) - 1.2;
-    place(el, c.x - ITEM.w / 2 + (Math.random() * 6 - 3), c.y - ITEM.h / 2 + (Math.random() * 6 - 3), rot);
+    place(el, c.x - ITEM.w / 2 + rnd(-3, 3), c.y - ITEM.h / 2 + rnd(-3, 3), rnd(-1.2, 1.2));
     $('stage').appendChild(el);
     oppCards.push({ el, item: it, kind: 'item' });
   });
@@ -807,21 +832,25 @@ function oppOpen(contraband, size, rush) {
   $('stage').appendChild(lidEl);
   oppCards.push({ el: lidEl, kind: 'lid' });
 
-  const step = Math.round(200 * (1 - 0.4 * rush));
-  later(() => { if (!over) settle(lidEl, LID_PARK, THEM.bench, 5); }, step);
+  const pace = 1 - 0.4 * rush;
+  let t = Math.round(rnd(150, 320) * pace);
+  later(() => { if (!over) settle(lidEl, LID_PARK, THEM.bench, 5, Math.round(rnd(280, 420))); }, t);
 
   const items = oppCards.filter(cd => cd.kind === 'item');
   items.forEach((cd, i) => {
+    /* an uneven hand: mostly quick, occasionally a long look at one card */
+    let gap = rnd(120, 300);
+    if (Math.random() < 0.22) gap += rnd(250, 650) * (1 - rush);
+    t += Math.round(gap * pace);
     later(() => {
       if (over) return;
-      settle(cd.el, SLOTS[i % SLOTS.length], THEM.bench, (Math.random() * 10) - 5);
+      settle(cd.el, SLOTS[i % SLOTS.length], THEM.bench, rnd(-5, 5), Math.round(rnd(240, 420)));
       playItem(cd.item, SFX_THEM);
-    }, step * (i + 2));
+    }, t);
   });
 
-  const laidOut = step * (items.length + 2);
-  const dwell = Math.round((500 + 260 * size) * (1 - 0.4 * rush));
-  later(() => { if (!over) oppSearch(contraband, size, rush); }, laidOut + dwell);
+  const dwell = Math.round(rnd(400, 900) * pace + 180 * size * pace);
+  later(() => { if (!over) oppSearch(contraband, size, rush); }, t + dwell);
 }
 
 /* Two sweeps if they have time, one if they are panicking. A thin bag gets
@@ -835,7 +864,9 @@ function oppSearch(contraband, size, rush) {
   const found = [], missed = [];
   contraband.forEach(it => (Math.random() < odds ? found : missed).push(it));
 
-  found.forEach((it, i) => {
+  let t = 0;
+  found.forEach(it => {
+    t += Math.round(rnd(280, 620));
     later(() => {
       if (over) return;
       const cd = oppCards.find(x => x.item && x.item.uid === it.uid);
@@ -846,35 +877,43 @@ function oppSearch(contraband, size, rush) {
       stow(cd.el, SEIZE_THEM, stowThem);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26, '+' + VP_SEIZED, 'theirs');
       drawTally();
-    }, 420 * i);
+    }, t);
   });
 
-  later(() => { if (!over) oppClose(missed); }, 420 * found.length + 520);
+  later(() => { if (!over) oppClose(missed); }, t + Math.round(rnd(350, 700)));
 }
 
-/* everything left goes back in, the front goes back on, the tray files */
+/* everything left goes back in one at a time, not all at once */
 function oppClose(missed) {
   if (over) return;
-  const c = centreOfTray(THEM);
-  let n = 0;
-  oppCards.forEach(cd => {
-    if (cd.kind !== 'item') return;
-    settle(cd.el, c.x - ITEM.w / 2 + (Math.random() * 10 - 5), c.y - ITEM.h / 2, 0);
+  const c = trayCentre(THEM);
+  const items = oppCards.filter(cd => cd.kind === 'item');
+  let t = 0;
+  items.forEach(cd => {
+    t += Math.round(rnd(110, 260));
     const it = cd.item;
-    later(() => playItem(it, SFX_THEM * 0.85), 70 * n++);
+    later(() => {
+      if (over) return;
+      settle(cd.el, c.x - ITEM.w / 2 + rnd(-5, 5), c.y - ITEM.h / 2, rnd(-1.5, 1.5), Math.round(rnd(220, 360)));
+      playItem(it, SFX_THEM * 0.85);
+    }, t);
   });
   const lid = oppCards.find(cd => cd.kind === 'lid');
-  if (lid) later(() => settle(lid.el, c.x - LID.w / 2, c.y - LID.h / 2, 0), 220);
-  later(() => play('shut', SFX_THEM), 70 * n + 200);
+  t += Math.round(rnd(200, 380));
+  later(() => {
+    if (over) return;
+    if (lid) settle(lid.el, c.x - LID.w / 2, c.y - LID.h / 2, 0, 320);
+    play('shut', SFX_THEM);
+  }, t);
   oppSay('Closing it up');
-  later(() => { if (!over) oppFile(missed); }, 800);
+  later(() => { if (!over) oppFile(missed); }, t + Math.round(rnd(420, 780)));
 }
 
 function oppFile(missed) {
   if (over) return;
   opp.trays++;
   missed.forEach(it => opp.missed.push(it));
-  const c = centreOfTray(THEM);
+  const c = trayCentre(THEM);
   if (missed.length) pop(c.x - 22, c.y + 92, String(VP_MISSED * missed.length), 'bad');
   else pop(c.x - 12, c.y + 92, '+' + VP_TRAY, 'theirs');
   drawTally();
@@ -882,12 +921,12 @@ function oppFile(missed) {
   oppCards.forEach(cd => cd.el.classList.add('binned'));
   later(clearOppCards, 320);
   oppSay(missed.length ? 'Filed it — something got past' : 'Filed a bag');
-  move($('trayB'), THEM.exit, 900, () => {
-    $('trayB').hidden = true;
-    oppHeld = null; lamp('lampB', false);
-    oppBusy = false;
-    later(oppTurn, 500);
-  }, false);
+
+  const t = THEM.work; THEM.work = null;
+  if (t) { t.box.hidden = false; shelve(THEM, t); }
+  oppHeld = null; lamp(THEM, false);
+  oppBusy = false;
+  later(oppTurn, Math.round(rnd(500, 1100)));
 }
 
 /* ---------- score ---------- */
@@ -904,11 +943,6 @@ function drawTally() {
   $('seizeN').textContent = you.seized.length;
   $('seizeNB').textContent = opp.seized.length;
   drawHud();
-
-  const rail = $('evidence');
-  rail.innerHTML = you.seized.length
-    ? you.seized.map(it => '<span class="chip' + (it.restricted ? ' bad' : '') + '">' + itemChip(it) + it.name + '</span>').join('')
-    : '<span class="evidence-none">Nothing seized yet</span>';
 }
 
 function checkEnd() {

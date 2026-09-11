@@ -11,9 +11,13 @@ fun?**
 ## How it handles
 
 Everything on the bench is a physical object, not a menu. You and Officer B
-work opposite sides of one bench: their lane runs across the top of the stage
-right to left, yours runs along the bottom left to right, and the seized bin
-sits in the middle where both of you can reach it.
+work opposite sides of one bench: their lane runs across the top of the stage,
+yours along the bottom, and the two seize trays sit in the middle. Both belts
+run the same way — in from the left, out to the right — because two lanes
+running opposite ways read as two different machines rather than one bench.
+Their arch is flipped instead, head below the mouth, since they are standing on
+the other side of it. A passed tray slides right and parks at the end of the
+lane, one per officer, until the next one pushes it off.
 
 Three buttons sit under your detector and never move. **Go** runs the belt:
 the first press fetches a tray, every press after that sends the waiting one
@@ -87,6 +91,19 @@ that number whenever you change `style.css` or `game.js`. Without it a browser
 — and Vercel's edge cache — will happily serve you last week's stylesheet with
 this week's HTML, which looks like the layout has broken rather than like a
 caching problem.
+
+**Two things that look like bugs and aren't**
+
+`index.html` loads the stylesheet and scripts with `?v=` on the end. Bump that
+number whenever you change `style.css` or `game.js`. Without it a browser — and
+Vercel's edge cache — will serve last week's stylesheet with this week's HTML,
+which looks like the layout has collapsed rather than like a caching problem.
+
+The stylesheet also carries `[hidden]{display:none !important}` near the top.
+That is not tidying: a panel with `display:flex` in its own rule beats the
+`hidden` attribute, so the code hides it and it stays on screen anyway. The
+supervisor's-hold overlay did exactly that and sat over the bottom half of the
+bench permanently.
 
 **4. Changing things later**
 
@@ -192,10 +209,16 @@ find into the shared bin in the middle. Their detector and rollers run
 independently of yours, so you can tell at a glance which side is busy.
 
 **The whole bench fits on one screen.** The stage scales to the window height
-as well as to the column, leaving room for the prompt and buttons underneath.
-Without that the stage fills the viewport, you scroll down to reach the
-controls, and B's half slides off the top — which defeats the point of putting
-them in front of you. `reserve` in `fit()` is how much room the controls get.
+as well as to the column, leaving room for the buttons underneath. Without that
+the stage fills the viewport, you scroll down to reach the controls, and B's
+half slides off the top — which defeats the point of putting them in front of
+you. `reserve` in `fit()` is how much room the controls get.
+
+The stage is 1150 × 712, deliberately landscape. Windows are usually wider than
+they are tall, so on a short window a squarer stage scaled down to fit the
+height leaves a band of dead space either side and shrinks the cards for no
+reason. A wide one scaled to the same height still fills the width, which is
+about a third more card for the same window.
 
 **The bench makes a noise.** Every card in the catalogue names the sound it
 makes — `book`, `cloth`, `glass`, `light`, `hardcase`, `plastic` or `rustle` —
@@ -230,6 +253,14 @@ Whether that's a help too far is a playtest question. `sound:` in
 `pointer-events: none` and never gets a drag handler bound to it. Clicking their
 suitcase does nothing at all. This is purely so playtesting doesn't turn into
 fighting the interface.
+
+**Officer B has hands, not a metronome.** Every timing on their side is
+jittered: the gap between cards coming out of a bag is random, one card in five
+gets a long look, the front comes off at its own speed, and everything goes
+back in one at a time rather than all at once. Each card's travel time varies
+too. Even spacing was the single thing that made them read as a machine rather
+than a person — the odds of them finding something never changed, only the
+rhythm.
 
 **Officer B works in passes.** They were previously a flat dice roll per item.
 Now they sweep a bag, and a calm officer gets two sweeps where a hurried one

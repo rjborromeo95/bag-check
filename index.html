@@ -8,15 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes,
-     or a browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=10">
+<!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
+     browser (and Vercel's edge cache) will keep serving the old file. -->
+<link rel="stylesheet" href="assets/style.css?v=11">
 </head>
 <body>
 
 <header class="signage">
   <span class="mark">Bag check</span>
-  <span class="lane">Lane 4</span>
   <span class="belt-count" id="beltCount">24 trays on the belt</span>
   <span class="scoreboard"><span class="scoreboard-label">Score</span><span class="scoreboard-num" id="hudScore">0</span></span>
   <button class="mute" id="mute" type="button" aria-pressed="false">Sound on</button>
@@ -33,10 +32,12 @@
     <div class="stagewrap" id="stagewrap">
       <div class="stage" id="stage">
 
-        <!-- Officer B, across the bench. Their arch is mirrored: the head sits
-             below the mouth because they are standing on the other side. -->
+        <!-- Officer B, across the bench. Same belt direction as yours; their
+             arch is flipped so the head sits below the mouth, because they
+             are standing on the other side of it. -->
         <div class="lane lane-b">
           <div class="conveyor"><div class="rollers"></div></div>
+          <div class="donespot"></div>
           <div class="arch">
             <div class="arch-mouth"></div>
             <div class="arch-head">
@@ -45,8 +46,9 @@
             </div>
           </div>
         </div>
-        <div class="tray waiting" id="trayB2" hidden><div class="tray-lip"></div><div class="tray-case" id="trayB2Case"></div></div>
-        <div class="tray" id="trayB" hidden><div class="tray-lip"></div><div class="tray-case" id="trayBCase" hidden></div></div>
+        <div class="tray lane-tray-b" id="tba" hidden><div class="tray-lip"></div><div class="tray-case" id="tbac"></div></div>
+        <div class="tray lane-tray-b" id="tbb" hidden><div class="tray-lip"></div><div class="tray-case" id="tbbc"></div></div>
+        <div class="tray lane-tray-b" id="tbc" hidden><div class="tray-lip"></div><div class="tray-case" id="tbcc"></div></div>
 
         <!-- the two seize trays, one each, in the middle where you both see them -->
         <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span></div>
@@ -55,6 +57,7 @@
         <!-- your side -->
         <div class="lane lane-you">
           <div class="conveyor"><div class="rollers"></div></div>
+          <div class="donespot"></div>
           <div class="arch">
             <div class="arch-mouth"></div>
             <div class="arch-head">
@@ -63,8 +66,9 @@
             </div>
           </div>
         </div>
-        <div class="tray waiting" id="tray2" hidden><div class="tray-lip"></div><div class="tray-case" id="tray2Case"></div></div>
-        <div class="tray" id="tray" hidden><div class="tray-lip"></div><div class="tray-case" id="trayCase" hidden></div></div>
+        <div class="tray lane-tray-you" id="tya" hidden><div class="tray-lip"></div><div class="tray-case" id="tyac"></div></div>
+        <div class="tray lane-tray-you" id="tyb" hidden><div class="tray-lip"></div><div class="tray-case" id="tybc"></div></div>
+        <div class="tray lane-tray-you" id="tyc" hidden><div class="tray-lip"></div><div class="tray-case" id="tycc"></div></div>
 
         <div class="freeze" id="freeze" hidden>
           <span class="freeze-head">Held at the bench</span>
@@ -102,10 +106,6 @@
       </dl>
       <p class="pane-doing" id="oppDoing">Walking to the lane</p>
     </div>
-    <div class="evidence">
-      <p class="evidence-head">Evidence bag</p>
-      <div class="evidence-rail" id="evidence"><span class="evidence-none">Nothing seized yet</span></div>
-    </div>
   </aside>
 
 </main>
@@ -116,7 +116,7 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=10"></script>
-<script src="assets/game.js?v=10"></script>
+<script src="assets/items.js?v=11"></script>
+<script src="assets/game.js?v=11"></script>
 </body>
 </html>
