@@ -18,25 +18,29 @@ const FREEZE_MS = 2000;   /* the hold after letting something through */
    on the other side of it. A passed tray parks on the right and stays there
    until the next one pushes it off, one per officer. */
 
-const SW = 1150, SH = 712;
+const SW = 1360, SH = 712;
 const TRAY = { w: 180, h: 108 };
 const ITEM = { w: 88, h: 123 };
 const LID  = { w: 88, h: 123 };   /* the suitcase front is the same size — it covers the stack exactly */
 
 /* the same x positions for both lanes */
-const X = { offstage: -230, parkIn: 16, parkOut: 500, done: 940, exit: 1260 };
+const X = { offstage: -230, parkIn: 16, parkOut: 520, done: 1150, exit: 1430 };
 
 const YOU  = { top: 594, bench: 418, mine: true,  lamp: 'lamp',  ids: ['tya', 'tyb', 'tyc'] };
 const THEM = { top: 8,   bench: 160, mine: false, lamp: 'lampB', ids: ['tba', 'tbb', 'tbc'] };
 
-const SEIZE_YOU  = { x: 470, y: 292, w: 400, h: 116 };
-const SEIZE_THEM = { x: 40,  y: 292, w: 400, h: 116 };
+const SEIZE_YOU  = { x: 700, y: 292, w: 400, h: 116 };
+const SEIZE_THEM = { x: 270, y: 292, w: 400, h: 116 };
+
+/* the magnifier plates, one at the right-hand end of each bench row */
+const LENS_YOU  = { x: 1152, y: 418, w: 196, h: 123 };
+const LENS_THEM = { x: 1152, y: 160, w: 196, h: 123 };
 const STOW = { scale: 0.42, cols: 9, dx: 42, dy: 46, ox: 8, oy: 18 };
 
-const SLOTS = [14, 126, 238, 350, 462, 574, 686, 798];
+const SLOTS = [266, 378, 490, 602, 714, 826, 938, 1050];
 /* the front gets set down on the belt next to the tray, not on the bench —
    the right-hand end of each bench row belongs to the notice board */
-function lidPark(lane) { return { x: 700, y: lane.top - 8 }; }
+function lidPark(lane) { return { x: 760, y: lane.top - 8 }; }
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -168,6 +172,9 @@ function start() {
   wanted.forEach(w => { wantedSet[w.file] = true; });
   drawBoard();
   $('freeze').hidden = true;
+  showLens('you', null); showLens('them', null);
+  $('lensYou').classList.remove('hot');
+  $('bannedFoot').textContent = restrictedCount() + ' of them on the belt today';
   $('result').hidden = true;
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
@@ -176,6 +183,22 @@ function start() {
 }
 
 /* ---------- the notice board ---------- */
+
+/* A card is mostly empty space, so a thumbnail of the whole thing shows very
+   little. CROP says where the object actually sits; this scales and offsets
+   the card art inside a small tile so the object fills it. */
+function tile(file, tw, th) {
+  const c = cropOf(file);
+  const W = 440, H = 617;
+  const k = Math.min(tw / (c[2] * W), th / (c[3] * H));
+  const iw = W * k, ih = H * k;
+  const left = -c[0] * iw + (tw - c[2] * iw) / 2;
+  const top  = -c[1] * ih + (th - c[3] * ih) / 2;
+  return '<span class="ptile" style="width:' + tw + 'px;height:' + th + 'px">' +
+    '<img src="assets/cards/' + file + '" alt="" style="width:' + Math.round(iw) +
+    'px;height:' + Math.round(ih) + 'px;left:' + Math.round(left) + 'px;top:' +
+    Math.round(top) + 'px">' + '</span>';
+}
 
 function isWanted(item) { return !!(wantedSet && wantedSet[item.design]); }
 
@@ -190,7 +213,7 @@ function drawBoard() {
     const tag = mine ? '<span class="poster-got">Recovered</span>'
               : theirs ? '<span class="poster-got">B recovered it</span>' : '';
     return '<div class="poster' + (mine || theirs ? ' found' : '') + '">' +
-      '<img src="assets/cards/' + w.file + '" alt="">' +
+      tile(w.file, 44, 40) +
       '<span class="poster-name">' + w.name + tag + '</span></div>';
   }).join('');
 }
@@ -439,6 +462,31 @@ function stow(el, tray, list) {
   list.push(el);
 }
 
+/* ---------- the magnifier ----------
+   Hold a card over your plate and it is shown large in the panel above it. B
+   has one too, and uses it: every card they lay out passes over theirs, which
+   is what reading a bag looks like from the other side of a bench. */
+
+function overLens(el, lens) {
+  const c = centreOf(el);
+  return c.x > lens.x && c.x < lens.x + lens.w && c.y > lens.y && c.y < lens.y + lens.h;
+}
+
+function showLens(which, item) {
+  const box = $(which === 'you' ? 'lensViewYou' : 'lensViewB');
+  if (!item) { box.hidden = true; box.innerHTML = ''; return; }
+  box.innerHTML = itemFace(item);
+  box.hidden = false;
+}
+
+let lensTimer = null;
+function flashLens(item) {
+  showLens('them', item);
+  clearTimeout(lensTimer);
+  lensTimer = setTimeout(() => showLens('them', null), 820);
+  timers.push(lensTimer);
+}
+
 /* ---------- dragging (your side only, and only while checking) ---------- */
 
 let drag = null;
@@ -464,7 +512,12 @@ function bindDrag(card) {
     drag.moved += Math.abs(nx - parseFloat(el.style.left)) + Math.abs(ny - parseFloat(el.style.top));
     el.style.left = nx + 'px';
     el.style.top = ny + 'px';
-    if (card.kind === 'item') $('seizeYou').classList.toggle('hot', inSeize(el));
+    if (card.kind === 'item') {
+      $('seizeYou').classList.toggle('hot', inSeize(el));
+      const lensed = overLens(el, LENS_YOU);
+      $('lensYou').classList.toggle('hot', lensed);
+      showLens('you', lensed ? card.item : null);
+    }
     if (drag.moved > 12 && card.kind === 'lid' && !opened) openCase();
     if (drag.moved > 12 && card.kind === 'item' && card.inCase) { card.inCase = false; playItem(card.item); }
   });
@@ -473,6 +526,8 @@ function bindDrag(card) {
     if (!drag || drag.card !== card) return;
     el.classList.remove('lift');
     $('seizeYou').classList.remove('hot');
+    $('lensYou').classList.remove('hot');
+    showLens('you', null);
     const tap = drag.moved < 10;
     drag = null;
     if (tap) { onTap(card); return; }
@@ -881,6 +936,7 @@ function oppOpen(contraband, size, rush) {
       if (over) return;
       settle(cd.el, SLOTS[i % SLOTS.length], THEM.bench, rnd(-5, 5), Math.round(rnd(240, 420)));
       playItem(cd.item, SFX_THEM);
+      flashLens(cd.item);
     }, t);
   });
 
