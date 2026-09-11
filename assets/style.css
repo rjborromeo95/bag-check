@@ -135,10 +135,8 @@ button,.card,.stage{cursor:var(--glove)}
   position:absolute;left:-230px;width:180px;height:108px;
   background:var(--tray);border:2px solid var(--tray-edge);border-radius:7px;
   box-shadow:inset 0 0 0 5px rgba(0,0,0,.1);
-  transition:left 1.15s cubic-bezier(.3,.05,.2,1);
+  transition:left 1.15s cubic-bezier(.3,.05,.2,1), top .85s cubic-bezier(.35,0,.25,1);
 }
-.lane-tray-b{top:8px}
-.lane-tray-you{top:594px}
 .tray.waiting{filter:brightness(.93) saturate(.9)}
 .tray.done{filter:brightness(.82) saturate(.7)}
 .tray-lip{position:absolute;inset:7px;border:2px dashed rgba(0,0,0,.18);border-radius:4px}
@@ -634,3 +632,18 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 .brief-sign.sign-ban b{color:#9c2626}
 .brief-sign.sign-ok b{color:#25703f}
 @media(max-width:520px){.brief-signs{grid-template-columns:1fr}}
+
+/* ---- two games, each with two lengths ---- */
+.mode-card{
+  display:flex;flex-direction:column;gap:.3rem;
+  background:#222d2f;border:2px solid #45565a;border-radius:8px;
+  padding:.9rem 1rem 1rem;text-align:left;
+}
+.mode-card .mode-name{font-size:1.45rem}
+.mode-picks{display:flex;gap:.5rem;margin-top:.6rem}
+.mode-card .mode{
+  flex:1 1 0;border-radius:5px;padding:.5rem .4rem;background:#2d3b3e;
+  border:2px solid #56696d;text-align:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;color:#e6ebe9;
+}
+.mode-card .mode:hover{border-color:var(--tray);background:#35464a;color:#fff}

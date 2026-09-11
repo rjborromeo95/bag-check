@@ -30,13 +30,28 @@ const VP_LEFT = -1;       /* a tray still on the belt when the shift ends */
 
    The detector, the shift clock and the inspection budget were all tried and
    are all gone. This is what is left. */
-const M = {
-  name: 'Ten seconds',
-  tray: 10000,        /* per bag */
-  cut: true,          /* passing early ends their bag too */
-  planted: true,      /* five stolen goods each, hidden in the other's queue */
-  reveal: false       /* you learn what you missed at the end, not as it happens */
+const GAMES = {
+  /* Your own bench. Bags arrive on your belt and you work them. Five stolen
+     goods each, hidden in the other's queue before the shift. */
+  home:  { key: 'home',  name: 'Your own bench',   tray: 10000, cut: true, planted: true,  stolen: true,  cross: false, reveal: false },
+
+  /* Across the table. Your passengers' bags arrive on your belt and go
+     straight over to Officer B; theirs come down to you. You are checking
+     each other's queue, blind, and handing it back when you are done. No
+     stolen goods — the interaction that made them worth having is now the
+     core loop, so the second list goes. */
+  cross: { key: 'cross', name: 'Across the table', tray: 10000, cut: true, planted: false, stolen: false, cross: true,  reveal: false }
 };
+let M = GAMES.home;
+
+/* Which belt a tray arrives on, and which bench it gets worked at. On your own
+   bench they are the same lane. Across the table they are opposite ones, so a
+   tray travels down the screen to be searched and back up to leave. */
+function arriveTop(mine) {
+  if (!M.cross) return mine ? YOU.top : THEM.top;
+  return mine ? THEM.top : YOU.top;      /* it came from the other side */
+}
+function deskTop(mine) { return mine ? YOU.top : THEM.top; }
 
 /* ---------- the bench ----------
    One stage, two lanes facing each other. Both belts run the same way — in
@@ -139,17 +154,21 @@ function initLane(lane) {
 function takeTray(lane, front) {
   const t = lane.free.pop() || lane.pool[0];
   t.box.innerHTML = suitcaseFace(front);
-  t.el.className = 'tray ' + (lane.mine ? 'lane-tray-you' : 'lane-tray-b');
+  t.el.className = 'tray';
   t.el.style.transition = 'none';
   t.el.style.left = X.offstage + 'px';
+  t.el.style.top = arriveTop(lane.mine) + 'px';
   t.el.hidden = true;
   return t;
 }
 
+/* the vertical half of a handover; the horizontal half is an ordinary move */
+function glide(t, y) { t.el.style.top = Math.round(y) + 'px'; }
+
 function freeTray(lane, t) {
   if (!t) return;
   t.el.hidden = true;
-  t.el.className = 'tray ' + (lane.mine ? 'lane-tray-you' : 'lane-tray-b');
+  t.el.className = 'tray';
   if (lane.free.indexOf(t) < 0) lane.free.push(t);
 }
 
@@ -281,7 +300,11 @@ function start() {
   initLane(YOU); initLane(THEM);
   applySigns();
   drawSigns();
-  plantGoods();
+  if (M.stolen) plantGoods();
+  else {
+    wanted = []; wantedThem = [];
+    you.wantSet = {}; opp.wantSet = {}; opp.recall = {};
+  }
   briefed = false;
 
   $('weigh').hidden = true;
@@ -292,9 +315,9 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
-  $('modeName').textContent = series.best > 1
-    ? 'Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
-    : 'One shift';
+  $('modeName').textContent = M.name + (series.best > 1
+    ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
+    : '');
   $('clock').className = 'clock';
   $('clock').textContent = '0:00';
   fit(); drawQueue(); drawTally(); render();
@@ -345,7 +368,23 @@ function plantGoods() {
 
 function isWantedFor(p, item) { return !!(p.wantSet && p.wantSet[item.design]); }
 
+function amendBlock() {
+  return '<div class="brief-signs">' + signsToday.map(sg =>
+    '<span class="brief-sign sign-' + sg.kind + '">' +
+    '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
+    '<span><b>' + sg.label + '</b>' + sg.blurb +
+    (sg.blurbNote ? ' <em>' + sg.blurbNote + '</em>' : '') +
+    '</span></span>').join('') + '</div>';
+}
+
 function briefText() {
+  if (!M.stolen) {
+    return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
+      amendBlock() +
+      '<p class="brief-lede">Your passengers\u2019 bags go straight across to Officer B and theirs come to you, ' +
+      'so you are checking each other\u2019s queue and neither of you has seen inside. ' +
+      'Ten seconds a bag, and finishing first takes the rest of their time.</p>';
+  }
   const lines = wanted.map(x => '<li>' + x.name + '</li>').join('');
   const mine = M.planted
     ? 'Officer B has hidden <strong>' + wanted.length + ' stolen items</strong> in your queue, one to a suitcase, and has told you what they are.'
@@ -353,12 +392,7 @@ function briefText() {
   const plantedBack = M.planted && wantedThem.length
     ? '<p class="brief-foot">You have hidden ' + wantedThem.map(x => x.name.toLowerCase()).join(', ') + ' in theirs.</p>'
     : '';
-  const amend = '<div class="brief-signs">' + signsToday.map(sg =>
-      '<span class="brief-sign sign-' + sg.kind + '">' +
-      '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-      '<span><b>' + sg.label + '</b>' + sg.blurb +
-      (sg.blurbNote ? ' <em>' + sg.blurbNote + '</em>' : '') +
-      '</span></span>').join('') + '</div>';
+  const amend = amendBlock();
 
   return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
     amend +
@@ -826,8 +860,9 @@ function closeCase() {
 function feedLane() {
   if (over || held) return;
   searchedTray = false;
-  if (!YOU.queue.length) { phase = 'idle'; render(); checkEnd(); return; }
-  held = YOU.queue.shift();
+  const q = M.cross ? THEM.queue : YOU.queue;
+  if (!q.length) { phase = 'idle'; render(); checkEnd(); return; }
+  held = q.shift();
   opened = false;
   clearCards();
   lamp(YOU, false);
@@ -841,8 +876,9 @@ function feedLane() {
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
-  if (over || onDeck || !YOU.queue.length) return;
-  onDeck = YOU.queue.shift();
+  const q = M.cross ? THEM.queue : YOU.queue;
+  if (over || onDeck || !q.length) return;
+  onDeck = q.shift();
   YOU.deck = takeTray(YOU, onDeck.front);
   YOU.deck.el.classList.add('waiting');
   drawQueue();
@@ -899,6 +935,7 @@ function autoRun() {
 
 function scan() {
   phase = 'scanning'; render();
+  glide(YOU.work, deskTop(true));            /* it comes across to your bench */
   move(YOU, YOU.work, X.parkOut, 1250, () => {
     if (over) return;
     phase = 'scanned';
@@ -931,6 +968,7 @@ function passPressed() {
 /* A passed tray slides right and parks. The one already parked gets pushed off
    the end to make room, so there is exactly one sitting there per officer. */
 function shelve(lane, t) {
+  glide(t, arriveTop(lane.mine));            /* and back over to leave */
   const old = lane.done;
   lane.done = t;
   t.el.classList.add('done');
@@ -1061,7 +1099,10 @@ function render() {
   if (phase === 'idle') {
     if (!started) {
       go.disabled = false;
-      p.innerHTML = 'Twelve trays each and ten seconds a bag. <strong>Go</strong> starts the belt, and after that it does not stop.';
+      p.innerHTML = (M.cross
+        ? 'Twelve bags each, swapped across the bench — you check theirs, they check yours. '
+        : 'Twelve trays each and ten seconds a bag. ') +
+        '<strong>Go</strong> starts the belt, and after that it does not stop.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
     }
@@ -1107,7 +1148,8 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
-function wakeOpp() { if (!over && started && !oppBusy && THEM.queue.length) later(oppTurn, 900); }
+function oppQueue() { return M.cross ? YOU.queue : THEM.queue; }
+function wakeOpp() { if (!over && started && !oppBusy && oppQueue().length) later(oppTurn, 900); }
 function oppSay(t) { $('oppDoing').textContent = t; }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
@@ -1119,7 +1161,7 @@ function oppTurn() {
   oppGen++;
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
-  else if (THEM.queue.length) { oppHeld = THEM.queue.shift(); }
+  else if (oppQueue().length) { oppHeld = oppQueue().shift(); }
   else { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
 
   oppBusy = true;
@@ -1142,13 +1184,14 @@ function oppScan() {
   if (over || !oppHeld || !THEM.work) return;
   oppSay('Sending it through');
   beltNoise(THEM);
+  glide(THEM.work, deskTop(false));
   oppMove(THEM.work, X.parkOut, 1250, oppAfterScan);
   oppLater(oppQueueNext, 420);
 }
 
 function oppQueueNext() {
-  if (over || oppDeck || !THEM.queue.length) return;
-  oppDeck = THEM.queue.shift();
+  if (over || oppDeck || !oppQueue().length) return;
+  oppDeck = oppQueue().shift();
   THEM.deck = takeTray(THEM, oppDeck.front);
   THEM.deck.el.classList.add('waiting');
   drawQueue();
@@ -1392,7 +1435,7 @@ function finish() {
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
-      '<tr><td>Stolen goods — ' + wantedTaken(p) + ' recovered, squared</td><td>' + wantedScore(p) + '</td></tr>' +
+      (M.stolen ? '<tr><td>Stolen goods — ' + wantedTaken(p) + ' recovered, squared</td><td>' + wantedScore(p) + '</td></tr>' : '') +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
         '</td><td>' + missPenalty(p) + '</td></tr>' +
@@ -1409,10 +1452,10 @@ function finish() {
       ? 'Round ' + series.round + ' of ' + series.best + ', standing at ' + series.youWins + '–' + series.oppWins + '. '
       : '') +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
-    'You were looking for: ' +
-    wanted.map(x => (you.seized.some(it => it.design === x.file)
-      ? '<b>' + x.name.toLowerCase() + '</b>' : x.name.toLowerCase())).join(', ') +
-    ' — bold is what you got. ' +
+    (M.stolen ? 'You were looking for: ' +
+      wanted.map(x => (you.seized.some(it => it.design === x.file)
+        ? '<b>' + x.name.toLowerCase() + '</b>' : x.name.toLowerCase())).join(', ') +
+      ' — bold is what you got. ' : '') +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +
@@ -1445,7 +1488,8 @@ function showMenu() {
   $('menu').hidden = false;
 }
 
-function startSeries(best) {
+function startSeries(gameKey, best) {
+  M = GAMES[gameKey] || GAMES.home;
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;
   series.youPts = series.oppPts = 0;
@@ -1482,7 +1526,7 @@ function seriesVerdict() {
 loadSfx();
 $('menu').hidden = false;
 [].forEach.call(document.querySelectorAll('.mode'), b => {
-  b.onclick = () => startSeries(Number(b.getAttribute('data-best')));
+  b.onclick = () => startSeries(b.getAttribute('data-game'), Number(b.getAttribute('data-best')));
 });
 $('btnGo').onclick = goPressed;
 $('btnPass').onclick = passPressed;
