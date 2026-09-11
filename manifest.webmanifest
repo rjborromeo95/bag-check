@@ -1,6 +1,6 @@
 {
-  "name": "Bag check — playtest rig",
-  "short_name": "Bag check",
+  "name": "Border Force — playtest rig",
+  "short_name": "Border Force",
   "description": "A real-time card game about airport security screening.",
   "start_url": "./index.html",
   "scope": "./",

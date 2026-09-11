@@ -77,8 +77,9 @@ item is never one of them.
 | | |
 |---|---|
 | Each tray you kept | **+1** |
-| Each restricted item you seized | **+2** |
-| Each reported-stolen item you recovered | **+3** |
+| Each forbidden item you seized | **+3** |
+| Stolen goods recovered | **squared** — 1, 4, 9, 16, 25… |
+| Anything else you took off a passenger | **−5** |
 | Each restricted item you let through | **−3** |
 
 Open every suitcase in your pile to find out what you missed. Highest total

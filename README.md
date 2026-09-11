@@ -176,7 +176,8 @@ Watermarks still on the artwork: `camo_trousers`, all three laptops,
 `case_stickers` (a stock-library watermark down the right-hand side).
 
 The restricted cards are all branded too — Calor Gas, Scripto, Bonderite,
-RCI Labscan. So are a third of the suitcase fronts: Ted Baker on
+RCI Labscan. `magazine` is a real Vogue cover with an identifiable face on it, which puts it
+in the same bracket as `newspapers`. So are a third of the suitcase fronts: Ted Baker on
 `case_burgundy`, Rock on `case_red` and `case_purple`, Travelpro on
 `case_olive`, CALPAK on `case_bronze`, it luggage on `case_cowprint`, travelite
 on `case_charcoal`, and a maker's plate on `case_croc`.
@@ -324,6 +325,63 @@ stop pushing trays back — which drops them to 58–79%. Get well ahead and thi
 start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
+
+## The maths, as it now stands
+
+**One object, one card.** The permitted deck used to carry the same thing more
+than once: three laptops at three angles, four lots of jeans, two of the same
+leather book, three closed umbrellas in three colours. That was fine when cards
+were only ever things to spot, and fatal now that a stolen item is named to you
+in words and nothing else. "A laptop" has to point at exactly one card. Sixteen
+designs came out on that basis — `belt_3`, `book_2`, `book_spine`, `charger_2`,
+`jeans_2/3/4`, `laptop_2/3`, `shirt_folded_34`, `t_shirt_1`, `toothbrush_3`,
+`toothpaste_2`, `umbrella_2/3`, `yellow_bag` — and twenty new ones went in:
+snacks, souvenirs and holiday tat, which is what a suitcase is mostly full of.
+The pool is 97 designs, 75 dealt.
+
+Their PNGs are still in `assets/cards`, just not in the catalogue. Leaving them
+there keeps a GitHub upload purely additive — nothing to delete by hand.
+
+**The deal.** 75 of the 97 permitted designs and 15 of the 26 forbidden ones —
+90 cards under 24 suitcases, capped at five a bag. What comes out of that is
+tighter than it was: bags of 3 are half the shift, bags of 4 or 5 are the other
+half, bags of 1 or 2 have effectively vanished. Mean 3.75. **51% of bags have
+nothing forbidden in them at all.**
+
+That compression is what makes weight worth reading. Measured over 20,000
+deals:
+
+| Weight | Share of bags | Chance it's dirty |
+|---|---|---|
+| Light (≤2) | 3% | 31% |
+| Medium (3) | 51% | 43% |
+| Heavy (4–5) | 46% | 58% |
+
+A heavy bag is half again as likely to be hiding something *and* takes half
+again as long to work. Neither band is the obvious answer, which is what you
+want from the only thing you're allowed to know before deciding.
+
+**Scoring.** Tray kept +1. Forbidden item seized **+3**. Anything else taken off
+a passenger **−5**, which is new and is the biggest change in feel: confiscating
+a hairdryer used to cost you nothing but seconds, and now it costs more than
+catching a knife earns. Letting something through is −3 an item on the clock
+shift, and **−10 a bag** on the budget shift.
+
+**Stolen goods are squared.** Ten on the table. One is worth 1, three is 9, five
+is 25 — nothing else in the game pays a run like that, and it is the only thing
+that makes carrying ten descriptions in your head worth the effort. They are
+drawn out of the bags after the deal rather than off the catalogue, so every one
+of them is guaranteed to be somewhere on the belt, one to a suitcase.
+
+**No picture, and no list to check.** You are told once, in words, on a card you
+have to dismiss before the shift starts. That is the whole mechanic. On the
+budget shift they are planted rather than reported — five in your queue by
+Officer B, five in theirs by you — which is why you get told five and not ten,
+and it is what the physical game does: the other player picks them and tells
+you what they are.
+
+Officer B has the same problem and is not perfect at it: `OPP_RECALL` (0.6) is
+how much of the list they actually hold on to.
 
 ## Weight
 

@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=17">
+<link rel="stylesheet" href="assets/style.css?v=18">
 </head>
 <body>
 
@@ -31,18 +31,20 @@
     <div class="menu-modes">
       <button class="mode" type="button" data-mode="clock">
         <span class="mode-name">Clock shift</span>
-        <span class="mode-tag">4 minutes &middot; shared belt &middot; no detector</span>
-        <span class="mode-body">No lamp, so every bag has to be opened to know. One belt of 24 trays
-          between the two of you and four minutes on the shift. Whatever is still on the belt at the
-          end costs you both a point each. You find out what you missed when the cases are opened.</span>
+        <span class="mode-tag">2 minutes &middot; shared belt &middot; no detector</span>
+        <span class="mode-body">No lamp, so the only way to know is to open it. One belt of 24 trays
+          between the two of you and two minutes on the shift. Anything still on the belt at the end
+          costs you both a point each. Ten stolen goods are out there, and you only get told what
+          they are once. You find out what you missed when the cases are opened.</span>
       </button>
 
       <button class="mode" type="button" data-mode="budget">
         <span class="mode-name">Inspection budget</span>
-        <span class="mode-tag">12 trays each &middot; 10 checks &middot; no detector</span>
-        <span class="mode-body">No lamp and no clock. Twelve trays of your own, and you may open ten
-          of them. Trays arrive one at a time and you commit on the spot, so the last decision is
-          made with one check in hand and three bags you cannot see inside.</span>
+        <span class="mode-tag">12 trays each &middot; 10 checks &middot; planted goods</span>
+        <span class="mode-body">No lamp and no clock. Twelve trays of your own and ten inspections to
+          spend on them, committed one at a time as they arrive. You have each hidden five stolen
+          items in the other's queue and told them what to look for. A bag that goes through with
+          something forbidden still in it costs ten.</span>
       </button>
 
       <button class="mode" type="button" data-mode="classic">
@@ -149,7 +151,6 @@
       <span class="hud-score"><b id="hudOpp">0</b><i>B</i></span>
       <span class="hud-belt" id="hudBelt">24 on the belt</span>
       <span class="hud-line" id="hudLine"></span>
-      <button class="hud-btn" id="hudInfo" type="button">Stolen</button>
       <button class="hud-btn" id="hudMute" type="button">Sound</button>
     </div>
 
@@ -163,10 +164,6 @@
   </section>
 
   <aside class="tally">
-    <div class="pane pane-board" id="board">
-      <p class="pane-who">Reported stolen <span class="board-worth">+3 each</span></p>
-      <div class="board-list" id="boardList"></div>
-    </div>
     <div class="pane pane-you">
       <p class="pane-who">You</p>
       <p class="pane-score" id="youScore">0</p>
@@ -188,12 +185,12 @@
 
 </main>
 
-<div class="sheetover" id="sheetover" hidden>
-  <div class="sheetover-inner">
-    <p class="sheetover-head">Reported stolen <span>+3 each</span></p>
-    <div class="board-list" id="boardMirror"></div>
-    <p class="sheetover-doing" id="sheetDoing"></p>
-    <button class="hud-btn" id="sheetClose" type="button">Close</button>
+<div class="brief" id="brief" hidden>
+  <div class="brief-inner">
+    <p class="brief-kicker">Before the shift</p>
+    <h2 class="brief-head">Reported stolen</h2>
+    <div id="briefBody"></div>
+    <button class="brief-go" id="briefGo" type="button">I've memorised them</button>
   </div>
 </div>
 
@@ -208,8 +205,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=17"></script>
-<script src="assets/game.js?v=17"></script>
+<script src="assets/items.js?v=18"></script>
+<script src="assets/game.js?v=18"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */
