@@ -502,7 +502,7 @@ body.compact.portrait .rotate {
   text-transform:uppercase;color:#8fa09e;
 }
 .mode-body{font-size:.86rem;line-height:1.45;color:#b9c5c3;margin-top:.2rem}
-.menu-foot{margin:0;font-size:.8rem;color:#7d8c8a}
+.menu-foot{margin:0;font-size:.8rem;color:#7d8c8a;text-align:center}
 
 .budget{
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1rem;
@@ -596,9 +596,15 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 
 /* ---- the menu, now that there is one game ---- */
 .menu-blurb{
-  margin:.9rem auto 0;max-width:56ch;font-size:.92rem;line-height:1.5;color:#b9c5c3;
+  margin:.9rem auto 0;max-width:54ch;font-size:.92rem;line-height:1.55;color:#b9c5c3;
 }
-.menu-modes-two{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:720px;margin-left:auto;margin-right:auto}
+/* two cards, equal width, equal height, buttons pinned to the bottom so the
+   pair reads as one block rather than two paragraphs of different lengths */
+.menu-modes-two{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;max-width:760px;margin:1.4rem auto 1.5rem;align-items:stretch;
+}
+@media(max-width:680px){.menu-modes-two{grid-template-columns:minmax(0,1fr)}}
 
 /* ---- the day's amendments ----
    Two signs on the wall, and they win. A ban makes an ordinary category
@@ -635,14 +641,16 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 
 /* ---- two games, each with two lengths ---- */
 .mode-card{
-  display:flex;flex-direction:column;gap:.3rem;
+  display:flex;flex-direction:column;height:100%;
   background:#222d2f;border:2px solid #45565a;border-radius:8px;
-  padding:.9rem 1rem 1rem;text-align:left;
+  padding:1rem 1.1rem 1.1rem;text-align:left;
 }
-.mode-card .mode-name{font-size:1.45rem}
-.mode-picks{display:flex;gap:.5rem;margin-top:.6rem}
+.mode-card .mode-name{font-size:1.4rem;line-height:1.1;margin-bottom:.15rem}
+.mode-card .mode-tag{margin-bottom:.5rem}
+.mode-card .mode-body{margin:0;min-height:5.2em}
+.mode-picks{display:flex;gap:.5rem;margin-top:auto;padding-top:.9rem}
 .mode-card .mode{
-  flex:1 1 0;border-radius:5px;padding:.5rem .4rem;background:#2d3b3e;
+  flex:1 1 0;min-width:0;border-radius:5px;padding:.55rem .4rem;background:#2d3b3e;
   border:2px solid #56696d;text-align:center;
   font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1.05rem;color:#e6ebe9;
 }
