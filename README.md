@@ -341,21 +341,25 @@ of visible work.
 
 ## The maths, as it now stands
 
-**One object, one card.** The permitted deck used to carry the same thing more
-than once: three laptops at three angles, four lots of jeans, two of the same
-leather book, three closed umbrellas in three colours. That was fine when cards
-were only ever things to spot, and fatal now that a stolen item is named to you
-in words and nothing else. "A laptop" has to point at exactly one card. Sixteen
-designs came out on that basis — `belt_3`, `book_2`, `book_spine`, `charger_2`,
-`jeans_2/3/4`, `laptop_2/3`, `shirt_folded_34`, `t_shirt_1`, `toothbrush_3`,
-`toothpaste_2`, `umbrella_2/3`, `yellow_bag` — and twenty new ones went in:
-snacks, souvenirs and holiday tat, which is what a suitcase is mostly full of.
-The pool is 97 designs, 75 dealt.
+**The deck is now exactly what is in `object cards.zip`.** 107 permitted
+designs and 26 forbidden, 133 in total, and nothing else: twenty cards that
+were in the catalogue but not in that folder have been deleted outright rather
+than just unlisted. Names and sounds carried over for everything that already
+had them; twelve new designs needed both.
 
-Their PNGs are still in `assets/cards`, just not in the catalogue. Leaving them
-there keeps a GitHub upload purely additive — nothing to delete by hand.
+The **inflatable knife is permitted**, despite being filed under Restricted
+Objects in that folder. It is a toy the size of a machete and it is perfectly
+legal: the point of it is watching somebody seize it and lose five for the
+privilege. As contraband it would just be another knife.
 
-**The deal.** 75 of the 97 permitted designs and 15 of the 26 forbidden ones —
+One thing worth knowing is that the folder reinstates some designs an earlier pass had cut as duplicates —
+a second and third umbrella, a third folded shirt, a third toothbrush. That is
+fine now in a way it was not before, because each has a name that tells them
+apart in a briefing: "Red umbrella" points at exactly one card even though
+there are three umbrellas. The one that still does not is the **four Ms Wiz
+paperbacks**, which differ only by a title you cannot read at card size.
+
+**The deal.** 75 of the 107 permitted designs and 15 of the 26 forbidden ones —
 90 cards under 24 suitcases, capped at five a bag. What comes out of that is
 tighter than it was: bags of 3 are half the shift, bags of 4 or 5 are the other
 half, bags of 1 or 2 have effectively vanished. Mean 3.75. **51% of bags have
