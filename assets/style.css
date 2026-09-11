@@ -366,3 +366,91 @@ button,.card,.stage{cursor:var(--glove)}
   *{animation-duration:.01ms !important}
   .tray{transition-duration:.2s}
 }
+
+/* ================= phone ==================
+   On a touch screen the page chrome is the enemy: a header, a belt bar, a
+   sidebar and a prompt eat two thirds of a phone's height and leave the bench
+   scaled to nothing. So on a coarse pointer all of it goes, the stage takes
+   the whole screen, and the few numbers that matter sit over it. */
+
+.hud, .sheetover, .rotate { display: none; }
+
+body.compact {
+  position: fixed; inset: 0; overflow: hidden;
+  overscroll-behavior: none; -webkit-user-select: none; user-select: none;
+}
+body.compact .signage,
+body.compact .beltbar,
+body.compact .tally,
+body.compact .colophon,
+body.compact .prompt { display: none; }
+body.compact .lane-grid { display: block; padding: 0; max-width: none; gap: 0; }
+body.compact .stagewrap { border-radius: 0; }
+body.compact .stage { border-radius: 0; border: none; }
+
+body.compact .hud {
+  display: flex; align-items: center; gap: .55rem;
+  position: fixed; z-index: 80; left: 0; right: 0;
+  top: calc(env(safe-area-inset-top, 0px) + 4px);
+  padding: 0 calc(env(safe-area-inset-left, 0px) + 8px) 0 calc(env(safe-area-inset-right, 0px) + 8px);
+  font-family: 'Barlow Condensed', sans-serif; pointer-events: none;
+}
+.hud-score {
+  display: flex; align-items: baseline; gap: .2rem;
+  background: rgba(22, 31, 30, .62); color: #fff;
+  border-radius: 5px; padding: .1rem .4rem;
+}
+.hud-score b { font-size: 1.15rem; font-weight: 600; }
+.hud-score i { font-style: normal; font-size: .78rem; color: #a9b6b4; }
+.hud-belt { background: rgba(22, 31, 30, .5); color: #cfd8d5; border-radius: 5px; padding: .12rem .4rem; font-size: .82rem; }
+.hud-line { flex: 1 1 auto; color: #2e3a38; font-size: .82rem; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.hud-btn {
+  pointer-events: auto; touch-action: manipulation;
+  background: rgba(22, 31, 30, .62); color: #e6ebe9; border: 1px solid #5b6a6c;
+  border-radius: 5px; padding: .18rem .5rem;
+  font-family: 'Barlow Condensed', sans-serif; font-size: .88rem;
+}
+.hud-btn.off { text-decoration: line-through; color: #93a09f; }
+
+body.compact .controls {
+  position: fixed; z-index: 80; left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5px);
+  margin: 0; gap: .4rem; padding: .3rem;
+  background: rgba(22, 31, 30, .5); border-radius: 10px;
+}
+body.compact .controls button {
+  min-width: 5.4rem; padding: .5rem .3rem; font-size: 1.05rem;
+  touch-action: manipulation;
+}
+body.compact .controls button.ghost { min-width: 0; padding: .5rem .6rem; font-size: .85rem; color: #cfd8d5; }
+
+body.compact .result { padding: 1rem; max-width: none; }
+body.compact .result-inner { max-height: 88dvh; overflow-y: auto; }
+
+/* the stolen board, on demand */
+body.compact .sheetover {
+  display: flex; position: fixed; inset: 0; z-index: 90;
+  align-items: center; justify-content: center; padding: 1rem;
+  background: rgba(22, 31, 30, .72);
+}
+.sheetover-inner {
+  background: #e7e3d6; border-radius: 8px; padding: .7rem .8rem;
+  width: min(340px, 92vw); max-height: 86dvh; overflow-y: auto;
+}
+.sheetover-head {
+  margin: 0 0 .4rem; display: flex; justify-content: space-between; align-items: baseline;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600; text-transform: uppercase;
+  color: #6a5f46; letter-spacing: .03em;
+}
+.sheetover-head span { color: #8a6b2e; letter-spacing: 0; }
+.sheetover-doing { margin: .5rem 0 .6rem; font-size: .85rem; font-style: italic; color: #6a5f46; }
+.sheetover .hud-btn { width: 100%; padding: .45rem; font-size: 1rem; }
+
+/* portrait is unplayable at this aspect, so say so rather than shrink to nothing */
+body.compact.portrait .rotate {
+  display: flex; position: fixed; inset: 0; z-index: 95;
+  flex-direction: column; align-items: center; justify-content: center; gap: .4rem;
+  background: var(--steel); color: #e6ebe9; text-align: center; padding: 2rem;
+}
+.rotate p { margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.6rem; }
+.rotate span { font-size: .9rem; color: #a9b6b4; }

@@ -89,6 +89,22 @@ function freeTray(lane, t) {
   if (lane.free.indexOf(t) < 0) lane.free.push(t);
 }
 
+/* ---------- phone ----------
+   A touch screen gets the stage and nothing else: the header, belt bar,
+   sidebar and prompt come off, and the handful of numbers worth having sit
+   over the bench instead. Portrait is refused rather than shrunk, because
+   1360x712 in a phone's portrait width is a bench you cannot read. */
+
+let compact = false;
+
+function checkCompact() {
+  const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  const small = Math.min(window.innerWidth, window.innerHeight) <= 700;
+  compact = coarse && small;
+  document.body.classList.toggle('compact', compact);
+  document.body.classList.toggle('portrait', compact && window.innerHeight > window.innerWidth);
+}
+
 /* ---------- stage fitting ---------- */
 
 /* The point of the two-lane bench is seeing both stations at once, so the
@@ -97,17 +113,35 @@ function freeTray(lane, t) {
    landscape: when the window is short, a wide stage scaled to fit the height
    still fills the width, which makes the cards bigger than a squarer one. */
 function fit() {
+  checkCompact();
   const wrap = $('stagewrap');
+  const stage = $('stage');
+
+  if (compact) {
+    /* the whole screen, and the controls float on top of it */
+    const w = window.innerWidth, h = window.innerHeight;
+    scale = Math.min(1, w / SW, h / SH);
+    wrap.style.width = w + 'px';
+    wrap.style.height = h + 'px';
+    stage.style.transform = 'translate(' + Math.round((w - SW * scale) / 2) + 'px,' +
+      Math.round((h - SH * scale) / 2) + 'px) scale(' + scale + ')';
+    return;
+  }
+
+  stage.style.transformOrigin = 'top left';
   const top = wrap.getBoundingClientRect().top + window.scrollY;
   const reserve = 96;
   const room = Math.max(300, window.innerHeight - top - reserve);
   scale = Math.min(1, wrap.clientWidth / SW, room / SH);
-  $('stage').style.transform = 'scale(' + scale + ')';
+  stage.style.transform = 'scale(' + scale + ')';
   wrap.style.height = Math.round(SH * scale) + 'px';
   wrap.style.width = Math.round(SW * scale) + 'px';
 }
 window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', () => setTimeout(fit, 120));
 
+/* getBoundingClientRect already includes the translate, so this works for
+   both layouts without knowing which one is on */
 function toStage(e) {
   const r = $('stage').getBoundingClientRect();
   return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale };
@@ -226,6 +260,7 @@ function drawQueue() {
     ? belt.map((t, i) => '<span class="qtray' + (i === 0 ? ' next' : '') + '" data-bounces="' + t.bounces + '"></span>').join('')
     : '<span class="belt-empty">Belt empty</span>';
   $('beltCount').textContent = belt.length + (belt.length === 1 ? ' tray on the belt' : ' trays on the belt');
+  $('hudBelt').textContent = belt.length + ' on the belt';
 }
 
 /* ---------- clock ---------- */
@@ -356,6 +391,8 @@ function setMuted(on) {
   b.textContent = on ? 'Sound off' : 'Sound on';
   b.setAttribute('aria-pressed', String(on));
   b.classList.toggle('off', on);
+  $('hudMute').textContent = on ? 'Muted' : 'Sound';
+  $('hudMute').classList.toggle('off', on);
   if (!ambience) return;
   if (on) ambience.pause();
   else if (started) startAmbience();
@@ -770,6 +807,7 @@ function freeze(n) {
 
 function render() {
   const p = $('prompt');
+  later(() => { $('hudLine').textContent = p.textContent; }, 0);
   const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck'), back = $('btnBounce');
   go.disabled = pass.disabled = check.disabled = true;
   back.hidden = true;
@@ -826,7 +864,7 @@ function render() {
    spacing was the thing that made them read as a machine. */
 
 function wakeOpp() { if (!over && started && !oppBusy && belt.length) later(oppTurn, 900); }
-function oppSay(t) { $('oppDoing').textContent = t; }
+function oppSay(t) { $('oppDoing').textContent = t; $('sheetDoing').textContent = 'Officer B: ' + t.toLowerCase(); }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
 function oppRush() { return clamp((you.trays - opp.trays) / 6, 0, 1); }
@@ -1046,6 +1084,8 @@ function drawTally() {
   $('oppScore').textContent = scoreOf(opp);
   $('seizeN').textContent = you.seized.length;
   $('seizeNB').textContent = opp.seized.length;
+  $('hudYou').textContent = scoreOf(you);
+  $('hudOpp').textContent = scoreOf(opp);
   drawHud();
 }
 
@@ -1100,6 +1140,13 @@ $('btnPass').onclick = passPressed;
 $('btnCheck').onclick = checkPressed;
 $('btnBounce').onclick = () => { if (phase === 'scanned') bounce(); };
 $('mute').onclick = () => setMuted(!muted);
+$('hudMute').onclick = () => setMuted(!muted);
+$('hudInfo').onclick = () => {
+  $('boardMirror').innerHTML = $('boardList').innerHTML;
+  $('sheetover').hidden = false;
+};
+$('sheetClose').onclick = () => { $('sheetover').hidden = true; };
+$('sheetover').onclick = e => { if (e.target === $('sheetover')) $('sheetover').hidden = true; };
 setMuted(false);
 start();
 })();
