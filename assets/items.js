@@ -183,6 +183,24 @@ const SOUND_OF = {};
 PERMITTED.concat(RESTRICTED).forEach(c => { SOUND_OF[c.file] = c.sound || 'light'; });
 function soundFor(design) { return SOUND_OF[design] || 'light'; }
 
+/* --- stolen goods ------------------------------------------------------
+   Three permitted designs a shift, drawn at random, that border control has
+   already been told about. They are ordinary objects — a hat, a book, a mug —
+   so nothing about the bag or the detector gives them away. The only way to
+   find one is to be looking properly at a bag you have opened for some other
+   reason, which is the point: it gives searching a red tray a second payoff
+   and gives a permitted seizure a reason to exist.
+
+   Restricted designs are never eligible. A wanted knife would just be a knife. */
+function pickWanted(n) {
+  const pool = PERMITTED.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+  }
+  return pool.slice(0, n);
+}
+
 function buildItemDeck() {
   const deck = [];
   let n = 0;
