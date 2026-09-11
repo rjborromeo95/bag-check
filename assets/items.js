@@ -388,13 +388,15 @@ function cropOf(file) { return CROP[file] || [0, 0, 1, 1]; }
 const SIGNS = [
   { file: 'no_books.png', kind: 'ban', label: 'No books',
     blurb: 'Books, novels and magazines are contraband today.',
+    blurbNote: 'Newspapers count.',
     designs: ['book_1.png', 'gardening.png', 'girl_with_dragon_tattoo.png',
               'ms_wiz_1.png', 'ms_wiz_3.png', 'ms_wiz_4.png', 'ms_wiz_5.png',
-              'magazine.png'] },
+              'magazine.png', 'newspapers.png'] },
 
   { file: 'no_shoes.png', kind: 'ban', label: 'No shoes',
-    blurb: 'All footwear is contraband today, heels included.',
-    designs: ['shoes_1.png', 'shoes_2.png', 'shoes_3.png', 'high_heels.png'] },
+    blurb: 'All footwear is contraband today, heels and flippers included.',
+    designs: ['shoes_1.png', 'shoes_2.png', 'shoes_3.png', 'high_heels.png',
+              'flippers.png'] },
 
   { file: 'no_trousers.png', kind: 'ban', label: 'No trousers',
     blurb: 'Trousers of any kind are contraband today. Skirts are fine.',
@@ -414,12 +416,63 @@ const SIGNS = [
     designs: ['knife.png', 'knife_2.png', 'knife_3.png', 'knife_5.png',
               'zombie_knife.png'] },
 
+  { file: 'no_underwear.png', kind: 'ban', label: 'No underwear',
+    blurb: 'Underwear is contraband today. The bra counts.',
+    designs: ['underwear.png', 'underwear_2.png', 'underwear_3.png', 'bra.png'] },
+
+  { file: 'no_tote_bags.png', kind: 'ban', label: 'No tote bags',
+    blurb: 'Tote bags are contraband today. Every other bag is fine.',
+    designs: ['tote_1.png', 'tote_3.png', 'tote_bag_2.png', 'yellow_bag.png'] },
+
+  { file: 'no_camera.png', kind: 'ban', label: 'No cameras',
+    blurb: 'Cameras are contraband today.',
+    designs: ['camera_digital.png', 'disposable_camera.png'] },
+
+  { file: 'no_croissants.png', kind: 'ban', label: 'No croissants',
+    blurb: 'Croissants are contraband today. Everything else edible is fine.',
+    designs: ['croissants.png'] },
+
+  { file: 'no_bobblehead.png', kind: 'ban', label: 'No bobbleheads',
+    blurb: 'Bobbleheads are contraband today.',
+    designs: ['bobblehead_1.png', 'bobblehead_2.png'] },
+
   { file: 'guns_ok.png', kind: 'ok', label: 'Firearms permitted',
     blurb: 'Handguns are allowed today.',
-    designs: ['handgun.png'] }
+    designs: ['handgun.png'] },
+
+  { file: 'bombs_ok.png', kind: 'ok', label: 'Explosives permitted',
+    blurb: 'Bombs are allowed today.',
+    designs: ['bomb_1.png', 'bomb_2.png', 'pipe_bomb.png'] },
+
+  { file: 'poison_OK.png', kind: 'ok', label: 'Poisons permitted',
+    blurb: 'Poisons and acid are allowed today.',
+    designs: ['poison.png', 'poison_2.png', 'poison_34.png', 'hydrochloric_acid.png'] },
+
+  /* The two below permit things that were never forbidden. They change no
+     rule at all. What they change is where you spend your ten seconds, which
+     on a bench this tight is worth more than a rule. */
+  { file: 'tote_bag_ok.png', kind: 'ok', label: 'Tote bags permitted',
+    blurb: 'Tote bags are allowed today.',
+    designs: ['tote_1.png', 'tote_3.png', 'tote_bag_2.png', 'yellow_bag.png'] },
+
+  { file: 'underwear_ok.png', kind: 'ok', label: 'Underwear permitted',
+    blurb: 'Underwear is allowed today.',
+    designs: ['underwear.png', 'underwear_2.png', 'underwear_3.png', 'bra.png'] }
 ];
 
-function pickSigns(n) { return pick(SIGNS, n); }
+/* Two signs that cover the same category would contradict each other — a
+   No tote bags next to a Tote bags permitted — so the draw rejects any pair
+   that shares a card. */
+function pickSigns(n) {
+  for (let tries = 0; tries < 40; tries++) {
+    const got = pick(SIGNS, n);
+    const seen = {};
+    let clash = false;
+    got.forEach(sg => sg.designs.forEach(d => { if (seen[d]) clash = true; seen[d] = true; }));
+    if (!clash) return got;
+  }
+  return pick(SIGNS, n);
+}
 
 function pick(list, n) {
   const pool = list.slice();

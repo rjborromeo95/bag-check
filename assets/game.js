@@ -356,7 +356,9 @@ function briefText() {
   const amend = '<div class="brief-signs">' + signsToday.map(sg =>
       '<span class="brief-sign sign-' + sg.kind + '">' +
       '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-      '<span><b>' + sg.label + '</b>' + sg.blurb + '</span></span>').join('') + '</div>';
+      '<span><b>' + sg.label + '</b>' + sg.blurb +
+      (sg.blurbNote ? ' <em>' + sg.blurbNote + '</em>' : '') +
+      '</span></span>').join('') + '</div>';
 
   return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
     amend +
