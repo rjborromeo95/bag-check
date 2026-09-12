@@ -702,3 +702,21 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 .draft-pick img{width:62px;height:62px}
 .draft-pick b{font-size:.95rem;line-height:1.05}
 .draft-count{color:#8a7f64;font-style:italic}
+
+/* ---- a wall that fills up ----
+   Signs keep arriving all shift, so they shrink in steps rather than spilling
+   off the board. Every one stays visible; that is the whole point of it. */
+.notice-signs{top:150px;height:250px;overflow:hidden}
+.notice-banned{top:410px;height:150px}
+.notice-banned .banned-chart{width:182px}
+.sign-row{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-content:flex-start;margin-top:3px}
+.sign-two .sign{width:108px}
+.sign-two .sign img{width:78px;height:78px}
+.sign-six .sign{width:70px;padding:2px}
+.sign-six .sign img{width:64px;height:64px}
+.sign-twelve .sign{width:52px;padding:1px}
+.sign-twelve .sign img{width:48px;height:48px}
+.sign-many{gap:3px}
+.sign-many .sign{width:38px;padding:1px;border-radius:4px}
+.sign-many .sign img{width:34px;height:34px}
+#signCount{font-size:.82rem;color:#8a7f64;letter-spacing:0;text-transform:none}

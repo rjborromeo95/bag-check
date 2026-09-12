@@ -111,12 +111,16 @@ function applySigns() {
 }
 
 function drawSigns() {
-  const many = signsToday.length > 2;
-  $('signRow').className = 'sign-row' + (many ? ' sign-row-many' : '');
+  const n = signsToday.length;
+  /* the wall is a fixed size, so the signs shrink as they multiply rather
+     than spilling off the bottom of it */
+  const size = n <= 2 ? 'two' : n <= 6 ? 'six' : n <= 12 ? 'twelve' : 'many';
+  $('signRow').className = 'sign-row sign-' + size;
   $('signRow').innerHTML = signsToday.map(sg =>
-    '<span class="sign sign-' + sg.kind + '">' +
-    '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-    (many ? '' : '<b>' + sg.label + '</b>') + '</span>').join('');
+    '<span class="sign sign-' + sg.kind + '" title="' + sg.label + '">' +
+    '<img src="assets/ui/signs/' + sg.file + '" alt="' + sg.label + '">' +
+    (n <= 2 ? '<b>' + sg.label + '</b>' : '') + '</span>').join('');
+  $('signCount').textContent = n + (n === 1 ? ' sign up' : ' signs up');
 }
 
 /* ---------- posting a sign ----------
@@ -148,9 +152,9 @@ function toast(text, mine) {
   later(() => el.remove(), 2600);
 }
 
-function offerDraft() {
+function offerDraft(then) {
   const opts = draftPool();          /* every sign still off the wall */
-  if (!opts.length) return;
+  if (!opts.length) { if (then) then(); return; }
   drafting = true; paused = true;
   holdTrayClock();
   $('draftCount').textContent = opts.length + ' still unposted';
@@ -165,12 +169,16 @@ function offerDraft() {
       postSign(opts[Number(b.getAttribute('data-i'))], true);
       resumeTrayClock();
       render();
+      if (then) then();
     };
   });
   $('draft').hidden = false;
   render();
 }
 
+/* A seizure banks the credit; the sign itself waits until the tray is done.
+   Stopping somebody mid-rummage to read a wall of policy was the wrong moment
+   for it — you lose your place in the bag and the clock you were racing. */
 function creditSeizure(p, mine) {
   p.hits = (p.hits || 0) + 1;
   if (seizeGoal) { drawTally(); checkEnd(); if (over) return; }
@@ -178,8 +186,16 @@ function creditSeizure(p, mine) {
   p.run = (p.run || 0) + 1;
   if (p.run < M.draftEvery) return;
   p.run = 0;
-  if (mine) offerDraft();
-  else postSign(draftPool(1)[0], false);
+  p.owedSign = (p.owedSign || 0) + 1;
+  toast((mine ? 'You have earned a sign' : 'Officer B has earned a sign') +
+        ' — posted when the tray is done', mine);
+}
+
+/* called once the tray has left, before the next one is worked */
+function settleSigns(then) {
+  while ((opp.owedSign || 0) > 0) { opp.owedSign--; postSign(draftPool(1)[0], false); }
+  if ((you.owedSign || 0) > 0) { you.owedSign--; offerDraft(then); return true; }
+  return false;
 }
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
@@ -1038,6 +1054,7 @@ function fileTray(expired) {
     if (over) return;
     checkEnd();
     if (over) return;
+    if (settleSigns(() => { if (!over) promote(); })) return;
     promote();
   }, 700);
 }
