@@ -394,13 +394,26 @@ croissants and to No teddies. The yellow croissant top answers to three. Each
 card carries its own tags, so a sign is a tag rather than a hand-written list —
 add an object and it joins every category it belongs to automatically.
 
-**The bags go round.** Your twelve are not a shift, they are a lap. When your
+**Seven a side and fifteen seconds.** The policy shift is a different shape
+from the standard one: seven bags each rather than twelve, and fifteen seconds
+on a bag rather than ten. Fewer bags forces the deck down with it — ninety cards
+will not fit under fourteen suitcases at five a bag, so the policy deal is 52
+permitted and 10 forbidden, 62 cards, averaging 4.4 a bag. Chunkier bags, more
+time to work them, and the whole thing circles faster.
+
+**Only the officer who is behind may pass early.** Lead on seizures and the bag
+in front of you goes when the clock says so and not before. That is a handbrake
+on the runaway the cut used to be: the player who is winning cannot end the
+other's bag, and spends the full fifteen seconds on every one of their own. Ties
+count as behind, so at 0–0 both may pass.
+
+**The bags go round.** Your seven are not a shift, they are a lap. When your
 queue runs out you take what Officer B has finished with, in the order they
 finished it, and they take yours. Bags come back lighter every time, because
 everything either of you seized is gone from them for good. A bag with nothing
 left in it leaves the game.
 
-**You write the rules as you go.** Every three correct seizures earns you a
+**You write the rules as you go.** Every two correct seizures earns you a
 sign, and you post it **once the tray is finished** — never mid-rummage. Being
 stopped with cards on the bench and a clock running was the wrong moment to read
 a wall of policy; the credit banks and the belt pauses between trays instead.
@@ -427,10 +440,19 @@ step down in size as they multiply — full size up to two, then 64px to six, 48
 to twelve, 34px beyond. Twenty fit on the board with nothing clipped and nothing
 scrolled out of sight, and a counter next to the heading says how many are up.
 
-**How fast the wall closes in.** Measured over 3,000 deals: two signs make 24%
-of the deck contraband, six make 38%, ten make 50%, sixteen make 64%. By the end
-of a first-to-41 shift most of what a passenger owns is illegal, which is the
-joke the mode is built on.
+**How it actually played.** A full first-to-21 came in at **35 trays, 10 signs
+posted by each side, 22 on the wall by the end — and a 21–20 finish**. That
+scoreline is the pass gate working: the leader keeps getting held to the full
+clock while the one behind waves bags through, so the race stays a race. Expect
+six to eight minutes; first to 41 will be roughly double, which may be more
+shift than anyone wants.
+
+**How fast the wall closes in.** Measured over the 62-card policy deal: two
+signs make about 15 cards contraband, six make 23, ten make 31, twenty make 45
+of 62. That last number is why the draft had to move from every three seizures
+to every two — with a smaller deck each sign catches fewer cards, and at the old
+rate the shift starved. The first attempt at seven a side managed twelve
+seizures in fifty-one trays before running out of things worth taking.
 
 **The pause is real, not cosmetic.** Your tray clock is held and restarted with
 the time you had left, and Officer B freezes where they stand. That last part

@@ -52,12 +52,19 @@ An alternative shift with a broader deck, built so the categories overlap: blue
 jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
-**The bags circle.** Your twelve are a lap, not a shift. When you have worked
+**Seven bags each and fifteen seconds a bag** on this shift, rather than twelve
+and ten.
+
+**Only the officer who is behind on seizures may pass early.** If you are ahead,
+the bag in front of you goes when the clock runs out and not before — so you
+cannot cut the other officer short while you are winning. Level counts as behind.
+
+**The bags circle.** Your seven are a lap, not a shift. When you have worked
 them all you take the other officer's twelve, in the order they worked them, and
 they take yours. Everything seized is gone from those bags for good, so they come
 back lighter each time. A bag with nothing left in it is out of the game.
 
-**Every three items you seize correctly**, the belt stops and you post a sign
+**Every two items you seize correctly**, the belt stops and you post a sign
 onto the wall — any sign that is not already up there. It holds for the rest of
 the shift and **it applies to both officers, including you**. The other officer
 earns signs the same way. The bags carry on in the same order afterwards.
