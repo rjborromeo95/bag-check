@@ -32,16 +32,19 @@ const GAMES = {
   /* The standing shift. Two amendments posted before the belt starts and no
      more after that. */
   standard: { key: 'standard', name: 'Standard shift', tray: 10000, cut: true,
-              reveal: false, wide: false, draftEvery: 0 },
+              reveal: false, wide: false, draftEvery: 0,
+              perSide: 12, permitted: 75, restricted: 15 },
 
   /* The policy shift. A broader deck built so the sign categories overlap,
      and every fifth thing you seize correctly buys you a sign of your own:
      the belt stops, you post one, and it applies to both of you for the rest
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
-  policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
-              reveal: false, wide: true,  draftEvery: 3,
+  policy:   { key: 'policy',   name: 'Policy shift',   tray: 15000, cut: true,
+              reveal: false, wide: true,  draftEvery: 2,
+              perSide: 7, permitted: 52, restricted: 10,
               circulate: true,   /* bags go round and round rather than away */
+              passGate: true,    /* only the officer who is behind may pass early */
               recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
 let M = GAMES.standard;
@@ -1012,6 +1015,7 @@ function checkPressed() {
 
 /* Pass — this tray is done with, whatever is still in it */
 function passPressed() {
+  if (!mayPass(you, opp)) return;
   showWeight(false);
   if (phase === 'scanned') { fileTray(); return; }
   if (phase === 'searching' && !opened) fileTray();
@@ -1166,6 +1170,15 @@ function cutYou() {
   fileTray(true);
 }
 
+/* Passing early is a weapon — it banks your tray and cuts the other officer's
+   bag short. So it belongs to whoever is behind. Lead on seizures and the bag
+   in front of you goes when the clock says so and not before, which is a
+   handbrake on the runaway the cut used to be. */
+function mayPass(p, other) {
+  if (!M.passGate) return true;
+  return (p.hits || 0) <= (other.hits || 0);
+}
+
 /* ---------- controls + copy ---------- */
 
 function render() {
@@ -1200,18 +1213,25 @@ function render() {
 
   if (phase === 'scanned') {
     if (!held) return;
-    pass.disabled = false;
+    const may = mayPass(you, opp);
+    pass.disabled = !may;
     check.disabled = false;
     check.textContent = 'Check';
-    p.innerHTML = 'No machine, no lamp — only the weight in your hands and the clock on the tray. ' +
-      '<strong>Check</strong> opens it. <strong>Pass</strong> sends it on, and if you are quick it ends their bag too.';
+    p.innerHTML = may
+      ? 'No machine, no lamp — only the weight in your hands and the clock on the tray. ' +
+        '<strong>Check</strong> opens it. <strong>Pass</strong> sends it on, and if you are quick it ends their bag too.'
+      : 'You are ahead on seizures, so you cannot wave this one through — the bag goes when the clock does. ' +
+        '<strong>Check</strong> it and use the time.';
     return;
   }
 
   if (phase === 'searching') {
     if (!opened) {
-      pass.disabled = false;
-      p.innerHTML = 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray and, with time on the clock, cuts Officer B off mid-bag.';
+      const may = mayPass(you, opp);
+      pass.disabled = !may;
+      p.innerHTML = may
+        ? 'The case is shut and the bag is packed. <strong>Pass</strong> files the tray and, with time on the clock, cuts Officer B off mid-bag.'
+        : 'Packed and ready, but you are ahead on seizures — this one waits for the clock. Keep looking.';
     } else {
       p.innerHTML = 'The item cards are clear, so they print over each other. Slide them out onto the bench to read them, drag what is restricted into <strong>your seize tray</strong>, then put the front back on the tray to close it.';
     }
@@ -1422,7 +1442,7 @@ function oppClose(missed) {
 
 function oppFile(missed) {
   if (over) return;
-  const theyWereQuick = M.cut && !oppCut;
+  const theyWereQuick = M.cut && !oppCut && mayPass(opp, you);
   opp.trays++;
   missed.forEach(it => opp.missed.push(it));
   if (missed.length) opp.dirtyBags++;
@@ -1575,6 +1595,7 @@ function showMenu() {
 function startSeries(gameKey, best, goal) {
   M = GAMES[gameKey] || GAMES.standard;
   useWide(!!M.wide);
+  setDeal(M.perSide * 2, M.permitted, M.restricted);
   seizeGoal = goal || 0;
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;

@@ -190,7 +190,15 @@ function bagCap() { return BAG_CAP; }
    only way to recognise a tray that has already been round the belt once.
    The eight that sit out are a different eight every game. */
 const TRAYS = 24;
-function trayCount() { return TRAYS; }
+
+/* The deal is set by the shift, because the number of bags and the number of
+   cards have to move together: ninety cards will not fit under fourteen
+   suitcases at five a bag. */
+let DEAL = { trays: TRAYS, permitted: 75, restricted: 15 };
+function setDeal(trays, permitted, restricted) {
+  DEAL = { trays: trays, permitted: permitted, restricted: restricted };
+}
+function trayCount() { return DEAL.trays; }
 
 const SUITCASES = ['case_black.jpg', 'case_burgundy.jpg', 'case_beige.jpg',
                    'case_navy.jpg', 'case_labels.jpg', 'case_orange.jpg',
@@ -208,8 +216,8 @@ const SUITCASES = ['case_black.jpg', 'case_burgundy.jpg', 'case_beige.jpg',
    pads with repeats rather than leaving a tray without a front, so the array
    above can be trimmed freely. */
 function buildSuitcaseDeck() {
-  const d = SUITCASES.slice();
-  for (let i = 0; d.length < TRAYS; i++) d.push(SUITCASES[i % SUITCASES.length]);
+  const d = SUITCASES.slice(0, Math.max(DEAL.trays, 8));
+  for (let i = 0; d.length < DEAL.trays; i++) d.push(SUITCASES[i % SUITCASES.length]);
   return d;
 }
 
@@ -808,9 +816,8 @@ function buildItemDeck() {
     }
   };
   const shelf = WIDE ? PERMITTED_WIDE : PERMITTED;
-  const howMany = WIDE ? wideCount() : PERMITTED_N;
-  pick(shelf, howMany).forEach(c => add(c, false));
-  pick(RESTRICTED, RESTRICTED_N).forEach(c => add(c, true));
+  pick(shelf, Math.min(DEAL.permitted, shelf.length)).forEach(c => add(c, false));
+  pick(RESTRICTED, Math.min(DEAL.restricted, RESTRICTED.length)).forEach(c => add(c, true));
   return deck;
 }
 
