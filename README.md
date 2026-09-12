@@ -373,6 +373,21 @@ are the whole fix.
 A second game on the menu, and the one where the two of you actually push on
 each other.
 
+**Colours are tagged by hand, not by filename.** They started out read off the
+artwork names, which left **a third of the deck with no colour at all** — the red
+Dream Big tote was not red, and the red crisps were not red either, because an
+underscore is a word character and `\bred\b` never matched `red_crisps`. So a
+sign would fire for some of a colour and silently ignore the rest, which is the
+worst possible failure for a rule you are being scored against.
+
+I tried detecting the dominant colour from the pixels. It is close but not good
+enough for a rule people argue over: it reads brown leather as orange, a wooden
+bowl as red and a lilac teddy as white. So the 33 gaps were filled by eye, and
+**anything brown, beige, silver or genuinely mixed carries no colour at all** —
+sixteen cards, including the croissants, the leather bag, the wooden mask and
+the teddy. A colour sign should never turn on a judgement call. Counts now: 19
+black, 17 red, 16 white, 14 blue, 14 green, 10 yellow, 9 orange.
+
 **A wider deck.** 107 designs built so the categories overlap on purpose. Blue
 jeans answer to No blue and to No trousers. The croissant teddy answers to No
 croissants and to No teddies. The yellow croissant top answers to three. Each
@@ -385,9 +400,12 @@ finished it, and they take yours. Bags come back lighter every time, because
 everything either of you seized is gone from them for good. A bag with nothing
 left in it leaves the game.
 
-**You write the rules as you go.** Every three correct seizures the bench stops
-and you post a sign — **all of them**, every sign still off the wall, not a hand
-of three. It holds for the rest of the shift, and the rule that makes it a
+**You write the rules as you go.** Every three correct seizures earns you a
+sign, and you post it **once the tray is finished** — never mid-rummage. Being
+stopped with cards on the bench and a clock running was the wrong moment to read
+a wall of policy; the credit banks and the belt pauses between trays instead.
+You choose from **all of them**, every sign still off the wall, not a hand of
+three. It holds for the rest of the shift, and the rule that makes it a
 decision rather than a free punch is that **it binds both of you**. Banning blue
 because their queue looked blue bans it in yours as well. B earns them the same
 way and posts against you.
@@ -403,6 +421,11 @@ selection effect — the cards that survive a lap are precisely the ones no post
 sign covers, so the survivors are always the hardest things to ban. A seizure
 target converges because seizing is the thing that always happens. First to 21
 came in at about 20 trays and 8 signs; first to 41 at about 34 trays and 15.
+
+**The wall shrinks rather than spills.** Signs keep arriving all shift, so they
+step down in size as they multiply — full size up to two, then 64px to six, 48px
+to twelve, 34px beyond. Twenty fit on the board with nothing clipped and nothing
+scrolled out of sight, and a counter next to the heading says how many are up.
 
 **How fast the wall closes in.** Measured over 3,000 deals: two signs make 24%
 of the deck contraband, six make 38%, ten make 50%, sixteen make 64%. By the end

@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=33">
+<link rel="stylesheet" href="assets/style.css?v=34">
 </head>
 <body>
 
@@ -104,7 +104,7 @@
 
         <!-- the wall, down the left: what is banned, and what is missing -->
         <div class="notice notice-signs">
-          <p class="notice-head">Today only</p>
+          <p class="notice-head">Today only <span id="signCount"></span></p>
           <div class="sign-row" id="signRow"></div>
         </div>
         <div class="notice notice-banned">
@@ -213,8 +213,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=33"></script>
-<script src="assets/game.js?v=33"></script>
+<script src="assets/items.js?v=34"></script>
+<script src="assets/game.js?v=34"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */
