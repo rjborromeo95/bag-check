@@ -32,8 +32,8 @@ const GAMES = {
   /* The standing shift. Two amendments posted before the belt starts and no
      more after that. */
   standard: { key: 'standard', name: 'Standard shift', tray: 10000, cut: true,
-              reveal: false, wide: false, draftEvery: 0,
-              perSide: 12, permitted: 75, restricted: 15 },
+              reveal: false, wide: false, banEvery: 0,
+              perSide: 12, permitted: 75, restricted: 15, cap: 5 },
 
   /* The policy shift. A broader deck built so the sign categories overlap,
      and every fifth thing you seize correctly buys you a sign of your own:
@@ -41,10 +41,14 @@ const GAMES = {
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
   policy:   { key: 'policy',   name: 'Policy shift',   tray: 15000, cut: true,
-              reveal: false, wide: true,  draftEvery: 2,
-              perSide: 7, permitted: 52, restricted: 10,
+              reveal: false, wide: true,  banEvery: 3, banCount: 2,
+              perSide: 7, bags: 7, cap: 8,
+              fixedPerm: 6, fixedRest: 2,  /* every bag the same: six and two */
+              permitted: 42, restricted: 14,
+              noPass: true,      /* no waving anything through; the clock decides */
+              autoOpen: true,    /* and no button to open it either */
+              skipOnWrong: true, /* take something legal and you sit the next one out */
               circulate: true,   /* bags go round and round rather than away */
-              passGate: true,    /* only the officer who is behind may pass early */
               recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
 let M = GAMES.standard;
@@ -76,7 +80,9 @@ const LENS_YOU  = { x: 1152, y: 418, w: 196, h: 123 };
 const LENS_THEM = { x: 1152, y: 160, w: 196, h: 123 };
 const STOW = { scale: 0.42, cols: 9, dx: 42, dy: 46, ox: 8, oy: 18 };
 
-const SLOTS = [266, 446, 626, 806, 986];
+/* eight bench positions, because the policy shift deals bags of up to eight.
+   The standard shift caps at five and simply never uses the last three. */
+const SLOTS = [266, 378, 490, 602, 714, 826, 938, 1050];
 /* the front gets set down on the belt next to the tray, not on the bench —
    the right-hand end of each bench row belongs to the notice board */
 function lidPark(lane) { return { x: 760, y: lane.top - 8 }; }
@@ -90,13 +96,20 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
    is why the opponent, the scoring and the stolen-goods picker all obey the
    signs without being told about them separately. */
 let signsToday = [], banToday = {}, okToday = {};
-let paused = false, drafting = false, recirc = 0, seizeGoal = 0;
+let paused = false, recirc = 0, seizeGoal = 0;
 
-function bad(it) {
+/* Contraband is no longer the same thing for both officers. Each of them is
+   carrying a permit nobody else has seen, and for the holder that category is
+   simply legal — which is what makes putting one back in a bag corruption
+   rather than a mistake. */
+function badFor(p, it) {
   if (banToday[it.design]) return true;
   if (okToday[it.design]) return false;
   return it.restricted;
 }
+
+/* the unqualified one is the bench's view: yours */
+function bad(it) { return badFor(you, it); }
 
 /* a sign posted mid-shift folds into the same two maps */
 function foldSign(sg) {
@@ -126,25 +139,40 @@ function drawSigns() {
   $('signCount').textContent = n + (n === 1 ? ' sign up' : ' signs up');
 }
 
-/* ---------- posting a sign ----------
-   Earned, not dealt. Every fifth correct seizure stops your half of the bench
-   and offers three signs off the unposted pile; the one you pick goes on the
-   wall and binds both officers, which is what stops it being a free punch. */
+/* ---------- the day's amendments, updated ----------
+   Nobody chooses these. Every third bag you finish, two more ordinary
+   categories are struck off the permitted list at random and go up on the
+   wall. It is policy arriving from somewhere above the bench, which is both
+   funnier and less work than picking, and it means neither officer can aim
+   anything at the other. */
 
-function draftPool(n) {
-  const up = {};
-  signsToday.forEach(sg => { up[sg.file] = true; });
-  const left = signPool().filter(sg => !up[sg.file]);
-  if (n == null) return left;                 /* everything still unposted */
-  return pick(left, Math.min(n, left.length));
-}
-
-function postSign(sg, byYou) {
+function postSign(sg) {
   if (!sg) return;
   signsToday.push(sg);
   foldSign(sg);
+}
+
+function newBans(n) {
+  const up = {};
+  signsToday.forEach(sg => { up[sg.file] = true; });
+  const left = signPool().filter(sg => sg.kind === 'ban' && !up[sg.file]);
+  return pick(left, Math.min(n, left.length));
+}
+
+/* A correct seizure is the only thing that counts toward the target. */
+function creditSeizure(p) {
+  p.hits = (p.hits || 0) + 1;
+  if (seizeGoal) { drawTally(); checkEnd(); }
+}
+
+function amendmentDue() {
+  if (!M.banEvery) return;
+  if (you.trays % M.banEvery !== 0) return;
+  const fresh = newBans(M.banCount || 2);
+  if (!fresh.length) return;
+  fresh.forEach(postSign);
   drawSigns();
-  toast((byYou ? 'You post' : 'Officer B posts') + ': ' + sg.label, byYou);
+  toast('New policy: ' + fresh.map(sg => sg.label.toLowerCase()).join(' and '), true);
 }
 
 function toast(text, mine) {
@@ -155,51 +183,6 @@ function toast(text, mine) {
   later(() => el.remove(), 2600);
 }
 
-function offerDraft(then) {
-  const opts = draftPool();          /* every sign still off the wall */
-  if (!opts.length) { if (then) then(); return; }
-  drafting = true; paused = true;
-  holdTrayClock();
-  $('draftCount').textContent = opts.length + ' still unposted';
-  $('draftList').innerHTML = opts.map((sg, i) =>
-    '<button class="draft-pick" type="button" data-i="' + i + '" title="' + sg.blurb + '">' +
-    '<img src="assets/ui/signs/' + sg.file + '" alt="">' +
-    '<b>' + sg.label + '</b></button>').join('');
-  [].forEach.call($('draftList').querySelectorAll('.draft-pick'), b => {
-    b.onclick = () => {
-      $('draft').hidden = true;
-      drafting = false; paused = false;
-      postSign(opts[Number(b.getAttribute('data-i'))], true);
-      resumeTrayClock();
-      render();
-      if (then) then();
-    };
-  });
-  $('draft').hidden = false;
-  render();
-}
-
-/* A seizure banks the credit; the sign itself waits until the tray is done.
-   Stopping somebody mid-rummage to read a wall of policy was the wrong moment
-   for it — you lose your place in the bag and the clock you were racing. */
-function creditSeizure(p, mine) {
-  p.hits = (p.hits || 0) + 1;
-  if (seizeGoal) { drawTally(); checkEnd(); if (over) return; }
-  if (!M.draftEvery) return;
-  p.run = (p.run || 0) + 1;
-  if (p.run < M.draftEvery) return;
-  p.run = 0;
-  p.owedSign = (p.owedSign || 0) + 1;
-  toast((mine ? 'You have earned a sign' : 'Officer B has earned a sign') +
-        ' — posted when the tray is done', mine);
-}
-
-/* called once the tray has left, before the next one is worked */
-function settleSigns(then) {
-  while ((opp.owedSign || 0) > 0) { opp.owedSign--; postSign(draftPool(1)[0], false); }
-  if ((you.owedSign || 0) > 0) { you.owedSign--; offerDraft(then); return true; }
-  return false;
-}
 const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
@@ -318,6 +301,23 @@ function toStage(e) {
    work, so bag sizes vary — that variance is the point. Anything above the
    topmost suitcase wraps round to the last one so no card is lost. */
 function deal() {
+  /* The policy shift does not shuffle bags out of one stream — every suitcase
+     is built to the same recipe, six ordinary things and two off the standing
+     forbidden list, so weight tells you nothing and there is no such thing as
+     an easy bag. */
+  if (M.fixedPerm) {
+    const deck = buildItemDeck();
+    const good = shuffle(deck.filter(c => !c.restricted));
+    const badly = shuffle(deck.filter(c => c.restricted));
+    const fronts = shuffle(buildSuitcaseDeck());
+    const out = [];
+    for (let i = 0; i < trayCount(); i++) {
+      const items = good.splice(0, M.fixedPerm).concat(badly.splice(0, M.fixedRest));
+      out.push({ id: i, bag: { items: shuffle(items) }, bounces: 0, front: fronts[i] });
+    }
+    return shuffle(out);
+  }
+
   const stream = shuffle(buildItemDeck().concat(new Array(trayCount()).fill(null)));
   const bags = [];
   let cur = null, orphans = [];
@@ -356,6 +356,7 @@ function deal() {
 function start() {
   clearTimers();
   clearInterval(tick);
+  clearInterval(beltWatch); beltWatch = null;
   const dealt = deal();
   if (false) {
     belt = dealt;
@@ -375,8 +376,9 @@ function start() {
   you.dirtyBags = opp.dirtyBags = 0;
   oppCut = false; searchedTray = false; stopTrayClock();
   recirc = 0; you.emptied = 0; opp.emptied = 0; you.hits = 0; opp.hits = 0;
-  paused = false; drafting = false; you.run = 0; opp.run = 0;
-  $('draft').hidden = true;
+  paused = false; you.run = 0; opp.run = 0;
+  you.skipNext = false; opp.skipNext = false;
+
   started = false; over = false;
   clearCards(); clearOppCards();
   stowYou.forEach(el => el.remove()); stowYou = [];
@@ -395,6 +397,7 @@ function start() {
   $('stage').classList.remove('running-you', 'running-b');
   lamp(YOU, false); lamp(THEM, false);
   hudShown = 0; $('hudScore').textContent = '0';
+  document.body.classList.toggle('no-tally', !!M.circulate);
   $('modeName').textContent = M.name + (seizeGoal ? '  ·  first to ' + seizeGoal : '') +
     (series.best > 1
       ? '  ·  Round ' + series.round + ' of ' + series.best + '  ·  ' + series.youWins + '–' + series.oppWins
@@ -427,9 +430,10 @@ function briefText() {
     '<strong>+3</strong> to seize, and anything you take off a passenger that is not forbidden today ' +
     'is <strong>\u22125</strong>.</p>' +
     '<p class="brief-warn">Read them now. They stay on the wall, but you will not have time to look.</p>' +
-    (M.draftEvery
-      ? '<p class="brief-score">Every <strong>' + M.draftEvery + '</strong> things you seize correctly, the bench stops and ' +
-        'you post a sign of your own. It applies to <strong>both</strong> of you — so does theirs. ' +
+
+    (M.banEvery
+      ? '<p class="brief-score">Every <strong>' + M.banEvery + '</strong> bags, two more ordinary things are ' +
+        'struck off and go up on the wall. Nobody chooses them and they apply to both of you. ' +
         'The bags go round and round; the shift ends when somebody has seized <strong>' + seizeGoal + '</strong>.</p>'
       : '');
 }
@@ -499,6 +503,7 @@ function beginClock() {
     }
   }, 250);
   startAmbience();
+  startBeltWatch();
   later(oppTurn, 2600);
 }
 
@@ -740,7 +745,8 @@ function stowSpot(tray, n) {
   };
 }
 
-function stow(el, tray, list) {
+function stow(el, tray, list, item) {
+  if (item) { el.dataset.design = item.design; el.dataset.item = JSON.stringify(item); }
   const s = stowSpot(tray, list.length);
   el.classList.add('settle');
   el.style.left = Math.round(s.x) + 'px';
@@ -876,10 +882,16 @@ function seize(card) {
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
   if (bad(card.item)) { pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good'); creditSeizure(you, true); }
-  else pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
+  else {
+    pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
+    if (M.skipOnWrong && !you.skipNext) {
+      you.skipNext = true;
+      toast('That was legal — you sit out the next bag', true);
+    }
+  }
   playItem(card.item);
   cards = cards.filter(other => other !== card);
-  stow(card.el, SEIZE_YOU, stowYou);
+  stow(card.el, SEIZE_YOU, stowYou, card.item);
   drawTally();
   if (M.circulate && held && !held.bag.items.length) render();
   render();
@@ -920,6 +932,13 @@ function feedLane() {
   searchedTray = false;
   held = nextBag(true);
   if (!held) { phase = 'idle'; render(); checkEnd(); return; }
+  if (you.skipNext) {
+    const skipped = held; held = null;
+    serveSkip(skipped, you, true);
+    phase = 'idle'; render();
+    later(feedLane, 1400);
+    return;
+  }
   opened = false;
   clearCards();
   lamp(YOU, false);
@@ -934,12 +953,23 @@ function feedLane() {
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
   if (over || onDeck) return;
+  if (M.circulate && bagsLeft() <= 2) return;   /* seven bags cannot spare one */
   onDeck = nextBag(true);
   if (!onDeck) return;
   YOU.deck = takeTray(YOU, onDeck.front);
   YOU.deck.el.classList.add('waiting');
   drawQueue();
   roll(YOU, YOU.deck, X.parkIn, 1200);
+}
+
+/* Somebody who took something legal off a passenger loses their next bag: it
+   comes down the belt, they are stood back from the bench, and it goes on to
+   the other officer untouched. */
+function serveSkip(tray, p, mine) {
+  p.skipNext = false;
+  toast((mine ? 'You are stood down for this one' : 'Officer B is stood down for this one'), mine);
+  retire(tray, p);
+  return true;
 }
 
 /* the tray you were working has gone; whatever is waiting becomes yours */
@@ -998,8 +1028,20 @@ function scan() {
     showWeight(true);
     startTrayClock();
     render();
+    if (M.autoOpen) later(autoOpenBag, 120);   /* it opens itself; the clock is the game */
   });
   later(queueNext, 420);
+}
+
+/* With no Pass to press there is nothing to decide about opening a bag, so the
+   rig does it: the tray stops, the case opens and the front goes on the bench
+   by itself. All fifteen seconds go on looking. */
+function autoOpenBag() {
+  if (over || phase !== 'scanned') return;
+  checkPressed();
+  const lid = cards.find(cd => cd.kind === 'lid');
+  if (lid) { const lp = lidPark(YOU); openCase(); settle(lid.el, lp.x, lp.y, -4); }
+  render();
 }
 
 /* Check — the belt stops and the suitcase becomes yours to open */
@@ -1015,6 +1057,7 @@ function checkPressed() {
 
 /* Pass — this tray is done with, whatever is still in it */
 function passPressed() {
+  if (M.noPass) return;
   if (!mayPass(you, opp)) return;
   showWeight(false);
   if (phase === 'scanned') { fileTray(); return; }
@@ -1058,7 +1101,7 @@ function fileTray(expired) {
     if (over) return;
     checkEnd();
     if (over) return;
-    if (settleSigns(() => { if (!over) promote(); })) return;
+    amendmentDue();
     promote();
   }, 700);
 }
@@ -1156,7 +1199,7 @@ function cutOpp() {
   oppCut = true;
   oppGen++;               /* everything still pending for this bag is now void */
   oppSay('Cut short');
-  oppFile(oppHeld.bag.items.filter(bad));
+  oppFile(oppHeld.bag.items.filter(it => badFor(opp, it)));
 }
 
 /* And the same the other way, which is the half you feel. */
@@ -1175,6 +1218,7 @@ function cutYou() {
    in front of you goes when the clock says so and not before, which is a
    handbrake on the runaway the cut used to be. */
 function mayPass(p, other) {
+  if (M.noPass) return false;
   if (!M.passGate) return true;
   return (p.hits || 0) <= (other.hits || 0);
 }
@@ -1186,14 +1230,16 @@ function render() {
   later(() => { $('hudLine').textContent = p.textContent; }, 0);
   const go = $('btnGo'), pass = $('btnPass'), check = $('btnCheck');
   go.disabled = pass.disabled = check.disabled = true;
-  if (drafting) { $('prompt').textContent = 'Posting a sign.'; return; }
+  pass.hidden = !!M.noPass;
+  check.hidden = !!M.autoOpen;
   check.classList.toggle('active', phase === 'searching');
 
   if (over) { p.textContent = 'Shift over.'; return; }
 
+  go.hidden = started && !!M.autoOpen;
   if (phase === 'idle') {
     if (!started) {
-      go.disabled = false;
+      go.hidden = false; go.disabled = false;
       p.innerHTML = 'Twelve trays each and ten seconds a bag. ' +
         '<strong>Go</strong> starts the belt, and after that it does not stop.';
     } else {
@@ -1213,6 +1259,7 @@ function render() {
 
   if (phase === 'scanned') {
     if (!held) return;
+    if (M.noPass) { p.textContent = 'Opening it.'; return; }
     const may = mayPass(you, opp);
     pass.disabled = !may;
     check.disabled = false;
@@ -1226,6 +1273,12 @@ function render() {
   }
 
   if (phase === 'searching') {
+    if (M.noPass) {
+      p.innerHTML = 'Eight things, fifteen seconds, and no way to wave it through. Slide them out, ' +
+        'take what is forbidden <strong>today</strong>, and leave everything else alone — anything legal ' +
+        'you pull out and you sit out the next bag.';
+      return;
+    }
     if (!opened) {
       const may = mayPass(you, opp);
       pass.disabled = !may;
@@ -1248,20 +1301,53 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
-function wakeOpp() { if (!over && started && !oppBusy) later(oppTurn, 900); }
-function oppSay(t) { $('oppDoing').textContent = t; }
+/* ---------- the belt watcher ----------
+   Either officer can run dry for a moment: the bags circulate, so your next
+   one only exists once the other has finished with it. Whoever runs out has
+   to be woken when one turns up, and nothing was doing that — the old wake-up
+   hung off the bounce rule, which was deleted, so the first time Officer B's
+   queue emptied they stood there for the rest of the game.
+
+   A watcher is the right shape for this rather than another callback: there is
+   no single event to hang it on, because the thing they are waiting for
+   happens on the other side of the bench. */
+let beltWatch = null;
+
+function startBeltWatch() {
+  clearInterval(beltWatch);
+  beltWatch = setInterval(() => {
+    if (over) { clearInterval(beltWatch); beltWatch = null; return; }
+    if (paused) return;
+    if (!oppBusy && !oppHeld) oppTurn();
+    if (!held && phase === 'idle') feedLane();
+  }, 600);
+  timers.push(beltWatch);
+}
+function oppSay(t) { $('oppDoing').textContent = t; $('oppDoingStage').textContent = t; }
 
 /* 0 = comfortable, 1 = being buried by the other lane */
 function oppRush() { return clamp((you.trays - opp.trays) / 6, 0, 1); }
 
 function oppTurn() {
-  if (over) return;
+  if (over || oppBusy) return;      /* the watcher may call this at any time */
   oppCut = false;
   oppGen++;
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
   else { oppHeld = nextBag(false); }
-  if (!oppHeld) { oppBusy = false; oppSay('Nothing on the belt'); checkEnd(); return; }
+  if (oppHeld && opp.skipNext) {
+    const skipped = oppHeld; oppHeld = null;
+    serveSkip(skipped, opp, false);
+    oppBusy = false;
+    later(oppTurn, 1400);
+    return;
+  }
+  if (!oppHeld) {
+    oppBusy = false;
+    oppSay('Waiting on a bag');
+    checkEnd();                     /* the watcher tries them again shortly */
+    return;
+  }
 
   oppBusy = true;
   clearOppCards();
@@ -1307,7 +1393,7 @@ function oppWantsSearch(size) {
 
 function oppAfterScan() {
   if (over || !oppHeld) return;
-  const contraband = oppHeld.bag.items.filter(bad);
+  const contraband = oppHeld.bag.items.filter(it => badFor(opp, it));
   const size = oppHeld.bag.items.length;
   const rush = oppRush();
 
@@ -1394,6 +1480,18 @@ function oppSearch(contraband, size, rush) {
   const found = [], missed = [];
   contraband.forEach(it => (Math.random() < odds ? found : missed).push(it));
 
+  /* B misreads the wall sometimes — with twenty signs up, who would not */
+  if (M.skipOnWrong && !opp.skipNext && Math.random() < 0.18) {
+    const legal = oppCards.filter(cd => cd.item && !badFor(opp, cd.item));
+    if (legal.length) {
+      const slip = legal[Math.floor(Math.random() * legal.length)].item;
+      opp.seized.push(slip);
+      oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== slip.uid);
+      opp.skipNext = true;
+      toast('Officer B took something legal — they sit out the next one', false);
+    }
+  }
+
   let t = 0;
   found.forEach(it => {
     t += Math.round(rnd(280, 620));
@@ -1404,7 +1502,7 @@ function oppSearch(contraband, size, rush) {
       opp.seized.push(it);
       oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== it.uid);
       playItem(it, SFX_THEM);
-      stow(cd.el, SEIZE_THEM, stowThem);
+      stow(cd.el, SEIZE_THEM, stowThem, it);
       creditSeizure(opp, false);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');
@@ -1442,7 +1540,7 @@ function oppClose(missed) {
 
 function oppFile(missed) {
   if (over) return;
-  const theyWereQuick = M.cut && !oppCut && mayPass(opp, you);
+  const theyWereQuick = M.cut && !M.noPass && !oppCut && mayPass(opp, you);
   opp.trays++;
   missed.forEach(it => opp.missed.push(it));
   if (missed.length) opp.dirtyBags++;
@@ -1468,13 +1566,13 @@ function oppFile(missed) {
 
 /* ---------- score ---------- */
 
-function wrongGrabs(p) { return p.seized.filter(it => !bad(it)).length; }
+function wrongGrabs(p) { return p.seized.filter(it => !badFor(p, it)).length; }
 function missPenalty(p) { return p.missed.length * VP_MISSED; }
 
 /* The final figure. Everything counts. */
 function scoreOf(p) {
   return p.trays * VP_TRAY
-    + p.seized.filter(bad).length * VP_SEIZED
+    + p.seized.filter(it => badFor(p, it)).length * VP_SEIZED
     + wrongGrabs(p) * VP_WRONG
     + missPenalty(p)
     + leftovers * VP_LEFT;
@@ -1484,15 +1582,15 @@ function scoreOf(p) {
    not know what went past you, so the running total does not either. */
 function shown(p) {
   return M.reveal ? scoreOf(p)
-    : p.trays * VP_TRAY + p.seized.filter(bad).length * VP_SEIZED + wrongGrabs(p) * VP_WRONG;
+    : p.trays * VP_TRAY + p.seized.filter(it => badFor(p, it)).length * VP_SEIZED + wrongGrabs(p) * VP_WRONG;
 }
 
 function drawTally() {
   $('youTrays').textContent = you.trays;
-  $('youSeized').textContent = you.seized.filter(bad).length;
+  $('youSeized').textContent = you.seized.filter(it => badFor(you, it)).length;
   $('youScore').textContent = shown(you);
   $('oppTrays').textContent = opp.trays;
-  $('oppSeized').textContent = opp.seized.filter(bad).length;
+  $('oppSeized').textContent = opp.seized.filter(it => badFor(opp, it)).length;
   $('oppScore').textContent = shown(opp);
   $('seizeN').textContent = seizeGoal ? (you.hits || 0) + ' / ' + seizeGoal : you.seized.length;
   $('seizeNB').textContent = seizeGoal ? (opp.hits || 0) + ' / ' + seizeGoal : opp.seized.length;
@@ -1518,6 +1616,7 @@ function checkEnd() {
 function finish() {
   over = true;
   clearInterval(tick);
+  clearInterval(beltWatch); beltWatch = null;
   clearTimers();
   if (ambience) ambience.pause();
 
@@ -1538,7 +1637,7 @@ function finish() {
   const falseGrabs = wrongGrabs(you);
 
   const sheet = (who, p) => {
-    const s = p.seized.filter(bad).length;
+    const s = p.seized.filter(it => badFor(p, it)).length;
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
       (M.circulate ? '<tr><td>Bags emptied and retired</td><td>' + (p.emptied || 0) + '</td></tr>' : '') +
@@ -1595,7 +1694,7 @@ function showMenu() {
 function startSeries(gameKey, best, goal) {
   M = GAMES[gameKey] || GAMES.standard;
   useWide(!!M.wide);
-  setDeal(M.perSide * 2, M.permitted, M.restricted);
+  setDeal(M.bags || M.perSide * 2, M.permitted, M.restricted, M.cap);
   seizeGoal = goal || 0;
   series.best = best; series.round = 1;
   series.youWins = series.oppWins = 0;
