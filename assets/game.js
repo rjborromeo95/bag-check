@@ -2,10 +2,10 @@
 'use strict';
 
 const BOUNCE_CAP = 2;
-const VP_TRAY = 1;
-const VP_SEIZED = 3;      /* a forbidden item, taken off the belt */
-const VP_WRONG = -5;      /* somebody's hairdryer, taken off the belt */
-const VP_MISSED = -3;     /* a forbidden item you let through, per item */
+const VP_TRAY = 0;      /* keeping a tray is the job, not a score */
+const VP_SEIZED = 1;    /* one a piece, and your own line counts two */      /* a forbidden item, taken off the belt */
+const VP_WRONG = 0;     /* the penalty is a lost bag, not a number */      /* somebody's hairdryer, taken off the belt */
+const VP_MISSED = 0;    /* letting one through costs nothing */     /* a forbidden item you let through, per item */
 const VP_DIRTY_BAG = -10; /* or, on the budget shift, per bag rather than per item */
 
 /* Stolen goods are squared: one is worth 1, three is worth 9, five is 25.
@@ -41,11 +41,12 @@ const GAMES = {
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
   policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
-              reveal: false, wide: true,  banEvery: 3, banCount: 2, useBoard: true,
-              perSide: 7, bags: 7, cap: 8,
-              fixedPerm: 6, fixedRest: 2,  /* every bag the same: six and two */
-              permitted: 42, restricted: 14,
+              reveal: false, wide: true,  banAfter: 3, banCount: 2, useBoard: true,
+              perSide: 7, bags: 7, cap: 9,
+              fixedPerm: 6, fixedRest: 3,  /* every bag the same: six and three */
+              permitted: 42, restricted: 21,
               noPass: true,      /* no waving anything through; the clock decides */
+              lockstep: true,    /* both benches take a bag together and file together */
               autoOpen: true,    /* and no button to open it either */
               skipOnWrong: true, /* take something legal and you sit the next one out */
               circulate: true,   /* bags go round and round rather than away */
@@ -82,7 +83,7 @@ const STOW = { scale: 0.42, cols: 9, dx: 42, dy: 46, ox: 8, oy: 18 };
 
 /* eight bench positions, because the policy shift deals bags of up to eight.
    The standard shift caps at five and simply never uses the last three. */
-const SLOTS = [266, 378, 490, 602, 714, 826, 938, 1050];
+const SLOTS = [266, 364, 462, 560, 658, 756, 854, 952, 1050];
 /* the front gets set down on the belt next to the tray, not on the bench —
    the right-hand end of each bench row belongs to the notice board */
 function lidPark(lane) { return { x: 760, y: lane.top - 8 }; }
@@ -238,9 +239,12 @@ function creditSeizure(p, it) {
   return worth;
 }
 
+/* Three bags of grace, then two more categories go over every single bag. With
+   twenty-seven green at the start the board is nearly all red inside twenty
+   rounds, and the shift is over long before that. */
 function amendmentDue() {
-  if (!M.banEvery) return;
-  if (you.trays % M.banEvery !== 0) return;
+  if (!M.useBoard) return;
+  if (roundNo <= (M.banAfter || 0)) return;
   const turned = turnSigns(M.banCount || 2);
   if (turned.length) toast('New policy: no ' + turned.join(', no ').toLowerCase(), true);
 }
@@ -447,6 +451,8 @@ function start() {
   oppCut = false; searchedTray = false; stopTrayClock();
   recirc = 0; you.emptied = 0; opp.emptied = 0; you.hits = 0; opp.hits = 0;
   paused = false; you.run = 0; opp.run = 0; you.doubles = 0; opp.doubles = 0;
+  you.skipped = 0; opp.skipped = 0;
+  roundNo = 0; youDone = oppDone = false; roundGoing = false;
   you.skipNext = false; opp.skipNext = false;
 
   started = false; over = false;
@@ -596,7 +602,7 @@ function beginClock() {
   }, 250);
   startAmbience();
   startBeltWatch();
-  later(oppTurn, 2600);
+  if (!M.lockstep) later(oppTurn, 2600);
 }
 
 /* The belt does not clear itself. Anything still on it costs both officers a
@@ -1027,12 +1033,6 @@ function feedLane() {
   searchedTray = false;
   held = nextBag(true);
   if (!held) { phase = 'idle'; render(); checkEnd(); return; }
-  if (you.skipNext) {
-    const skipped = held; held = null;
-    phase = 'skipped'; render();
-    serveSkip(skipped, you, true);
-    return;
-  }
   opened = false;
   clearCards();
   lamp(YOU, false);
@@ -1046,6 +1046,7 @@ function feedLane() {
 
 /* the on-deck tray, rolling into the spot the scanned one just left */
 function queueNext() {
+  if (M.lockstep) return;           /* one bag a round, nothing waiting */
   if (over || onDeck) return;
   if (M.circulate && bagsLeft() <= 2) return;   /* seven bags cannot spare one */
   onDeck = nextBag(true);
@@ -1065,6 +1066,7 @@ function queueNext() {
 function serveSkip(tray, p, mine) {
   const lane = mine ? YOU : THEM;
   p.skipNext = false;
+  p.skipped = (p.skipped || 0) + 1;
   toast((mine ? 'Stood down — this one goes past you' : 'Officer B is stood down for this one'), mine);
 
   const t = takeTray(lane, tray.front);
@@ -1073,6 +1075,7 @@ function serveSkip(tray, p, mine) {
     move(lane, t, X.exit, 1000, () => {
       freeTray(lane, t);
       retire(tray, p);
+      if (M.lockstep) { if (mine) { phase = 'idle'; render(); } else oppBusy = false; return; }
       if (mine) { phase = 'idle'; render(); feedLane(); }
       else { oppBusy = false; oppTurn(); }
     });
@@ -1085,14 +1088,6 @@ function promote() {
   if (over) return;
   if (!onDeck) { feedLane(); return; }
   /* the tray already waiting is the one you lose, and it has to be seen to go */
-  if (you.skipNext) {
-    const skipped = onDeck; onDeck = null;
-    const t = YOU.deck; YOU.deck = null;
-    if (t) { freeTray(YOU, t); }
-    phase = 'skipped'; render();
-    serveSkip(skipped, you, true);
-    return;
-  }
   held = onDeck; onDeck = null;
   opened = false; searchedTray = false;
   clearCards();
@@ -1126,7 +1121,11 @@ function showWeight(on) {
 }
 
 function goPressed() {
-  if (!started) { beginClock(); beltNoise(YOU); feedLane(); return; }
+  if (!started) {
+    beginClock(); beltNoise(YOU);
+    if (M.lockstep) beginRound(); else feedLane();
+    return;
+  }
   if (phase === 'ready') { beltNoise(YOU); scan(); }
 }
 
@@ -1216,6 +1215,7 @@ function fileTray(expired) {
   if (early) cutOpp();
   later(() => {
     if (over) return;
+    if (M.lockstep) { phase = 'idle'; render(); roundEnd(true); return; }
     checkEnd();
     if (over) return;
     amendmentDue();
@@ -1425,6 +1425,60 @@ function render() {
    some of them, and everything goes back in one at a time. Even, regular
    spacing was the thing that made them read as a machine. */
 
+/* ---------- rounds ----------
+   Both benches work to one clock. A round hands a bag to each officer at the
+   same moment, both get the same ten seconds, and neither starts the next one
+   until both have filed. Without this each side ran its own pipeline and they
+   drifted apart within a few bags — Officer B opening their fourth while you
+   were still on your third, which makes a wall that keeps turning over mean two
+   different things to the two of you.
+
+   Somebody stood down still spends the round standing there: their bag goes
+   past and they wait for the other officer to finish. */
+let roundNo = 0, youDone = false, oppDone = false, roundGoing = false;
+
+function beginRound() {
+  if (over || !M.lockstep) return;
+  roundNo++;
+  youDone = false; oppDone = false; roundGoing = true;
+  amendmentDue();
+
+  if (you.skipNext) {
+    you.skipNext = false;
+    const bag = nextBag(true);
+    youDone = true;
+    phase = 'skipped'; render();
+    if (bag) serveSkip(bag, you, true); else toast('Stood down for this one', true);
+  } else {
+    feedLane();
+  }
+
+  if (opp.skipNext) {
+    opp.skipNext = false;
+    const bag = nextBag(false);
+    oppDone = true;
+    oppSay('Stood down for this one');
+    if (bag) serveSkip(bag, opp, false);
+  } else {
+    oppTurn();
+  }
+  roundCheck();
+}
+
+function roundEnd(mine) {
+  if (mine) youDone = true; else oppDone = true;
+  roundCheck();
+}
+
+function roundCheck() {
+  if (!M.lockstep || over || !roundGoing) return;
+  if (!youDone || !oppDone) return;
+  roundGoing = false;
+  checkEnd();
+  if (over) return;
+  later(beginRound, 900);
+}
+
 /* ---------- the belt watcher ----------
    Either officer can run dry for a moment: the bags circulate, so your next
    one only exists once the other has finished with it. Whoever runs out has
@@ -1442,6 +1496,11 @@ function startBeltWatch() {
   beltWatch = setInterval(() => {
     if (over) { clearInterval(beltWatch); beltWatch = null; return; }
     if (paused) return;
+    if (M.lockstep) {
+      /* rounds drive everything; the watcher only rescues a stalled one */
+      if (roundGoing && !held && !oppHeld && !oppBusy && phase === 'idle') { youDone = oppDone = true; roundCheck(); }
+      return;
+    }
     if (!oppBusy && !oppHeld) oppTurn();
     if (!held && phase === 'idle') feedLane();
   }, 600);
@@ -1466,12 +1525,6 @@ function oppTurn() {
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
   else { oppHeld = nextBag(false); }
-  if (oppHeld && opp.skipNext) {
-    const skipped = oppHeld; oppHeld = null;
-    oppBusy = true;                 /* busy watching it go past */
-    serveSkip(skipped, opp, false);
-    return;
-  }
   if (!oppHeld) {
     oppBusy = false;
     oppSay('Waiting on a bag');
@@ -1504,6 +1557,7 @@ function oppScan() {
 }
 
 function oppQueueNext() {
+  if (M.lockstep) return;
   if (over || oppDeck) return;
   oppDeck = nextBag(false);
   if (!oppDeck) return;
@@ -1709,6 +1763,7 @@ function oppFile(missed) {
   if (over) return;
   oppBusy = false;
   if (theyWereQuick) cutYou();
+  if (M.lockstep) { oppSay('Waiting on the next round'); roundEnd(false); return; }
   later(oppTurn, Math.round(rnd(500, 1100)));
 }
 
@@ -1717,8 +1772,13 @@ function oppFile(missed) {
 function wrongGrabs(p) { return p.seized.filter(it => !badFor(p, it)).length; }
 function missPenalty(p) { return p.missed.length * VP_MISSED; }
 
-/* The final figure. Everything counts. */
+/* One currency. A forbidden thing is worth one, your own secret line is worth
+   two, and nothing else scores at all — trays kept, bags emptied and things
+   that went past you are all just counts on the sheet. Which means the running
+   number on your seize tray IS the score, and there is nothing to reconcile at
+   the end. */
 function scoreOf(p) {
+  if (M.useBoard) return p.hits || 0;
   return p.trays * VP_TRAY
     + p.seized.filter(it => badFor(p, it)).length * VP_SEIZED
     + wrongGrabs(p) * VP_WRONG
@@ -1729,6 +1789,7 @@ function scoreOf(p) {
 /* What the scoreboard is allowed to show mid-shift. Without a detector you do
    not know what went past you, so the running total does not either. */
 function shown(p) {
+  if (M.useBoard) return p.hits || 0;
   return M.reveal ? scoreOf(p)
     : p.trays * VP_TRAY + p.seized.filter(it => badFor(p, it)).length * VP_SEIZED + wrongGrabs(p) * VP_WRONG;
 }
@@ -1787,9 +1848,10 @@ function finish() {
   const sheet = (who, p) => {
     const s = p.seized.filter(it => badFor(p, it)).length;
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
-      '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
-      (M.circulate ? '<tr><td>Bags emptied and retired</td><td>' + (p.emptied || 0) + '</td></tr>' : '') +
-      ((p.doubles || 0) ? '<tr><td>Your own line — ' + p.doubles + ' of them, counted twice</td><td>+' + p.doubles + '</td></tr>' : '') +
+      '<tr><td>Forbidden seized — ' + ((p.hits || 0) - (p.doubles || 0) * 2) + ' × 1</td><td>' +
+        ((p.hits || 0) - (p.doubles || 0) * 2) + '</td></tr>' +
+      '<tr><td>Your own line — ' + (p.doubles || 0) + ' × 2</td><td>' + ((p.doubles || 0) * 2) + '</td></tr>' +
+      '<tr><td>Bags that went past you</td><td>' + (p.skipped || 0) + '</td></tr>' +
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
