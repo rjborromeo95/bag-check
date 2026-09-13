@@ -131,32 +131,32 @@ const PERMITTED = [
    That size gap is where the difficulty lives. */
 
 const RESTRICTED = [
-  { file: 'bomb_1.png',                name: 'Bomb',                        sound: 'hardcase'   },
-  { file: 'bomb_2.png',                name: 'Bomb, corner',                sound: 'hardcase'   },
+  { file: 'bomb_1.png',                name: 'Bomb',                        sound: 'hardcase', tags: ['bombs']   },
+  { file: 'bomb_2.png',                name: 'Bomb, corner',                sound: 'hardcase', tags: ['bombs']   },
   { file: 'flammable_bottle.png',      name: 'Flammable solvent',           sound: 'plastic'    },
   { file: 'flammable_liquid.png',      name: 'Flammable liquid',            sound: 'plastic'    },
   { file: 'gasoline.png',              name: 'Propane cylinder',            sound: 'hardcase'   },
   { file: 'hammer.png',                name: 'Claw hammer',                 sound: 'hardcase'   },
-  { file: 'handgun.png',               name: 'Handgun',                     sound: 'hardcase'   },
-  { file: 'hydrochloric_acid.png',     name: 'Hydrochloric acid',           sound: 'glass'      },
-  { file: 'knife.png',                 name: 'Knife',                       sound: 'light'      },
-  { file: 'knife_2.png',               name: 'Knife, upright',              sound: 'light'      },
-  { file: 'knife_3.png',               name: 'Sheathed knife',              sound: 'plastic'    },
-  { file: 'knife_5.png',               name: 'Sheathed knife, low',         sound: 'plastic'    },
-  { file: 'lighter.png',               name: 'Lighter, red',                sound: 'plastic'    },
-  { file: 'lighter_2.png',             name: 'Lighter, blue',               sound: 'plastic'    },
+  { file: 'handgun.png',               name: 'Handgun',                     sound: 'hardcase', tags: ['guns']   },
+  { file: 'hydrochloric_acid.png',     name: 'Hydrochloric acid',           sound: 'glass', tags: ['poison']      },
+  { file: 'knife.png',                 name: 'Knife',                       sound: 'light', tags: ['knives']      },
+  { file: 'knife_2.png',               name: 'Knife, upright',              sound: 'light', tags: ['knives']      },
+  { file: 'knife_3.png',               name: 'Sheathed knife',              sound: 'plastic', tags: ['knives']    },
+  { file: 'knife_5.png',               name: 'Sheathed knife, low',         sound: 'plastic', tags: ['knives']    },
+  { file: 'lighter.png',               name: 'Lighter, red',                sound: 'plastic', tags: ['lighter']    },
+  { file: 'lighter_2.png',             name: 'Lighter, blue',               sound: 'plastic', tags: ['lighter']    },
   { file: 'lighter_fluid.png',         name: 'Lighter fluid',               sound: 'plastic'    },
-  { file: 'pipe_bomb.png',             name: 'Pipe bomb',                   sound: 'hardcase'   },
+  { file: 'pipe_bomb.png',             name: 'Pipe bomb',                   sound: 'hardcase', tags: ['bombs']   },
   { file: 'pliers.png',                name: 'Side cutters',                sound: 'hardcase'   },
   { file: 'pliers_2.png',              name: 'Pliers',                      sound: 'hardcase'   },
-  { file: 'poison.png',                name: 'Poison, green flask',         sound: 'glass'      },
-  { file: 'poison_2.png',              name: 'Poison bottle',               sound: 'glass'      },
-  { file: 'poison_34.png',             name: 'Poison, top edge',            sound: 'glass'      },
-  { file: 'scissors_1.png',            name: 'Shears',                      sound: 'light'      },
-  { file: 'scissors_2.png',            name: 'Kitchen scissors',            sound: 'light'      },
-  { file: 'screwdriver_1.png',         name: 'Screwdriver, yellow',         sound: 'plastic'    },
-  { file: 'screwdriver_2.png',         name: 'Screwdriver, blue',           sound: 'plastic'    },
-  { file: 'zombie_knife.png',          name: 'Zombie knife',                sound: 'hardcase'   }
+  { file: 'poison.png',                name: 'Poison, green flask',         sound: 'glass', tags: ['poison']      },
+  { file: 'poison_2.png',              name: 'Poison bottle',               sound: 'glass', tags: ['poison']      },
+  { file: 'poison_34.png',             name: 'Poison, top edge',            sound: 'glass', tags: ['poison']      },
+  { file: 'scissors_1.png',            name: 'Shears',                      sound: 'light', tags: ['scissors']      },
+  { file: 'scissors_2.png',            name: 'Kitchen scissors',            sound: 'light', tags: ['scissors']      },
+  { file: 'screwdriver_1.png',         name: 'Screwdriver, yellow',         sound: 'plastic', tags: ['screwdriver']    },
+  { file: 'screwdriver_2.png',         name: 'Screwdriver, blue',           sound: 'plastic', tags: ['screwdriver']    },
+  { file: 'zombie_knife.png',          name: 'Zombie knife',                sound: 'hardcase', tags: ['knives']   }
 ];
 
 /* Twenty-six forbidden designs exist; sixteen of them are on the belt in any
@@ -181,7 +181,7 @@ const BAG_CAP = 5;
 
 function restrictedCount() { return RESTRICTED_N; }
 function permittedCount() { return PERMITTED_N; }
-function bagCap() { return BAG_CAP; }
+function bagCap() { return DEAL.cap; }
 
 /* --- suitcase fronts ---------------------------------------------------
    Thirty-two designs, twenty-four of which go on the belt in any one shift.
@@ -194,9 +194,9 @@ const TRAYS = 24;
 /* The deal is set by the shift, because the number of bags and the number of
    cards have to move together: ninety cards will not fit under fourteen
    suitcases at five a bag. */
-let DEAL = { trays: TRAYS, permitted: 75, restricted: 15 };
-function setDeal(trays, permitted, restricted) {
-  DEAL = { trays: trays, permitted: permitted, restricted: restricted };
+let DEAL = { trays: TRAYS, permitted: 75, restricted: 15, cap: 5 };
+function setDeal(trays, permitted, restricted, cap) {
+  DEAL = { trays: trays, permitted: permitted, restricted: restricted, cap: cap || 5 };
 }
 function trayCount() { return DEAL.trays; }
 
@@ -538,7 +538,7 @@ const SIGNS = [
     blurb: 'Bombs are allowed today.',
     designs: ['bomb_1.png', 'bomb_2.png', 'pipe_bomb.png'] },
 
-  { file: 'poison_OK.png', kind: 'ok', label: 'Poisons permitted',
+  { file: 'poison_ok.png', kind: 'ok', label: 'Poisons permitted',
     blurb: 'Poisons and acid are allowed today.',
     designs: ['poison.png', 'poison_2.png', 'poison_34.png', 'hydrochloric_acid.png'] },
 
@@ -780,6 +780,66 @@ const SIGNS_WIDE = [
 ];
 
 function wideCount() { return Math.min(75, PERMITTED_WIDE.length); }
+
+
+/* --- the board, for the policy shift ------------------------------------
+   Every category has two faces and one of them is showing. At the start only
+   the genuinely dangerous ones are red — knives, scissors, screwdrivers,
+   poison, explosives, firearms, lighters — and everything else a passenger
+   might own is green. Then the policy arrives and green ones go over.
+
+   A card can sit in several categories at once and red beats green: blue jeans
+   are contraband the moment either No blue or No trousers turns. The standard
+   shift does not use this at all; it keeps the two posted signs. */
+const CATEGORIES = [
+  { key: 'knives',     label: 'Knives',          tag: 'knives',     allowed: 'knife_ok.png',              banned: 'no_knives.png',           start: true },
+  { key: 'scissors',   label: 'Scissors',        tag: 'scissors',   allowed: 'scissor_allowed.png',       banned: 'no_scissor.png',          start: true },
+  { key: 'screwdriver', label: 'Screwdrivers',    tag: 'screwdriver', allowed: 'screwdriver_allowed.png',   banned: 'no_screwdriver.png',      start: true },
+  { key: 'bombs',      label: 'Explosives',      tag: 'bombs',      allowed: 'bombs_ok.png',              banned: 'no_bombs.png',            start: true },
+  { key: 'poison',     label: 'Poisons',         tag: 'poison',     allowed: 'poison_ok.png',             banned: 'no_poison.png',           start: true },
+  { key: 'guns',       label: 'Firearms',        tag: 'guns',       allowed: 'guns_ok.png',               banned: 'no_guns.png',             start: true },
+  { key: 'lighter',    label: 'Lighters',        tag: 'lighter',    allowed: 'lighter_allowed.png',       banned: 'no_lighter.png',          start: true },
+  { key: 'black',      label: 'Black things',    tag: 'black',      allowed: 'black_allowed.png',         banned: 'no_black.png',            start: false },
+  { key: 'blue',       label: 'Blue things',     tag: 'blue',       allowed: 'blue_allowed.png',          banned: 'no_blue.png',             start: false },
+  { key: 'orange',     label: 'Orange things',   tag: 'orange',     allowed: 'orange_allowed.png',        banned: 'no_orange.png',           start: false },
+  { key: 'red',        label: 'Red things',      tag: 'red',        allowed: 'red_allowed.png',           banned: 'no_red.png',              start: false },
+  { key: 'white',      label: 'White things',    tag: 'white',      allowed: 'white_allowed.png',         banned: 'no_white.png',            start: false },
+  { key: 'yellow',     label: 'Yellow things',   tag: 'yellow',     allowed: 'yellow_allowed.png',        banned: 'no_yellow.png',           start: false },
+  { key: 'alcohol',    label: 'Alcohol',         tag: 'alcohol',    allowed: 'alcohol_allowed.png',       banned: 'no_alcohol.png',          start: false },
+  { key: 'belts',      label: 'Belts',           tag: 'belt',       allowed: 'belts_allowed.png',         banned: 'no_belts.png',            start: false },
+  { key: 'books',      label: 'Books',           tag: 'book',       allowed: 'books_allowed.png',         banned: 'no_books.png',            start: false },
+  { key: 'bowling',    label: 'Bowling balls',   tag: 'bowling',    allowed: 'bowling_ball_allowed.png',  banned: 'no_bowling_balls.png',    start: false },
+  { key: 'camera',     label: 'Cameras',         tag: 'camera',     allowed: 'camera_allowed.png',        banned: 'no_camera.png',           start: false },
+  { key: 'croissants', label: 'Croissants',      tag: 'croissant',  allowed: 'croissants_allowed.png',    banned: 'no_croissants.png',       start: false },
+  { key: 'devices',    label: 'Devices',         tag: 'device',     allowed: 'devices_allowed.png',       banned: 'no_devices.png',          start: false },
+  { key: 'dresses',    label: 'Dresses',         tag: 'dress',      allowed: 'dresses_allowed.png',       banned: 'no_dresses.png',          start: false },
+  { key: 'glasses',    label: 'Eyewear',         tag: 'glasses',    allowed: 'glasses_allowed.png',       banned: 'no_glasses.png',          start: false },
+  { key: 'hats',       label: 'Hats',            tag: 'hat',        allowed: 'hats_allowed.png',          banned: 'no_hats.png',             start: false },
+  { key: 'masks',      label: 'Masks',           tag: 'mask',       allowed: 'masks_allowed.png',         banned: 'no_masks.png',            start: false },
+  { key: 'music',      label: 'Music',           tag: 'music',      allowed: 'music_allowed.png',         banned: 'no_music.png',            start: false },
+  { key: 'shells',     label: 'Shells',          tag: 'shell',      allowed: 'shells_allowed.png',        banned: 'no_shells.png',           start: false },
+  { key: 'shoes',      label: 'Shoes',           tag: 'shoe',       allowed: 'shoes_allowed.png',         banned: 'no_shoes.png',            start: false },
+  { key: 'snacks',     label: 'Snacks',          tag: 'snack',      allowed: 'snacks_allowed.png',        banned: 'no_snacks.png',           start: false },
+  { key: 'tshirts',    label: 'T-shirts',        tag: 'tshirt',     allowed: 't_shirts_allowed.png',      banned: 'no_t_shirts.png',         start: false },
+  { key: 'teddies',    label: 'Soft toys',       tag: 'teddy',      allowed: 'teddies_allowed.png',       banned: 'no_teddys.png',           start: false },
+  { key: 'toothbrush', label: 'Toothbrushes',    tag: 'toothbrush', allowed: 'toothbrush_allowed.png',    banned: 'no_toothbrushes.png',     start: false },
+  { key: 'tote',       label: 'Tote bags',       tag: 'tote',       allowed: 'tote_bag_allowed.png',      banned: 'no_tote_bags.png',        start: false },
+  { key: 'trousers',   label: 'Trousers',        tag: 'trousers',   allowed: 'trousers_allowed.png',      banned: 'no_trousers.png',         start: false },
+  { key: 'underwear',  label: 'Underwear',       tag: 'underwear',  allowed: 'underwear_allowed.png',     banned: 'no_underwear.png',        start: false }
+];
+
+/* game.js reaches these through functions rather than the constants, which is
+   how everything else in this file is used and does not depend on load order */
+function categoryList() { return CATEGORIES; }
+function designTags() {
+  /* the two decks share filenames and only the wide one carries tags, so a
+     later untagged copy must never overwrite an earlier tagged one */
+  const m = {};
+  PERMITTED_WIDE.concat(PERMITTED).concat(RESTRICTED).forEach(c => {
+    if (!m[c.file] || !m[c.file].length) m[c.file] = c.tags || [];
+  });
+  return m;
+}
 
 function pickSigns(n) {
   for (let tries = 0; tries < 40; tries++) {

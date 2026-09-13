@@ -41,7 +41,7 @@ const GAMES = {
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
   policy:   { key: 'policy',   name: 'Policy shift',   tray: 15000, cut: true,
-              reveal: false, wide: true,  banEvery: 3, banCount: 2,
+              reveal: false, wide: true,  banEvery: 3, banCount: 2, useBoard: true,
               perSide: 7, bags: 7, cap: 8,
               fixedPerm: 6, fixedRest: 2,  /* every bag the same: six and two */
               permitted: 42, restricted: 14,
@@ -96,6 +96,61 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
    is why the opponent, the scoring and the stolen-goods picker all obey the
    signs without being told about them separately. */
 let signsToday = [], banToday = {}, okToday = {};
+
+/* ---------- the board, policy shift only ----------
+   Thirty-four categories, each showing a green face or a red one. At the start
+   only the genuinely dangerous ones are red; everything else a passenger might
+   own is allowed. Every third bag, two more green ones go over and stay over.
+
+   Red beats green, because a card sits in several categories at once — blue
+   jeans are contraband the moment either No blue or No trousers turns. Anything
+   no category covers falls back to the standing list, which is why the hammer
+   and the pliers never stop being contraband: they have no sign of their own.
+
+   The standard shift ignores all of this and keeps its two posted signs. */
+let board = [], boardBan = {}, boardHas = {}, tagCache = null;
+
+function tagIndex() { return tagCache || (tagCache = designTags()); }
+
+function recomputeBoard() {
+  boardBan = {}; boardHas = {};
+  const idx = tagIndex();
+  board.forEach(row => {
+    Object.keys(idx).forEach(design => {
+      if (idx[design].indexOf(row.cat.tag) < 0) return;
+      boardHas[design] = true;
+      if (row.banned) boardBan[design] = true;
+    });
+  });
+}
+
+function setUpBoard() {
+  board = categoryList().map(cat => ({ cat: cat, banned: !!cat.start }));
+  recomputeBoard();
+}
+
+/* One category each, secret, drawn from the ones that start red. It is still
+   contraband and still has to come out of the bag — but yours counts two
+   towards the target, and the other officer is never told what it is. */
+function dealBonus() {
+  const two = pick(categoryList().filter(c => c.start), 2);
+  you.bonus = two[0] || null;
+  opp.bonus = two[1] || two[0] || null;
+}
+
+function isBonus(p, it) {
+  return !!(p.bonus && (tagIndex()[it.design] || []).indexOf(p.bonus.tag) >= 0);
+}
+
+function turnSigns(n) {
+  const green = board.filter(r => !r.banned);
+  if (!green.length) return [];
+  const picked = pick(green, Math.min(n, green.length));
+  picked.forEach(r => { r.banned = true; });
+  recomputeBoard();
+  drawSigns();
+  return picked.map(r => r.cat.label);
+}
 let paused = false, recirc = 0, seizeGoal = 0;
 
 /* Contraband is no longer the same thing for both officers. Each of them is
@@ -103,6 +158,11 @@ let paused = false, recirc = 0, seizeGoal = 0;
    simply legal — which is what makes putting one back in a bag corruption
    rather than a mistake. */
 function badFor(p, it) {
+  if (M.useBoard) {
+    if (boardBan[it.design]) return true;
+    if (boardHas[it.design]) return false;
+    return it.restricted;
+  }
   if (banToday[it.design]) return true;
   if (okToday[it.design]) return false;
   return it.restricted;
@@ -127,6 +187,16 @@ function applySigns() {
 }
 
 function drawSigns() {
+  if (M.useBoard) {
+    const red = board.filter(r => r.banned).length;
+    $('signRow').className = 'sign-row sign-board';
+    $('signRow').innerHTML = board.map(r =>
+      '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + '" title="' + r.cat.label + '">' +
+      '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt="' + r.cat.label + '"></span>'
+    ).join('');
+    $('signCount').textContent = red + ' of ' + board.length + ' turned';
+    return;
+  }
   const n = signsToday.length;
   /* the wall is a fixed size, so the signs shrink as they multiply rather
      than spilling off the bottom of it */
@@ -160,19 +230,19 @@ function newBans(n) {
 }
 
 /* A correct seizure is the only thing that counts toward the target. */
-function creditSeizure(p) {
-  p.hits = (p.hits || 0) + 1;
+function creditSeizure(p, it) {
+  const worth = (M.useBoard && it && isBonus(p, it)) ? 2 : 1;
+  p.hits = (p.hits || 0) + worth;
+  if (worth === 2) p.doubles = (p.doubles || 0) + 1;
   if (seizeGoal) { drawTally(); checkEnd(); }
+  return worth;
 }
 
 function amendmentDue() {
   if (!M.banEvery) return;
   if (you.trays % M.banEvery !== 0) return;
-  const fresh = newBans(M.banCount || 2);
-  if (!fresh.length) return;
-  fresh.forEach(postSign);
-  drawSigns();
-  toast('New policy: ' + fresh.map(sg => sg.label.toLowerCase()).join(' and '), true);
+  const turned = turnSigns(M.banCount || 2);
+  if (turned.length) toast('New policy: no ' + turned.join(', no ').toLowerCase(), true);
 }
 
 function toast(text, mine) {
@@ -376,7 +446,7 @@ function start() {
   you.dirtyBags = opp.dirtyBags = 0;
   oppCut = false; searchedTray = false; stopTrayClock();
   recirc = 0; you.emptied = 0; opp.emptied = 0; you.hits = 0; opp.hits = 0;
-  paused = false; you.run = 0; opp.run = 0;
+  paused = false; you.run = 0; opp.run = 0; you.doubles = 0; opp.doubles = 0;
   you.skipNext = false; opp.skipNext = false;
 
   started = false; over = false;
@@ -384,7 +454,7 @@ function start() {
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
   initLane(YOU); initLane(THEM);
-  applySigns();
+  if (M.useBoard) { setUpBoard(); dealBonus(); } else applySigns();
   drawSigns();
 
   briefed = false;
@@ -414,6 +484,12 @@ function start() {
    nobody could keep the two apart — the signs do that job better, and they
    are the joke as well. */
 
+function boardBlock() {
+  return '<div class="brief-board">' + board.filter(r => r.banned).map(r =>
+    '<span class="brief-chip"><img src="assets/ui/signs/' + r.cat.banned + '" alt="">' +
+    r.cat.label + '</span>').join('') + '</div>';
+}
+
 function amendBlock() {
   return '<div class="brief-signs">' + signsToday.map(sg =>
     '<span class="brief-sign sign-' + sg.kind + '">' +
@@ -424,6 +500,22 @@ function amendBlock() {
 }
 
 function briefText() {
+  if (M.useBoard) {
+    return '<p class="brief-rules">Red on the wall. Everything else is allowed — for now.</p>' +
+      boardBlock() +
+      '<p class="brief-lede">Every other category on that board is <strong>green</strong>, and taking one of ' +
+      'those off a passenger costs you the next bag. Every <strong>' + M.banEvery + '</strong> bags, two more ' +
+      'green signs turn over and stay over.</p>' +
+      (you.bonus
+        ? '<div class="brief-permit"><img src="assets/ui/signs/' + you.bonus.allowed + '" alt="">' +
+          '<span><b>Your own line: ' + you.bonus.label + '</b>' +
+          'A private arrangement, and nobody else knows about it. It is still contraband and you still have to ' +
+          'get it out of the bag — but every one you take counts <strong>two</strong> towards your total. ' +
+          'Officer B has a line of their own.</span></div>'
+        : '') +
+      '<p class="brief-score">The bags go round and round; the shift ends when somebody has seized <strong>' +
+      seizeGoal + '</strong>.</p>';
+  }
   return '<p class="brief-rules">Two amendments are up on the wall for this shift. They beat the standing list.</p>' +
     amendBlock() +
     '<p class="brief-lede">They hold for this shift only, and they cut both ways: a banned category is ' +
@@ -881,7 +973,10 @@ function seize(card) {
   const c = centreOf(card.el);
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
-  if (bad(card.item)) { pop(c.x - 14, c.y - 28, '+' + VP_SEIZED, 'good'); creditSeizure(you, true); }
+  if (bad(card.item)) {
+    const worth = creditSeizure(you, card.item);
+    pop(c.x - 24, c.y - 28, worth === 2 ? 'Yours \u00b7 2' : '+' + VP_SEIZED, 'good');
+  }
   else {
     pop(c.x - 18, c.y - 28, String(VP_WRONG), 'bad');
     if (M.skipOnWrong && !you.skipNext) {
@@ -934,9 +1029,8 @@ function feedLane() {
   if (!held) { phase = 'idle'; render(); checkEnd(); return; }
   if (you.skipNext) {
     const skipped = held; held = null;
+    phase = 'skipped'; render();
     serveSkip(skipped, you, true);
-    phase = 'idle'; render();
-    later(feedLane, 1400);
     return;
   }
   opened = false;
@@ -965,10 +1059,24 @@ function queueNext() {
 /* Somebody who took something legal off a passenger loses their next bag: it
    comes down the belt, they are stood back from the bench, and it goes on to
    the other officer untouched. */
+/* The bag you have lost has to go past you, not vanish. It comes down the belt
+   with its front still on, runs the length of the lane and out the other end
+   without ever being opened, and you watch it go. */
 function serveSkip(tray, p, mine) {
+  const lane = mine ? YOU : THEM;
   p.skipNext = false;
-  toast((mine ? 'You are stood down for this one' : 'Officer B is stood down for this one'), mine);
-  retire(tray, p);
+  toast((mine ? 'Stood down — this one goes past you' : 'Officer B is stood down for this one'), mine);
+
+  const t = takeTray(lane, tray.front);
+  t.el.classList.add('waiting');
+  roll(lane, t, X.parkOut, 1100, () => {
+    move(lane, t, X.exit, 1000, () => {
+      freeTray(lane, t);
+      retire(tray, p);
+      if (mine) { phase = 'idle'; render(); feedLane(); }
+      else { oppBusy = false; oppTurn(); }
+    });
+  });
   return true;
 }
 
@@ -976,6 +1084,15 @@ function serveSkip(tray, p, mine) {
 function promote() {
   if (over) return;
   if (!onDeck) { feedLane(); return; }
+  /* the tray already waiting is the one you lose, and it has to be seen to go */
+  if (you.skipNext) {
+    const skipped = onDeck; onDeck = null;
+    const t = YOU.deck; YOU.deck = null;
+    if (t) { freeTray(YOU, t); }
+    phase = 'skipped'; render();
+    serveSkip(skipped, you, true);
+    return;
+  }
   held = onDeck; onDeck = null;
   opened = false; searchedTray = false;
   clearCards();
@@ -1248,6 +1365,11 @@ function render() {
     return;
   }
   if (phase === 'rolling') { p.textContent = 'Tray coming down the belt.'; return; }
+  if (phase === 'skipped') {
+    p.innerHTML = 'You took something legal off a passenger, so <strong>this one goes straight past</strong>. ' +
+      'It is not checked by anybody — it just goes back round.';
+    return;
+  }
 
   if (phase === 'ready') {
     /* the ten-second belt runs itself, so Go is only ever pressed once */
@@ -1332,14 +1454,20 @@ function oppTurn() {
   if (over || oppBusy) return;      /* the watcher may call this at any time */
   oppCut = false;
   oppGen++;
+  if (opp.skipNext && oppDeck) {
+    const skipped = oppDeck; oppDeck = null;
+    if (THEM.deck) { freeTray(THEM, THEM.deck); THEM.deck = null; }
+    oppBusy = true;
+    serveSkip(skipped, opp, false);
+    return;
+  }
   const fromDeck = !!oppDeck;
   if (oppDeck) { oppHeld = oppDeck; oppDeck = null; }
   else { oppHeld = nextBag(false); }
   if (oppHeld && opp.skipNext) {
     const skipped = oppHeld; oppHeld = null;
+    oppBusy = true;                 /* busy watching it go past */
     serveSkip(skipped, opp, false);
-    oppBusy = false;
-    later(oppTurn, 1400);
     return;
   }
   if (!oppHeld) {
@@ -1503,7 +1631,7 @@ function oppSearch(contraband, size, rush) {
       oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== it.uid);
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem, it);
-      creditSeizure(opp, false);
+      creditSeizure(opp, it);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');
       drawTally();
@@ -1641,6 +1769,7 @@ function finish() {
     return '<div class="sheet"><h3>' + who + '</h3><table>' +
       '<tr><td>Trays kept — ' + p.trays + ' × ' + VP_TRAY + '</td><td>' + (p.trays * VP_TRAY) + '</td></tr>' +
       (M.circulate ? '<tr><td>Bags emptied and retired</td><td>' + (p.emptied || 0) + '</td></tr>' : '') +
+      ((p.doubles || 0) ? '<tr><td>Your own line — ' + p.doubles + ' of them, counted twice</td><td>+' + p.doubles + '</td></tr>' : '') +
       '<tr><td>Forbidden seized — ' + s + ' × ' + VP_SEIZED + '</td><td>' + (s * VP_SEIZED) + '</td></tr>' +
       (wrongGrabs(p) ? '<tr class="neg"><td>Taken off somebody for nothing — ' + wrongGrabs(p) + ' × ' + VP_WRONG + '</td><td>' + (wrongGrabs(p) * VP_WRONG) + '</td></tr>' : '') +
       '<tr class="neg"><td>Let through — ' + p.missed.length + ' × ' + VP_MISSED +
@@ -1658,7 +1787,9 @@ function finish() {
       ? 'Round ' + series.round + ' of ' + series.best + ', standing at ' + series.youWins + '–' + series.oppWins + '. '
       : '') +
     (leftovers ? leftovers + ' tray' + (leftovers === 1 ? '' : 's') + ' never got looked at, which costs you both. ' : '') +
-    why + 'On the wall: ' + signsToday.map(sg => sg.label.toLowerCase()).join(', ') + '. ' +
+    why + (M.useBoard
+      ? 'Turned over by the end: ' + board.filter(r => r.banned).map(r => r.cat.label.toLowerCase()).join(', ')
+      : 'On the wall: ' + signsToday.map(sg => sg.label.toLowerCase()).join(', ')) + '. ' +
     (falseGrabs ? 'You also confiscated ' + falseGrabs + ' thing' + (falseGrabs === 1 ? '' : 's') +
       ' nobody was smuggling, which scores nothing and cost you time.' : '') + '</p>' +
     '<div class="sheets">' + sheet('You', you) + sheet('Officer B', opp) + '</div>' +

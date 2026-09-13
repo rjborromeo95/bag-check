@@ -720,3 +720,67 @@ body.compact .hud-mode{background:rgba(22,31,30,.5);color:#cfd8d5;border-radius:
 .sign-many .sign{width:38px;padding:1px;border-radius:4px}
 .sign-many .sign img{width:34px;height:34px}
 #signCount{font-size:.82rem;color:#8a7f64;letter-spacing:0;text-transform:none}
+
+/* ---- the permit, and what people do with it ---- */
+.controls button.smuggle{
+  border-style:solid;border-color:#8a6b2e;background:#3a3222;color:#f0d79a;
+  min-width:0;padding:.55rem .9rem;font-size:1rem;font-weight:600;
+}
+.controls button.smuggle:hover{background:#4a4029;color:#fff}
+.brief-permit{
+  display:flex;gap:.7rem;align-items:flex-start;margin:0 0 .8rem;
+  background:#efe7cf;border:2px dashed #b08a3a;border-radius:6px;padding:.6rem .7rem;
+}
+.brief-permit img{width:64px;height:64px;flex:0 0 auto}
+.brief-permit span{font-size:.84rem;line-height:1.35;color:#4a442f}
+.brief-permit b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;color:#6d5312}
+
+/* ---- the policy shift does not need a scoreboard ----
+   The win condition is the seizure target and both of those live on the seize
+   trays, so the side panel is just noise. The stage takes the width instead. */
+body.no-tally .tally{display:none}
+body.no-tally .lane-grid{grid-template-columns:minmax(0,1fr)}
+.seize-doing{
+  position:absolute;left:10px;bottom:2px;
+  font-size:.78rem;font-style:italic;color:#7d8783;
+}
+
+
+/* ---- the board ----
+   Thirty-four categories, every one of them showing a face. It has to fit the
+   wall whole, so the tiles are small and the colour does the reading: green is
+   fine, red is not. */
+.notice-signs{top:150px;height:358px;overflow:hidden}
+body.no-tally .notice-banned{display:none}
+.sign-board{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:3px}
+.sign-board .sign{width:auto;padding:1px;border-radius:3px;background:#f4f1e7;border:1px solid #cdc5ae}
+.sign-board .sign img{width:100%;height:auto;display:block}
+.sign-board .sign-ban{border-color:#c04a4a;background:#f7e9e6}
+.sign-board .sign-ok{opacity:.5}
+
+.brief-board{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .9rem}
+.brief-chip{
+  display:flex;align-items:center;gap:.3rem;background:#f7e9e6;border:1px solid #c9a2a2;
+  border-radius:5px;padding:.2rem .5rem .2rem .25rem;
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:#8a2b2b;
+}
+.brief-chip img{width:30px;height:30px}
+
+/* ---- the policy board ----
+   Thirty-four categories, all of them on the wall at once, so the tiles are
+   small and the colour does the reading: green is fine, red is not. */
+body.no-tally .notice-signs{top:150px;height:358px;overflow:hidden}
+body.no-tally .notice-banned{display:none}
+.sign-board{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:3px;align-content:start}
+.sign-board .sign{width:auto;padding:1px;border-radius:3px;background:#f4f1e7;border:1px solid #cdc5ae}
+.sign-board .sign img{width:100%;height:auto;display:block}
+.sign-board .sign-ban{border-color:#c0483f;background:#f8e7e4}
+.sign-board .sign-ok{opacity:.42}
+
+.brief-board{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .9rem}
+.brief-chip{
+  display:flex;align-items:center;gap:.3rem;background:#f8e7e4;border:1px solid #c9a2a2;
+  border-radius:5px;padding:.2rem .5rem .2rem .25rem;
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:#8a2b2b;
+}
+.brief-chip img{width:30px;height:30px}
