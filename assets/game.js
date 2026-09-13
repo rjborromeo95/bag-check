@@ -1357,7 +1357,9 @@ function render() {
   if (phase === 'idle') {
     if (!started) {
       go.hidden = false; go.disabled = false;
-      p.innerHTML = 'Twelve trays each and ten seconds a bag. ' +
+      p.innerHTML = (M.circulate
+        ? (M.bags || 7) + ' bags going round and ' + Math.round(M.tray / 1000) + ' seconds on each. '
+        : M.perSide + ' trays each and ' + Math.round(M.tray / 1000) + ' seconds a bag. ') +
         '<strong>Go</strong> starts the belt, and after that it does not stop.';
     } else {
       p.textContent = 'Belt empty. Waiting on the other lane.';
