@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=35">
+<link rel="stylesheet" href="assets/style.css?v=41">
 </head>
 <body>
 
@@ -45,10 +45,11 @@
 
       <div class="mode-card">
         <span class="mode-name">Policy shift</span>
-        <span class="mode-tag">7 trays each &middot; 15s a bag &middot; bags go round</span>
-        <span class="mode-body">Seven bags a side, circling between you and emptying as they go. Every
-          two correct seizures you post a sign — it binds both of you. And only the officer who is
-          <em>behind</em> may pass early, so leading costs you the clock.</span>
+        <span class="mode-tag">7 bags &middot; 8 things in each &middot; 15 seconds</span>
+        <span class="mode-body">Seven suitcases between you, six ordinary things and two forbidden in
+          every one, circling round and round. No passing — the bag opens itself and goes when the
+          clock says. Every three bags, two more ordinary things are struck off at random. Take
+          something legal by mistake and you sit out the next bag.</span>
         <span class="mode-picks">
           <button class="mode" type="button" data-game="policy" data-goal="21">First to 21</button>
           <button class="mode" type="button" data-game="policy" data-goal="41">First to 41</button>
@@ -99,7 +100,8 @@
         <div class="tray lane-tray-b" id="tbc" hidden><div class="tray-lip"></div><div class="tray-case" id="tbcc"></div></div>
 
         <!-- the two seize trays, one each, in the middle where you both see them -->
-        <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span></div>
+        <div class="seize seize-b"><span class="seize-tag">Officer B seized</span><span class="seize-n" id="seizeNB">0</span>
+          <span class="seize-doing" id="oppDoingStage"></span></div>
         <div class="seize seize-you" id="seizeYou"><span class="seize-tag">You seized</span><span class="seize-n" id="seizeN">0</span></div>
 
         <!-- the wall, down the left: what is banned, and what is missing -->
@@ -184,15 +186,6 @@
 
 </main>
 
-<div class="draft" id="draft" hidden>
-  <div class="draft-inner">
-    <p class="brief-kicker">Five seized</p>
-    <h2 class="brief-head">Post a sign</h2>
-    <p class="brief-lede">It goes up on the wall for the rest of the shift and it applies to both of you. <span class="draft-count" id="draftCount"></span></p>
-    <div class="draft-list" id="draftList"></div>
-  </div>
-</div>
-
 <div class="brief" id="brief" hidden>
   <div class="brief-inner">
     <p class="brief-kicker">Before the shift</p>
@@ -213,8 +206,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=35"></script>
-<script src="assets/game.js?v=35"></script>
+<script src="assets/items.js?v=41"></script>
+<script src="assets/game.js?v=41"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

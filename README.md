@@ -394,34 +394,53 @@ croissants and to No teddies. The yellow croissant top answers to three. Each
 card carries its own tags, so a sign is a tag rather than a hand-written list —
 add an object and it joins every category it belongs to automatically.
 
-**Seven a side and fifteen seconds.** The policy shift is a different shape
-from the standard one: seven bags each rather than twelve, and fifteen seconds
-on a bag rather than ten. Fewer bags forces the deck down with it — ninety cards
-will not fit under fourteen suitcases at five a bag, so the policy deal is 52
-permitted and 10 forbidden, 62 cards, averaging 4.4 a bag. Chunkier bags, more
-time to work them, and the whole thing circles faster.
+**Seven bags, six and two.** Seven suitcases in the whole game, and every one
+is built to the same recipe rather than shuffled out of a stream: six ordinary
+things and two off the standing forbidden list. 42 permitted and 14 forbidden,
+56 cards. Because every bag is identical in size, **the weight readout tells you
+nothing on this shift** — there is no such thing as a light one and no way to
+triage. Seven is also few enough to start recognising them as they come round,
+which is the point of the number. The on-deck tray is suppressed when two or
+fewer bags are circulating, or the two of you would be holding four of the seven
+and the belt would stall.
 
-**Only the officer who is behind may pass early.** Lead on seizures and the bag
-in front of you goes when the clock says so and not before. That is a handbrake
-on the runaway the cut used to be: the player who is winning cannot end the
-other's bag, and spends the full fifteen seconds on every one of their own. Ties
-count as behind, so at 0–0 both may pass.
+The recipe is a starting condition, not a standing one: seizures take cards out
+for good, so by the third lap the bags are thinner than eight and getting
+thinner. Nothing puts anything back, so the bags only ever get thinner.
 
-**The bags go round.** Your seven are not a shift, they are a lap. When your
-queue runs out you take what Officer B has finished with, in the order they
-finished it, and they take yours. Bags come back lighter every time, because
-everything either of you seized is gone from them for good. A bag with nothing
-left in it leaves the game.
+**No passing, and no button to open with.** The bag arrives, opens itself, lays
+the front on the bench and gives you fifteen seconds. There is nothing to press
+and nothing to decide except what to take. That took the cut and the pass gate
+out with it — with no early pass there is nothing to cut anybody off with, so
+two rules that had caused trouble since they were built simply stopped existing.
 
-**You write the rules as you go.** Every two correct seizures earns you a
-sign, and you post it **once the tray is finished** — never mid-rummage. Being
-stopped with cards on the bench and a clock running was the wrong moment to read
-a wall of policy; the credit banks and the belt pauses between trays instead.
-You choose from **all of them**, every sign still off the wall, not a hand of
-three. It holds for the rest of the shift, and the rule that makes it a
-decision rather than a free punch is that **it binds both of you**. Banning blue
-because their queue looked blue bans it in yours as well. B earns them the same
-way and posts against you.
+**Take something legal and you sit out the next bag.** That replaces the points
+penalty as the thing you actually feel: the tray comes down the belt, you are
+stood back from the bench, and it goes on to the other officer untouched. In a
+race to a seizure target a lost bag is worth far more than five points. Officer
+B misreads the crowded wall about one bag in six and is stood down for it too.
+
+**The scoreboard is gone.** Both officers' progress lives on their seize trays
+as a count against the target, so the side panel was repeating itself. B's
+status line moved onto their tray and the stage took the width.
+
+**How long it runs.** A perfect player reached 21 in five to seven bags —
+roughly a hundred seconds. Two guaranteed forbidden items a bag plus whatever
+the wall has banned makes four or five seizures a bag, so the target arrives
+fast. First to 41 is the one to pick if that feels over before it started.
+
+**The policy arrives; nobody chooses it.** Every third bag you finish, two more
+ordinary categories are struck off at random and go up on the wall. It is a
+clock rather than a decision, and it reads better for it — the rules come from
+somewhere above the bench, neither officer can aim anything at the other, and
+there is nothing to stop and read mid-shift. Only bans are drawn, so the wall
+only ever closes in. Measured: two signs at the start, four by tray three, six
+by six, eight by nine, ten by twelve.
+
+The secret permits and lifting from another officer's evidence tray are out
+until there is a cleaner way to do them. Without a way to earn stock of your own
+category the loop only worked by reaching into the other player's pile, and it
+was the eighth rule on a fifteen second clock.
 
 **It ends on a seizure target**, 21 or 41, chosen on the menu. Only correct
 seizures count, so grabbing everything in sight gets you there no faster — it
@@ -453,6 +472,22 @@ of 62. That last number is why the draft had to move from every three seizures
 to every two — with a smaller deck each sign catches fewer cards, and at the old
 rate the shift starved. The first attempt at seven a side managed twelve
 seizures in fifty-one trays before running out of things worth taking.
+
+**A belt watcher, because there is no event to wait on.** Either officer can
+run dry for a moment — the bags circulate, so your next one only exists once
+the other has finished with it. Whoever runs out has to be woken when one turns
+up, and nothing was doing that: the old wake-up hung off the bounce rule, which
+was deleted three builds earlier. So the first time Officer B's queue emptied
+they stood there saying "nothing on the belt" for the rest of the game, with
+bags still going round.
+
+It is fixed with a 600ms watcher rather than another callback, because the
+thing an idle officer is waiting for happens on the other side of the bench and
+there is no single moment to hang a handler on. `oppTurn` gained a guard
+against being entered twice, since the watcher can now call it at any time.
+Measured with a passive player, which is the worst case: B filed nine trays and
+reached the target, longest gap twelve seconds, and that gap was a genuine
+search of a fat bag rather than a stall.
 
 **The pause is real, not cosmetic.** Your tray clock is held and restarted with
 the time you had left, and Officer B freezes where they stand. That last part

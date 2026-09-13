@@ -52,22 +52,18 @@ An alternative shift with a broader deck, built so the categories overlap: blue
 jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
-**Seven bags each and fifteen seconds a bag** on this shift, rather than twelve
-and ten.
+**Seven bags in the whole game**, and every one holds the same: six ordinary
+things and two off the forbidden list. Fifteen seconds a bag.
 
-**Only the officer who is behind on seizures may pass early.** If you are ahead,
-the bag in front of you goes when the clock runs out and not before — so you
-cannot cut the other officer short while you are winning. Level counts as behind.
+**Nobody passes.** The suitcase opens itself, you get your fifteen seconds, and
+it goes. There is no waving one through and no cutting the other officer short.
 
-**The bags circle.** Your seven are a lap, not a shift. When you have worked
-them all you take the other officer's twelve, in the order they worked them, and
-they take yours. Everything seized is gone from those bags for good, so they come
-back lighter each time. A bag with nothing left in it is out of the game.
+**Take something legal and you sit out the next bag.** It comes down the belt,
+you stand back, and it goes on to the other officer untouched.
 
-**Every two items you seize correctly**, the belt stops and you post a sign
-onto the wall — any sign that is not already up there. It holds for the rest of
-the shift and **it applies to both officers, including you**. The other officer
-earns signs the same way. The bags carry on in the same order afterwards.
+**Every three bags**, two more ordinary categories are struck off at random and
+posted on the wall. Nobody chooses them, they hold for the rest of the shift,
+and they apply to both officers.
 
 **First to 21 seized wins the shift**, or 41 for a long one. Only correct
 seizures count.
