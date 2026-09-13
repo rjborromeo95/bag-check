@@ -53,7 +53,9 @@ jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
 **Seven bags in the whole game**, and every one holds the same: six ordinary
-things and two off the forbidden list. Fifteen seconds a bag.
+things and two off the forbidden list. **Ten seconds a bag**, and both officers
+get the same ten — finishing early does not bring the next one along any
+sooner.
 
 **Nobody passes.** The suitcase opens itself, you get your fifteen seconds, and
 it goes. There is no waving one through and no cutting the other officer short.

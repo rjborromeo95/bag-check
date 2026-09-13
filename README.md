@@ -408,6 +408,19 @@ The recipe is a starting condition, not a standing one: seizures take cards out
 for good, so by the third lap the bags are thinner than eight and getting
 thinner. Nothing puts anything back, so the bags only ever get thinner.
 
+**Both officers are on the same clock.** Officer B's bag lands on their bench,
+they get exactly as long with it as you get with yours, and finishing early buys
+them nothing — they stand there with it shut until the time is up, same as you.
+Before this they simply started the next one the moment they were done, and
+worked through the shift a good deal faster than anybody could match. Measured
+after the fix: your cadence is a flat 12.3 seconds a bag, theirs 12.0 to 12.6.
+
+The occasional 15 second outlier on their side is the belt running dry rather
+than them being slow — with seven bags in the whole game and two officers, the
+loop sometimes has nothing to hand them for a moment.
+
+**Back to ten seconds a bag.** Fifteen was tried and reverted.
+
 **No passing, and no button to open with.** The bag arrives, opens itself, lays
 the front on the bench and gives you fifteen seconds. There is nothing to press
 and nothing to decide except what to take. That took the cut and the pass gate
