@@ -40,7 +40,7 @@ const GAMES = {
      the belt stops, you post one, and it applies to both of you for the rest
      of the shift. Officer B earns them the same way. The wall fills up and
      what counts as contraband keeps moving under you. */
-  policy:   { key: 'policy',   name: 'Policy shift',   tray: 15000, cut: true,
+  policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
               reveal: false, wide: true,  banEvery: 3, banCount: 2, useBoard: true,
               perSide: 7, bags: 7, cap: 8,
               fixedPerm: 6, fixedRest: 2,  /* every bag the same: six and two */
@@ -1521,21 +1521,34 @@ function oppWantsSearch(size) {
   return size >= 3 ? true : Math.random() < 0.8;
 }
 
+/* Officer B is on the same clock you are. Their bag lands on their bench, they
+   get exactly as long with it as you get with yours, and finishing early buys
+   them nothing — they stand there with it shut until the time is up, the same
+   as you do. Without this they simply started the next one, and worked through
+   the shift a good deal faster than you could. */
+let oppTrayStart = 0;
+
+function oppFileWhenDue(missed, soonest) {
+  const leftOnClock = M.tray ? (oppTrayStart + M.tray) - Date.now() : 0;
+  oppLater(() => oppFile(missed), Math.max(soonest, leftOnClock));
+}
+
 function oppAfterScan() {
   if (over || !oppHeld) return;
+  oppTrayStart = Date.now();
   const contraband = oppHeld.bag.items.filter(it => badFor(opp, it));
   const size = oppHeld.bag.items.length;
   const rush = oppRush();
 
   if (false) {
     oppSay('No light — tray kept');
-    oppLater(() => oppFile([]), Math.round(rnd(600, 1100)));
+    oppFileWhenDue([], Math.round(rnd(600, 1100)));
     return;
   }
 
   if (!oppWantsSearch(size)) {
     oppSay(size >= 5 ? 'Waved a heavy one through' : 'Waved a bag through');
-    oppLater(() => oppFile(contraband), Math.round(rnd(500, 950)));
+    oppFileWhenDue(contraband, Math.round(rnd(500, 950)));
     return;
   }
 
@@ -1665,7 +1678,12 @@ function oppClose(missed) {
     play('shut', SFX_THEM);
   }, t);
   oppSay('Closing it up');
-  oppLater(() => oppFile(missed), t + Math.round(rnd(420, 780)));
+  /* and if they were quick about it, they wait like everybody else */
+  if (M.tray) {
+    const spare = (oppTrayStart + M.tray) - Date.now();
+    if (spare > 1200) oppLater(() => { if (oppHeld) oppSay('Done early — waiting on the belt'); }, 900);
+  }
+  oppFileWhenDue(missed, t + Math.round(rnd(420, 780)));
 }
 
 function oppFile(missed) {
