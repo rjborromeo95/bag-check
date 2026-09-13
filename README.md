@@ -415,10 +415,17 @@ out with it — with no early pass there is nothing to cut anybody off with, so
 two rules that had caused trouble since they were built simply stopped existing.
 
 **Take something legal and you sit out the next bag.** That replaces the points
-penalty as the thing you actually feel: the tray comes down the belt, you are
-stood back from the bench, and it goes on to the other officer untouched. In a
-race to a seizure target a lost bag is worth far more than five points. Officer
-B misreads the crowded wall about one bag in six and is stood down for it too.
+penalty as the thing you actually feel: the tray comes down the belt with its
+front still on, runs the length of your lane and out the other end without ever
+being opened, and you watch it go. Nobody checks it — it goes straight back into
+circulation. In a race to a seizure target a lost bag is worth far more than
+five points. Officer B misreads the crowded wall about one bag in six and is
+stood down for it too.
+
+The bag you lose is usually the one already waiting on deck, which is why the
+skip has to be caught on two separate paths — the one that fetches a fresh bag
+and the one that promotes the waiting one. It was only on the first, so for
+several builds the penalty silently did nothing at all.
 
 **The scoreboard is gone.** Both officers' progress lives on their seize trays
 as a count against the target, so the side panel was repeating itself. B's
@@ -429,18 +436,28 @@ roughly a hundred seconds. Two guaranteed forbidden items a bag plus whatever
 the wall has banned makes four or five seizures a bag, so the target arrives
 fast. First to 41 is the one to pick if that feels over before it started.
 
-**The policy arrives; nobody chooses it.** Every third bag you finish, two more
-ordinary categories are struck off at random and go up on the wall. It is a
-clock rather than a decision, and it reads better for it — the rules come from
-somewhere above the bench, neither officer can aim anything at the other, and
-there is nothing to stop and read mid-shift. Only bans are drawn, so the wall
-only ever closes in. Measured: two signs at the start, four by tray three, six
-by six, eight by nine, ten by twelve.
+**A board of thirty-four categories, two faces each.** The whole policy is on
+the wall at once now rather than accumulating a sign at a time. At the start
+only the genuinely dangerous categories are turned to red — knives, scissors,
+screwdrivers, poison, explosives, firearms, lighters — and every other thing a
+passenger might own is green and legal. Every third bag, **two more green signs
+turn over and stay over**. Measured: 7 red at the start, 9 by tray three, 11 by
+six, 13 by nine.
 
-The secret permits and lifting from another officer's evidence tray are out
-until there is a cleaner way to do them. Without a way to earn stock of your own
-category the loop only worked by reaching into the other player's pile, and it
-was the eighth rule on a fifteen second clock.
+That inverts what the wall used to mean. It was a short list of what is banned;
+it is now a long list of what is still allowed, shrinking. Red beats green where
+they overlap, so blue jeans become contraband the moment either No blue or No
+trousers turns. Anything no category covers at all — the hammer, the pliers, the
+gasoline — falls back to the standing list and is never legal.
+
+**One secret line each.** Each officer is dealt one of the seven dangerous
+categories, face down. It is still contraband and you still have to get it out
+of the bag, but every one you take counts **two** towards your target, and the
+other officer never learns what yours is.
+
+**This is the policy shift only.** The standard shift keeps its two posted signs
+and knows nothing about the board — `M.useBoard` is the switch, and every place
+that asks what is contraband checks it.
 
 **It ends on a seizure target**, 21 or 41, chosen on the menu. Only correct
 seizures count, so grabbing everything in sight gets you there no faster — it

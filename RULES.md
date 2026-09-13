@@ -58,12 +58,19 @@ things and two off the forbidden list. Fifteen seconds a bag.
 **Nobody passes.** The suitcase opens itself, you get your fifteen seconds, and
 it goes. There is no waving one through and no cutting the other officer short.
 
-**Take something legal and you sit out the next bag.** It comes down the belt,
-you stand back, and it goes on to the other officer untouched.
+**Take something legal and you sit out the next bag.** It comes down the belt
+with the suitcase still shut, passes the length of your bench without being
+opened by anybody, and goes back into circulation.
 
-**Every three bags**, two more ordinary categories are struck off at random and
-posted on the wall. Nobody chooses them, they hold for the rest of the shift,
-and they apply to both officers.
+**The board.** Every category a passenger might have is on the wall showing one
+of two faces. At the start only knives, scissors, screwdrivers, poison,
+explosives, firearms and lighters are red; everything else is green and legal.
+**Every three bags, two more green signs are turned over** and stay that way.
+
+**One secret line each.** You are dealt one of the red categories face down. It
+is still contraband and you still have to take it out of the bag — but every one
+you take counts **two** towards your total, and the other officer never learns
+which it is.
 
 **First to 21 seized wins the shift**, or 41 for a long one. Only correct
 seizures count.
