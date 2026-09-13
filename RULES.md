@@ -53,9 +53,16 @@ jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
 **Seven bags in the whole game**, and every one holds the same: six ordinary
-things and two off the forbidden list. **Ten seconds a bag**, and both officers
-get the same ten — finishing early does not bring the next one along any
-sooner.
+things and three off the forbidden list. **Ten seconds a bag.** Both officers
+take a bag at the same moment and neither gets the next one until both are
+finished, so nobody can work ahead.
+
+**Scoring.** A forbidden item is one point. An item on your own secret line is
+two. Nothing else scores, and letting something through costs nothing.
+
+**Take something legal off a passenger and you sit out a round.** The bag you
+would have had goes past unopened and you wait for the other officer to finish
+theirs.
 
 **Nobody passes.** The suitcase opens itself, you get your fifteen seconds, and
 it goes. There is no waving one through and no cutting the other officer short.
@@ -67,7 +74,8 @@ opened by anybody, and goes back into circulation.
 **The board.** Every category a passenger might have is on the wall showing one
 of two faces. At the start only knives, scissors, screwdrivers, poison,
 explosives, firearms and lighters are red; everything else is green and legal.
-**Every three bags, two more green signs are turned over** and stay that way.
+After three rounds of grace, **two more green signs turn over every round** and
+stay that way.
 
 **One secret line each.** You are dealt one of the red categories face down. It
 is still contraband and you still have to take it out of the bag — but every one

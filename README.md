@@ -408,6 +408,19 @@ The recipe is a starting condition, not a standing one: seizures take cards out
 for good, so by the third lap the bags are thinner than eight and getting
 thinner. Nothing puts anything back, so the bags only ever get thinner.
 
+**One clock, one round.** Both benches take a bag at the same moment, both get
+the same ten seconds, and neither starts the next until both have filed. Putting
+Officer B on a matching timer was not enough on its own — each side still ran
+its own pipeline, and a single skipped bag or a slow roll-in put them a bag
+apart, which only grew. A wall that turns over every round means two different
+things to two officers who are not on the same round.
+
+The round controller is the fix: `beginRound` hands out both bags and
+`roundCheck` will not start another until `youDone` and `oppDone` are both set.
+Anyone stood down still spends the round standing there. Verified across a full
+shift with nearly three thousand samples: the two never drifted more than the
+one bag a sit-out accounts for.
+
 **Both officers are on the same clock.** Officer B's bag lands on their bench,
 they get exactly as long with it as you get with yours, and finishing early buys
 them nothing — they stand there with it shut until the time is up, same as you.
@@ -426,6 +439,18 @@ the front on the bench and gives you fifteen seconds. There is nothing to press
 and nothing to decide except what to take. That took the cut and the pass gate
 out with it — with no early pass there is nothing to cut anybody off with, so
 two rules that had caused trouble since they were built simply stopped existing.
+
+**One currency, and it is the number already on your tray.** A forbidden thing
+is worth one. Your own secret line is worth two. Nothing else scores — trays
+kept, bags emptied and bags that went past you are counts on the sheet and
+nothing more, and letting something through costs nothing at all. So the running
+total on your seize tray *is* your score, with nothing to reconcile at the end,
+and the target is just that number.
+
+**Nine to a bag now** — six ordinary things and three forbidden — and the wall
+turns over far harder: three rounds of grace, then **two more categories go red
+every single round**. Measured: 7 red for rounds one to three, then 9, 11, 13,
+15.
 
 **Take something legal and you sit out the next bag.** That replaces the points
 penalty as the thing you actually feel: the tray comes down the belt with its
