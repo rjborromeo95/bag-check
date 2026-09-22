@@ -782,6 +782,111 @@ const SIGNS_WIDE = [
 function wideCount() { return Math.min(75, PERMITTED_WIDE.length); }
 
 
+
+/* --- the lean shift -----------------------------------------------------
+   Eighteen punch-out pieces, every one of them two-sided. Knives, hats,
+   t-shirts and trousers — the whole deck. Each side carries its own tags,
+   because the two faces are not always the same: the black t-shirt has a
+   guitar on the back only, the beanie a smiley on the front only. A piece is
+   contraband if EITHER side qualifies. You only find out by turning it over.
+
+   Three knives in the whole game, one of each, and three of everything else:
+   48 pieces into six pouches of eight. Knives are rare on purpose — they are
+   the only piece that does something. */
+const LEAN_PIECES = [
+  { key: 'lean_knives_0',    name: "Chef's knife",     sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_knives_0_a.png', tags: ['knife'] },
+             { img: 'lean_knives_0_b.png', tags: ['knife'] } ] },
+  { key: 'lean_knives_1',    name: "Hunting knife",    sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_knives_1_a.png', tags: ['knife'] },
+             { img: 'lean_knives_1_b.png', tags: ['knife'] } ] },
+  { key: 'lean_knives_2',    name: "Folding knife",    sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_knives_2_a.png', tags: ['knife'] },
+             { img: 'lean_knives_2_b.png', tags: ['knife'] } ] },
+  { key: 'lean_five_hats_0', name: "Graduation cap",   sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_five_hats_0_a.png', tags: ['hat', 'black'] },
+             { img: 'lean_five_hats_0_b.png', tags: ['hat', 'black'] } ] },
+  { key: 'lean_five_hats_1', name: "Bucket hat",       sound: 'light',  copies: 3,
+    sides: [ { img: 'lean_five_hats_1_a.png', tags: ['hat', 'green', 'belt'] },
+             { img: 'lean_five_hats_1_b.png', tags: ['hat', 'green', 'belt'] } ] },
+  { key: 'lean_five_hats_2', name: "Red cap",          sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_five_hats_2_a.png', tags: ['hat', 'red'] },
+             { img: 'lean_five_hats_2_b.png', tags: ['hat', 'red'] } ] },
+  { key: 'lean_five_hats_3', name: "Beanie",           sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_five_hats_3_a.png', tags: ['hat', 'smiley'] },
+             { img: 'lean_five_hats_3_b.png', tags: ['hat'] } ] },
+  { key: 'lean_five_hats_4', name: "Yellow cap",       sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_five_hats_4_a.png', tags: ['hat', 'yellow'] },
+             { img: 'lean_five_hats_4_b.png', tags: ['hat', 'yellow'] } ] },
+  { key: 'lean_t_shirts_0',  name: "Green t-shirt",    sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_t_shirts_0_a.png', tags: ['tshirt', 'green'] },
+             { img: 'lean_t_shirts_0_b.png', tags: ['tshirt', 'green'] } ] },
+  { key: 'lean_t_shirts_1',  name: "Black t-shirt",    sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_t_shirts_1_a.png', tags: ['tshirt', 'black'] },
+             { img: 'lean_t_shirts_1_b.png', tags: ['tshirt', 'black', 'instruments'] } ] },
+  { key: 'lean_t_shirts_2',  name: "Red t-shirt",      sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_t_shirts_2_a.png', tags: ['tshirt', 'red'] },
+             { img: 'lean_t_shirts_2_b.png', tags: ['tshirt', 'red'] } ] },
+  { key: 'lean_t_shirts_3',  name: "Yellow t-shirt",   sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_t_shirts_3_a.png', tags: ['tshirt', 'yellow'] },
+             { img: 'lean_t_shirts_3_b.png', tags: ['tshirt', 'yellow'] } ] },
+  { key: 'lean_t_shirts_4',  name: "White t-shirt",    sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_t_shirts_4_a.png', tags: ['tshirt', 'white'] },
+             { img: 'lean_t_shirts_4_b.png', tags: ['tshirt', 'white'] } ] },
+  { key: 'lean_trousers_0',  name: "Black trousers",   sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_trousers_0_a.png', tags: ['trousers', 'black'] },
+             { img: 'lean_trousers_0_b.png', tags: ['trousers', 'black'] } ] },
+  { key: 'lean_trousers_1',  name: "Olive trousers",   sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_trousers_1_a.png', tags: ['trousers', 'green'] },
+             { img: 'lean_trousers_1_b.png', tags: ['trousers', 'green'] } ] },
+  { key: 'lean_trousers_2',  name: "Red trousers",     sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_trousers_2_a.png', tags: ['trousers', 'red'] },
+             { img: 'lean_trousers_2_b.png', tags: ['trousers', 'red'] } ] },
+  { key: 'lean_trousers_3',  name: "Jeans",            sound: 'light',  copies: 3,
+    sides: [ { img: 'lean_trousers_3_a.png', tags: ['trousers'] },
+             { img: 'lean_trousers_3_b.png', tags: ['trousers'] } ] },
+  { key: 'lean_trousers_4',  name: "White trousers",   sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_trousers_4_a.png', tags: ['trousers', 'white'] },
+             { img: 'lean_trousers_4_b.png', tags: ['trousers', 'white'] } ] }
+];
+
+const LEAN_CATEGORIES = [
+  { key: 'knife',       label: 'Knives',       tag: 'knife',       allowed: 'knife_ok.png',             banned: 'no_knives.png',    start: true },
+  { key: 'hat',         label: 'Hats',         tag: 'hat',         allowed: 'hats_allowed.png',         banned: 'no_hats.png',      start: false },
+  { key: 'tshirt',      label: 'T-shirts',     tag: 'tshirt',      allowed: 't_shirts_allowed.png',     banned: 'no_t_shirts.png',  start: false },
+  { key: 'trousers',    label: 'Trousers',     tag: 'trousers',    allowed: 'trousers_allowed.png',     banned: 'no_trousers.png',  start: false },
+  { key: 'green',       label: 'Green',        tag: 'green',       allowed: 'green_allowed.png',        banned: 'no_green.png',     start: false },
+  { key: 'white',       label: 'White',        tag: 'white',       allowed: 'white_allowed.png',        banned: 'no_white.png',     start: false },
+  { key: 'red',         label: 'Red',          tag: 'red',         allowed: 'red_allowed.png',          banned: 'no_red.png',       start: false },
+  { key: 'yellow',      label: 'Yellow',       tag: 'yellow',      allowed: 'yellow_allowed.png',       banned: 'no_yellow.png',    start: false },
+  { key: 'black',       label: 'Black',        tag: 'black',       allowed: 'black_allowed.png',        banned: 'no_black.png',     start: false },
+  { key: 'instruments', label: 'Instruments',  tag: 'instruments', allowed: 'instruments_allowed.png',  banned: 'no_music.png',     start: false },
+  { key: 'belts',       label: 'Belts',        tag: 'belt',        allowed: 'belts_allowed.png',        banned: 'no_belts.png',     start: false }
+];
+
+let LEAN = false;
+function useLean(on) { LEAN = !!on; }
+
+function leanDeck() {
+  const d = [];
+  let uid = 0;
+  LEAN_PIECES.forEach(p => {
+    for (let c = 0; c < p.copies; c++) {
+      const union = {};
+      p.sides.forEach(s => s.tags.forEach(t => { union[t] = true; }));
+      d.push({
+        design: p.key, name: p.name, sound: p.sound, uid: 'L' + (uid++),
+        restricted: p.key.indexOf('lean_knives') === 0,
+        sides: p.sides.map(s => s.img), sideTags: p.sides.map(s => s.tags),
+        tags: Object.keys(union),
+        side: Math.random() < 0.5 ? 0 : 1,     /* whichever way up it landed */
+        lean: true
+      });
+    }
+  });
+  return d;
+}
+
 /* --- the board, for the policy shift ------------------------------------
    Every category has two faces and one of them is showing. At the start only
    the genuinely dangerous ones are red — knives, scissors, screwdrivers,
@@ -830,11 +935,15 @@ const CATEGORIES = [
 
 /* game.js reaches these through functions rather than the constants, which is
    how everything else in this file is used and does not depend on load order */
-function categoryList() { return CATEGORIES; }
+function categoryList() { return LEAN ? LEAN_CATEGORIES : CATEGORIES; }
 function designTags() {
   /* the two decks share filenames and only the wide one carries tags, so a
      later untagged copy must never overwrite an earlier tagged one */
   const m = {};
+  LEAN_PIECES.forEach(p => {
+    const u = {}; p.sides.forEach(sd => sd.tags.forEach(t => { u[t] = true; }));
+    m[p.key] = Object.keys(u);
+  });
   PERMITTED_WIDE.concat(PERMITTED).concat(RESTRICTED).forEach(c => {
     if (!m[c.file] || !m[c.file].length) m[c.file] = c.tags || [];
   });
@@ -863,6 +972,7 @@ function pick(list, n) {
 
 
 function buildItemDeck() {
+  if (LEAN) return leanDeck();
   const deck = [];
   let n = 0;
   const add = (c, restricted) => {
@@ -883,8 +993,10 @@ function buildItemDeck() {
 
 /* the printed face of a card — transparent everywhere the object isn't */
 function itemFace(item) {
+  /* a two-sided piece shows whichever face is up */
+  const src = item.sides ? item.sides[item.side || 0] : item.design;
   return '<img class="face' + (item.flipped ? ' flip' : '') +
-    '" src="assets/cards/' + item.design + '" alt="" draggable="false">';
+    '" src="assets/cards/' + src + '" alt="" draggable="false">';
 }
 
 /* small icon for the evidence list */

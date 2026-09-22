@@ -784,3 +784,42 @@ body.no-tally .notice-banned{display:none}
   font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:#8a2b2b;
 }
 .brief-chip img{width:30px;height:30px}
+
+/* ---- three shifts on the menu, the lean one first ---- */
+.menu-modes-three{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1rem;max-width:1100px;margin:1.4rem auto 1.5rem;align-items:stretch;
+}
+@media(max-width:900px){.menu-modes-three{grid-template-columns:minmax(0,1fr)}}
+.mode-card-lead{border-color:var(--tray)}
+
+/* ---- the stab picker ---- */
+.draft{
+  position:fixed;inset:0;z-index:140;overflow-y:auto;
+  display:flex;align-items:center;justify-content:center;padding:clamp(1rem,4vw,2rem);
+  background:rgba(18,25,26,.94);
+}
+.draft-inner{
+  width:min(760px,100%);background:#e7e3d6;border:2px solid #b6ae98;border-radius:8px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);padding:1.1rem 1.3rem 1.3rem;
+}
+.draft-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.5rem;margin-top:.8rem}
+.stab-pick{
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;text-align:center;
+  background:#f4f1e7;border:2px solid #cdc5ae;border-radius:6px;padding:.5rem .3rem;touch-action:manipulation;
+}
+.stab-pick:hover{border-color:#9c2626;background:#fbeeee}
+.stab-pick img{width:62px;height:62px}
+.stab-pick b{font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:#3c372a}
+.stab-skip{margin-top:.9rem;width:100%;padding:.6rem;border:2px solid #b6ae98;border-radius:6px;background:#efebe0;color:#4a442f}
+
+/* a stabbed sign cannot turn this round */
+.sign.stabbed{outline:2px solid #1c1c1c;outline-offset:-2px;position:relative}
+.sign.stabbed::after{
+  content:'';position:absolute;right:-2px;top:-3px;width:12px;height:12px;
+  background:#1c1c1c;clip-path:polygon(50% 0,100% 100%,50% 75%,0 100%);
+}
+
+/* turning a piece over reads as a quick flip rather than a swap */
+.card.item .face{transition:transform .11s ease-in}
+.card.item.turning .face{transform:scaleX(0)}

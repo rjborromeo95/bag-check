@@ -43,7 +43,7 @@ const GAMES = {
   policy:   { key: 'policy',   name: 'Policy shift',   tray: 10000, cut: true,
               reveal: false, wide: true,  banAfter: 3, banCount: 2, useBoard: true,
               perSide: 7, bags: 7, cap: 9,
-              fixedPerm: 6, fixedRest: 3,  /* every bag the same: six and three */
+              fixedBag: 9,       /* nine in every bag; the mix is the shuffle's business */
               permitted: 42, restricted: 21,
               noPass: true,      /* no waving anything through; the clock decides */
               lockstep: true,    /* both benches take a bag together and file together */
@@ -52,6 +52,19 @@ const GAMES = {
               circulate: true,   /* bags go round and round rather than away */
               recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
+/* The lean shift. Eighteen two-sided punch-out pieces — knives, hats,
+   t-shirts, trousers — six pouches of eight, and a board of eleven signs.
+   Everything else about the policy shift carries over: one clock for both
+   benches, bags that go round, no passing, and a lost bag for taking something
+   legal. The knife is the only piece that does anything. */
+GAMES.lean = {
+  key: 'lean', name: 'Lean shift', tray: 10000, cut: true, reveal: false,
+  lean: true, wide: true, useBoard: true, banAfter: 3, banCount: 2,
+  perSide: 3, bags: 6, cap: 8, fixedBag: 8, permitted: 45, restricted: 3,
+  noPass: true, autoOpen: true, skipOnWrong: true, lockstep: true,
+  circulate: true, recircCap: 400
+};
+
 let M = GAMES.standard;
 
 /* ---------- the bench ----------
@@ -144,7 +157,7 @@ function isBonus(p, it) {
 }
 
 function turnSigns(n) {
-  const green = board.filter(r => !r.banned);
+  const green = board.filter(r => !r.banned && !r.stabbed);
   if (!green.length) return [];
   const picked = pick(green, Math.min(n, green.length));
   picked.forEach(r => { r.banned = true; });
@@ -192,7 +205,7 @@ function drawSigns() {
     const red = board.filter(r => r.banned).length;
     $('signRow').className = 'sign-row sign-board';
     $('signRow').innerHTML = board.map(r =>
-      '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + '" title="' + r.cat.label + '">' +
+      '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') + '" title="' + r.cat.label + '">' +
       '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt="' + r.cat.label + '"></span>'
     ).join('');
     $('signCount').textContent = red + ' of ' + board.length + ' turned';
@@ -379,15 +392,17 @@ function deal() {
      is built to the same recipe, six ordinary things and two off the standing
      forbidden list, so weight tells you nothing and there is no such thing as
      an easy bag. */
-  if (M.fixedPerm) {
-    const deck = buildItemDeck();
-    const good = shuffle(deck.filter(c => !c.restricted));
-    const badly = shuffle(deck.filter(c => c.restricted));
+  /* Every suitcase holds the same number of things, so weight tells you
+     nothing — but the mix inside is dealt, not built. Twenty-one forbidden
+     items go into the shuffle with the forty-two ordinary ones and land where
+     they land. Three a bag is only the average: some come out nearly clean and
+     some are half contraband, and you cannot know which until it is open. */
+  if (M.fixedBag) {
+    const deck = shuffle(buildItemDeck());
     const fronts = shuffle(buildSuitcaseDeck());
     const out = [];
     for (let i = 0; i < trayCount(); i++) {
-      const items = good.splice(0, M.fixedPerm).concat(badly.splice(0, M.fixedRest));
-      out.push({ id: i, bag: { items: shuffle(items) }, bounces: 0, front: fronts[i] });
+      out.push({ id: i, bag: { items: deck.splice(0, M.fixedBag) }, bounces: 0, front: fronts[i] });
     }
     return shuffle(out);
   }
@@ -453,6 +468,8 @@ function start() {
   paused = false; you.run = 0; opp.run = 0; you.doubles = 0; opp.doubles = 0;
   you.skipped = 0; opp.skipped = 0;
   roundNo = 0; youDone = oppDone = false; roundGoing = false;
+  you.stabs = 0; opp.stabs = 0;
+  $('stab').hidden = true;
   you.skipNext = false; opp.skipNext = false;
 
   started = false; over = false;
@@ -460,7 +477,8 @@ function start() {
   stowYou.forEach(el => el.remove()); stowYou = [];
   stowThem.forEach(el => el.remove()); stowThem = [];
   initLane(YOU); initLane(THEM);
-  if (M.useBoard) { setUpBoard(); dealBonus(); } else applySigns();
+  if (M.useBoard) { setUpBoard(); if (!M.lean) dealBonus(); else { you.bonus = opp.bonus = null; } }
+  else applySigns();
   drawSigns();
 
   briefed = false;
@@ -510,8 +528,14 @@ function briefText() {
     return '<p class="brief-rules">Red on the wall. Everything else is allowed — for now.</p>' +
       boardBlock() +
       '<p class="brief-lede">Every other category on that board is <strong>green</strong>, and taking one of ' +
-      'those off a passenger costs you the next bag. Every <strong>' + M.banEvery + '</strong> bags, two more ' +
-      'green signs turn over and stay over.</p>' +
+      'those off a passenger costs you the next bag. After <strong>' + (M.banAfter || 0) + '</strong> rounds, ' +
+      '<strong>' + (M.banCount || 2) + '</strong> more green signs turn over every round and stay over.</p>' +
+      (M.lean
+        ? '<p class="brief-lede"><strong>Every piece has two sides</strong>, and the one facing up is not always ' +
+          'the one that gets it confiscated — tap a piece to turn it over, drag it to the tray to seize it. ' +
+          'There are only three knives in the whole game: take one and you can <strong>stab a sign</strong> ' +
+          'before the next turn, and it stays green that round.</p>'
+        : '') +
       (you.bonus
         ? '<div class="brief-permit"><img src="assets/ui/signs/' + you.bonus.allowed + '" alt="">' +
           '<span><b>Your own line: ' + you.bonus.label + '</b>' +
@@ -946,6 +970,22 @@ function onTray(el) {
          c.y > YOU.top - 60 && c.y < YOU.top + TRAY.h + 60;
 }
 
+/* A two-sided piece turns over when you tap it on the bench. What you see
+   is only half of it, and the half you cannot see may be the half that makes
+   it contraband. */
+function turnOver(card) {
+  const it = card.item;
+  if (!it || !it.sides) return;
+  const img = card.el.querySelector('img.face');
+  card.el.classList.add('turning');
+  later(() => {
+    it.side = it.side ? 0 : 1;
+    if (img) img.src = 'assets/cards/' + it.sides[it.side];
+    card.el.classList.remove('turning');
+  }, 110);
+  playItem(it, 0.35);
+}
+
 /* tap fallback so this works on a phone and with a keyboard */
 function onTap(card) {
   if (phase !== 'searching') return;
@@ -959,7 +999,11 @@ function onTap(card) {
     card.inCase = false;
     playItem(card.item);
     settle(card.el, freeSlot(), YOU.bench, rnd(-5, 5));
-    card.el.setAttribute('aria-label', 'Item card on the bench. Select again to seize it.');
+    card.el.setAttribute('aria-label', card.item.sides
+      ? 'Piece on the bench. Select to turn it over; drag it to the tray to seize it.'
+      : 'Item card on the bench. Select again to seize it.');
+  } else if (card.item && card.item.sides) {
+    turnOver(card);                 /* on the lean shift a tap turns it; dragging seizes */
   } else {
     seize(card);
   }
@@ -980,6 +1024,10 @@ function seize(card) {
   held.bag.items = held.bag.items.filter(x => x.uid !== card.item.uid);
   you.seized.push(card.item);
   if (bad(card.item)) {
+    if (M.lean && isKnife(card.item)) {
+      you.stabs = (you.stabs || 0) + 1;
+      toast('A knife — you can stab a sign before a round turns', true);
+    }
     const worth = creditSeizure(you, card.item);
     pop(c.x - 24, c.y - 28, worth === 2 ? 'Yours \u00b7 2' : '+' + VP_SEIZED, 'good');
   }
@@ -1437,11 +1485,65 @@ function render() {
    past and they wait for the other officer to finish. */
 let roundNo = 0, youDone = false, oppDone = false, roundGoing = false;
 
+/* ---------- the knife ----------
+   Take a knife and you get to stab a sign before the next bag: that sign
+   cannot turn over this round. Signs only turn once the three rounds of grace
+   are up, so a stab is kept until a round where it would actually do
+   something rather than wasted on a round where nothing moves. Officer B does
+   the same with theirs. Only three knives in the game, so they are worth
+   having. */
+function flipsThisRound() {
+  return !!M.useBoard && roundNo > (M.banAfter || 0);
+}
+
+function isKnife(it) { return !!(it && it.design && it.design.indexOf('lean_knives') === 0); }
+
+function offerStab(then) {
+  const green = board.filter(r => !r.banned);
+  if (!green.length) { you.stabs--; then(); return; }
+  paused = true;
+  $('stabList').innerHTML = green.map((r, i) =>
+    '<button class="stab-pick" type="button" data-i="' + i + '">' +
+    '<img src="assets/ui/signs/' + r.cat.allowed + '" alt=""><b>' + r.cat.label + '</b></button>').join('');
+  const done = (row) => {
+    $('stab').hidden = true;
+    paused = false;
+    you.stabs--;
+    if (row) { row.stabbed = true; drawSigns(); toast('You stabbed ' + row.cat.label.toLowerCase() + ' — it stays put this round', true); }
+    then();
+  };
+  [].forEach.call($('stabList').querySelectorAll('.stab-pick'), b => {
+    b.onclick = () => done(green[Number(b.getAttribute('data-i'))]);
+  });
+  $('stabSkip').onclick = () => done(null);
+  $('stab').hidden = false;
+}
+
+function oppStabs() {
+  if (!(opp.stabs > 0)) return;
+  const green = board.filter(r => !r.banned && !r.stabbed);
+  if (!green.length) return;
+  const row = green[Math.floor(Math.random() * green.length)];
+  row.stabbed = true;
+  opp.stabs--;
+  drawSigns();
+  toast('Officer B stabbed ' + row.cat.label.toLowerCase(), false);
+}
+
 function beginRound() {
   if (over || !M.lockstep) return;
   roundNo++;
   youDone = false; oppDone = false; roundGoing = true;
+  if (M.lean && flipsThisRound() && you.stabs > 0) { offerStab(dealRound); return; }
+  dealRound();
+}
+
+function dealRound() {
+  if (over) return;
+  if (M.lean && flipsThisRound()) oppStabs();
   amendmentDue();
+  board.forEach(r => { r.stabbed = false; });   /* a stab holds for one turn only */
+  if (M.useBoard) drawSigns();
 
   if (you.skipNext) {
     you.skipNext = false;
@@ -1700,6 +1802,7 @@ function oppSearch(contraband, size, rush) {
       oppHeld.bag.items = oppHeld.bag.items.filter(x => x.uid !== it.uid);
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem, it);
+      if (M.lean && isKnife(it)) opp.stabs = (opp.stabs || 0) + 1;
       creditSeizure(opp, it);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');
@@ -1907,6 +2010,8 @@ function showMenu() {
 function startSeries(gameKey, best, goal) {
   M = GAMES[gameKey] || GAMES.standard;
   useWide(!!M.wide);
+  useLean(!!M.lean);
+  tagCache = null;                  /* the board index differs per shift */
   setDeal(M.bags || M.perSide * 2, M.permitted, M.restricted, M.cap);
   seizeGoal = goal || 0;
   series.best = best; series.round = 1;
