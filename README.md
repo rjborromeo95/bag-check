@@ -323,8 +323,9 @@ of visible work.
 
 ## The lean shift — the one to build on
 
-The first card on the menu, and deliberately small. Eighteen punch-out pieces
-and a board of eleven signs, so every rule can be seen working rather than
+The first card on the menu, and deliberately small. Originally eighteen
+punch-out pieces and a board of eleven signs (now twenty-seven and fifteen —
+see below), so every rule can be seen working rather than
 buried under a hundred and seven objects.
 
 **The pieces.** Knives, hats, t-shirts and trousers, cut out of the four sheets
@@ -373,6 +374,46 @@ rather than burned on a round where nothing moves. Officer B stabs with theirs.
   not exist yet.
 - Knives, the bucket hat and the jeans make the `light` sound and everything
   else `cloth`, so the sound of a knife is not, on its own, a giveaway.
+
+## Lighters, dresses and a board you can burn
+
+**Nine more pieces**, cut from two new sheets along their outlines and paired
+front to back like the first eighteen: five dresses (red, green, white, blue,
+black slip) and four lighters (purple, utility, blue, mini). Same 440×617
+canvas, same shared transform per pair, everything upright. The blue dress's
+collar touches the top of its sheet, so a sliver of outline is clipped there.
+
+**Four more signs**, making fifteen: Dresses, Lighters, Teddies and Smiley
+faces. The smiley pair was made from the supplied JPGs — cropped to the ring,
+transparent outside it, 240px like the rest.
+
+**The board is a 5×3 grid**, because the lighter needs neighbours. The order
+of `LEAN_CATEGORIES` is the layout, read left to right; `LEAN_COLS` sets the
+width and `leanNeighbours()` does the adjacency. Knives sit in a corner and
+Lighters in the centre, so the two starting reds are far apart and the middle
+is where fire does most.
+
+**The lighter.** Take one and a picker opens before the next round, showing
+the wall. Pick a red sign and the four signs touching it turn red; pick a
+green one and only it turns. Hovering previews where it spreads; on a phone
+the first tap aims and the second strikes. Signs that caught get an orange
+ring for the round. Officer B strikes as soon as they have one, wherever it
+catches most.
+
+**Judgement calls**, all easy to change:
+- **Lighters start red**, like knives. A green lighter would be a wrongful
+  seizure, so its effect could never be used.
+- **A stabbed sign will not catch.** The knife is the only defence against
+  fire, which gives it a second job.
+- **One of each lighter, three of each dress**: 67 pieces for 64 slots. Three
+  ordinary pieces sit out each shift, never a knife or a lighter.
+- **Teddy and smiley are front-only** on the white and blue dresses, so both
+  have to be turned over to be sure.
+- **The blue dress is not yellow**, despite its smileys — same call as the
+  beanie. Jeans, the beanie, the blue dress and two lighters carry no colour,
+  since there is no blue or purple sign.
+- **The black slip dress makes the `light` sound**, so the sound of a lighter
+  is not a giveaway on its own.
 
 ## The game
 

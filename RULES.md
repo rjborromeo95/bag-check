@@ -100,11 +100,31 @@ points across all of them.
 that gets it confiscated. A piece is contraband if either side qualifies. Turn
 pieces over to find out.
 
-Eleven signs start green except **Knives**. After three rounds, **two more turn
-red every round**.
+Sixty-seven pieces: three knives, four lighters, and three each of five hats,
+five t-shirts, five trousers and five dresses. Eight pouches of eight, so three
+ordinary pieces stay in the box each shift — never a knife or a lighter.
+
+Fifteen signs, laid out **five across and three down**. Knives (top-left
+corner) and Lighters (centre) start red; the rest start green. After three
+rounds, **two more turn red every round**.
 
 **Knives.** There are only three. Take one and, before a round in which signs
-turn, you may stab one green sign: it cannot turn that round.
+turn, you may stab one green sign: it cannot turn that round — not by policy,
+and not by fire.
+
+**Lighters.** There are four. Take one and, before any round, you may strike
+it on one sign:
+- a **red** sign spreads: the signs directly above, below and either side of
+  it turn red;
+- a **green** sign turns red on its own, and nothing else does.
+
+Fire only turns signs red. A stabbed sign does not catch. Officer B stabs
+first, then you use your knife, then your lighter, then B strikes theirs, then
+the policy turns.
+
+**Smiley faces and teddies are different signs.** The blue dress and the
+beanie carry smileys on their front only; the white dress carries a teddy on
+its front only.
 
 First to 12 seized wins, or 20 for a longer shift.
 
