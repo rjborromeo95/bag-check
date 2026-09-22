@@ -823,3 +823,33 @@ body.no-tally .notice-banned{display:none}
 /* turning a piece over reads as a quick flip rather than a swap */
 .card.item .face{transition:transform .11s ease-in}
 .card.item.turning .face{transform:scaleX(0)}
+
+/* ---- the lean board is a grid ----
+   Five across, three down, because the lighter needs neighbours: fire on a
+   red sign spreads up, down and to either side. The gaps are wider than the
+   policy board's so the rows and columns read as a grid, not a list. */
+.sign-board.sign-grid{grid-template-columns:repeat(5,1fr);gap:5px}
+.sign-board .sign.lit{animation:catch 1.1s ease-out 1;box-shadow:0 0 0 2px #f29a2e}
+@keyframes catch{0%{box-shadow:0 0 0 0 #ffd36b;transform:scale(1.18)}60%{box-shadow:0 0 0 5px rgba(242,154,46,.5)}100%{box-shadow:0 0 0 2px #f29a2e;transform:scale(1)}}
+
+/* ---- the lighter picker: the wall itself, big enough to aim at ---- */
+.light-inner{width:min(620px,100%)}
+.light-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin-top:.8rem}
+.light-pick{
+  display:flex;flex-direction:column;align-items:center;gap:.1rem;text-align:center;
+  background:#f4f1e7;border:2px solid #cdc5ae;border-radius:6px;padding:.35rem .2rem;touch-action:manipulation;
+  position:relative;
+}
+.light-pick img{width:100%;max-width:72px;height:auto}
+.light-pick b{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;line-height:1.05;color:#3c372a}
+.light-pick.light-ban{background:#f8e7e4;border-color:#c0483f}
+.light-pick.light-ok img{opacity:.75}
+.light-pick.aim{border-color:#1c1c1c;box-shadow:0 0 0 2px #1c1c1c}
+.light-pick.reach{border-color:#e07a1f;background:#fdebd3;box-shadow:0 0 0 3px #f29a2e}
+.light-pick.reach img{opacity:1}
+.light-pick.stabbed::after{
+  content:'';position:absolute;right:3px;top:3px;width:14px;height:14px;
+  background:#1c1c1c;clip-path:polygon(50% 0,100% 100%,50% 75%,0 100%);
+}
+.light-hint{margin:.6rem 0 0;min-height:1.3em;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;color:#8a4a12}
+@media(max-width:520px){.light-pick b{font-size:.75rem}}

@@ -847,22 +847,84 @@ const LEAN_PIECES = [
              { img: 'lean_trousers_3_b.png', tags: ['trousers'] } ] },
   { key: 'lean_trousers_4',  name: "White trousers",   sound: 'cloth',  copies: 3,
     sides: [ { img: 'lean_trousers_4_a.png', tags: ['trousers', 'white'] },
-             { img: 'lean_trousers_4_b.png', tags: ['trousers', 'white'] } ] }
+             { img: 'lean_trousers_4_b.png', tags: ['trousers', 'white'] } ] },
+
+  /* Dresses. Two of them are only caught from one side: the white dress has
+     its teddy on the front, the blue dress its smileys on the front. Turned
+     over, both look like any other dress. */
+  { key: 'lean_dresses_0',   name: "Red dress",        sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_dresses_0_a.png', tags: ['dress', 'red'] },
+             { img: 'lean_dresses_0_b.png', tags: ['dress', 'red'] } ] },
+  { key: 'lean_dresses_1',   name: "Green dress",      sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_dresses_1_a.png', tags: ['dress', 'green'] },
+             { img: 'lean_dresses_1_b.png', tags: ['dress', 'green'] } ] },
+  { key: 'lean_dresses_2',   name: "White dress",      sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_dresses_2_a.png', tags: ['dress', 'white', 'teddy'] },
+             { img: 'lean_dresses_2_b.png', tags: ['dress', 'white'] } ] },
+  { key: 'lean_dresses_3',   name: "Blue dress",       sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_dresses_3_a.png', tags: ['dress', 'smiley'] },
+             { img: 'lean_dresses_3_b.png', tags: ['dress'] } ] },
+  { key: 'lean_dresses_4',   name: "Black slip dress", sound: 'light',  copies: 3,
+    sides: [ { img: 'lean_dresses_4_a.png', tags: ['dress', 'black'] },
+             { img: 'lean_dresses_4_b.png', tags: ['dress', 'black'] } ] },
+
+  /* Lighters. One of each, like the knives, because they are the other piece
+     that does something: take one and you can set fire to the board. */
+  { key: 'lean_lighters_0',  name: "Purple lighter",   sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_lighters_0_a.png', tags: ['lighter'] },
+             { img: 'lean_lighters_0_b.png', tags: ['lighter'] } ] },
+  { key: 'lean_lighters_1',  name: "Utility lighter",  sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_lighters_1_a.png', tags: ['lighter', 'black'] },
+             { img: 'lean_lighters_1_b.png', tags: ['lighter', 'black'] } ] },
+  { key: 'lean_lighters_2',  name: "Blue lighter",     sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_lighters_2_a.png', tags: ['lighter'] },
+             { img: 'lean_lighters_2_b.png', tags: ['lighter'] } ] },
+  { key: 'lean_lighters_3',  name: "Mini lighter",     sound: 'light',  copies: 1,
+    sides: [ { img: 'lean_lighters_3_a.png', tags: ['lighter', 'black'] },
+             { img: 'lean_lighters_3_b.png', tags: ['lighter', 'black'] } ] }
 ];
 
+/* The pieces that do something when you take them. They are never the ones
+   left in the box when the deck is too big for the pouches. */
+function isEffectPiece(key) { return key.indexOf('lean_knives') === 0 || key.indexOf('lean_lighters') === 0; }
+
+/* The board is a grid now, five across and three down, because the lighter
+   needs to know what is next to what: set fire to a red sign and it spreads to
+   the signs directly above, below and either side. The order below IS the
+   layout, read left to right, top to bottom. Knives sit in a corner and
+   Lighters in the middle, so the two that start red are as far apart as the
+   grid allows and the centre is where fire does the most. */
+const LEAN_COLS = 5;
 const LEAN_CATEGORIES = [
-  { key: 'knife',       label: 'Knives',       tag: 'knife',       allowed: 'knife_ok.png',             banned: 'no_knives.png',    start: true },
-  { key: 'hat',         label: 'Hats',         tag: 'hat',         allowed: 'hats_allowed.png',         banned: 'no_hats.png',      start: false },
-  { key: 'tshirt',      label: 'T-shirts',     tag: 'tshirt',      allowed: 't_shirts_allowed.png',     banned: 'no_t_shirts.png',  start: false },
-  { key: 'trousers',    label: 'Trousers',     tag: 'trousers',    allowed: 'trousers_allowed.png',     banned: 'no_trousers.png',  start: false },
-  { key: 'green',       label: 'Green',        tag: 'green',       allowed: 'green_allowed.png',        banned: 'no_green.png',     start: false },
-  { key: 'white',       label: 'White',        tag: 'white',       allowed: 'white_allowed.png',        banned: 'no_white.png',     start: false },
-  { key: 'red',         label: 'Red',          tag: 'red',         allowed: 'red_allowed.png',          banned: 'no_red.png',       start: false },
-  { key: 'yellow',      label: 'Yellow',       tag: 'yellow',      allowed: 'yellow_allowed.png',       banned: 'no_yellow.png',    start: false },
-  { key: 'black',       label: 'Black',        tag: 'black',       allowed: 'black_allowed.png',        banned: 'no_black.png',     start: false },
-  { key: 'instruments', label: 'Instruments',  tag: 'instruments', allowed: 'instruments_allowed.png',  banned: 'no_music.png',     start: false },
-  { key: 'belts',       label: 'Belts',        tag: 'belt',        allowed: 'belts_allowed.png',        banned: 'no_belts.png',     start: false }
+  { key: 'knife',       label: 'Knives',       tag: 'knife',       allowed: 'knife_ok.png',             banned: 'no_knives.png',        start: true },
+  { key: 'hat',         label: 'Hats',         tag: 'hat',         allowed: 'hats_allowed.png',         banned: 'no_hats.png',          start: false },
+  { key: 'tshirt',      label: 'T-shirts',     tag: 'tshirt',      allowed: 't_shirts_allowed.png',     banned: 'no_t_shirts.png',      start: false },
+  { key: 'trousers',    label: 'Trousers',     tag: 'trousers',    allowed: 'trousers_allowed.png',     banned: 'no_trousers.png',      start: false },
+  { key: 'dress',       label: 'Dresses',      tag: 'dress',       allowed: 'dresses_allowed.png',      banned: 'no_dresses.png',       start: false },
+
+  { key: 'green',       label: 'Green',        tag: 'green',       allowed: 'green_allowed.png',        banned: 'no_green.png',         start: false },
+  { key: 'white',       label: 'White',        tag: 'white',       allowed: 'white_allowed.png',        banned: 'no_white.png',         start: false },
+  { key: 'lighter',     label: 'Lighters',     tag: 'lighter',     allowed: 'lighter_allowed.png',      banned: 'no_lighter.png',       start: true },
+  { key: 'red',         label: 'Red',          tag: 'red',         allowed: 'red_allowed.png',          banned: 'no_red.png',           start: false },
+  { key: 'yellow',      label: 'Yellow',       tag: 'yellow',      allowed: 'yellow_allowed.png',       banned: 'no_yellow.png',        start: false },
+
+  { key: 'black',       label: 'Black',        tag: 'black',       allowed: 'black_allowed.png',        banned: 'no_black.png',         start: false },
+  { key: 'instruments', label: 'Instruments',  tag: 'instruments', allowed: 'instruments_allowed.png',  banned: 'no_music.png',         start: false },
+  { key: 'belts',       label: 'Belts',        tag: 'belt',        allowed: 'belts_allowed.png',        banned: 'no_belts.png',         start: false },
+  { key: 'teddy',       label: 'Teddies',      tag: 'teddy',       allowed: 'teddies_allowed.png',      banned: 'no_teddys.png',        start: false },
+  { key: 'smiley',      label: 'Smiley faces', tag: 'smiley',      allowed: 'smiley_faces_allowed.png', banned: 'no_smiley_faces.png',  start: false }
 ];
+
+/* the four signs touching a square of the grid — fewer at the edges */
+function leanNeighbours(i) {
+  const n = LEAN_CATEGORIES.length, c = i % LEAN_COLS, out = [];
+  if (i - LEAN_COLS >= 0) out.push(i - LEAN_COLS);
+  if (i + LEAN_COLS < n)  out.push(i + LEAN_COLS);
+  if (c > 0)              out.push(i - 1);
+  if (c < LEAN_COLS - 1 && i + 1 < n) out.push(i + 1);
+  return out;
+}
+
 
 let LEAN = false;
 function useLean(on) { LEAN = !!on; }
@@ -876,7 +938,7 @@ function leanDeck() {
       p.sides.forEach(s => s.tags.forEach(t => { union[t] = true; }));
       d.push({
         design: p.key, name: p.name, sound: p.sound, uid: 'L' + (uid++),
-        restricted: p.key.indexOf('lean_knives') === 0,
+        restricted: isEffectPiece(p.key),
         sides: p.sides.map(s => s.img), sideTags: p.sides.map(s => s.tags),
         tags: Object.keys(union),
         side: Math.random() < 0.5 ? 0 : 1,     /* whichever way up it landed */
@@ -884,6 +946,15 @@ function leanDeck() {
       });
     }
   });
+  /* Sixty-seven pieces and eight pouches of eight: three stay in the box each
+     shift, chosen at random — but never a knife or a lighter, so there are
+     always three of one and four of the other in play. */
+  const room = DEAL.trays * DEAL.cap;
+  while (d.length > room) {
+    const plain = d.filter(x => !x.restricted);
+    const drop = plain[Math.floor(Math.random() * plain.length)];
+    d.splice(d.indexOf(drop), 1);
+  }
   return d;
 }
 

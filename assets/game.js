@@ -52,15 +52,16 @@ const GAMES = {
               circulate: true,   /* bags go round and round rather than away */
               recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
-/* The lean shift. Eighteen two-sided punch-out pieces — knives, hats,
-   t-shirts, trousers — six pouches of eight, and a board of eleven signs.
-   Everything else about the policy shift carries over: one clock for both
-   benches, bags that go round, no passing, and a lost bag for taking something
-   legal. The knife is the only piece that does anything. */
+/* The lean shift. Twenty-seven two-sided punch-out pieces — knives,
+   lighters, hats, t-shirts, trousers, dresses — eight pouches of eight, and a
+   board of fifteen signs laid out five by three. Everything else about the
+   policy shift carries over: one clock for both benches, bags that go round,
+   no passing, and a lost bag for taking something legal. Knives and lighters
+   are the pieces that do something. */
 GAMES.lean = {
   key: 'lean', name: 'Lean shift', tray: 10000, cut: true, reveal: false,
   lean: true, wide: true, useBoard: true, banAfter: 3, banCount: 2,
-  perSide: 3, bags: 6, cap: 8, fixedBag: 8, permitted: 45, restricted: 3,
+  perSide: 4, bags: 8, cap: 8, fixedBag: 8, permitted: 57, restricted: 7,
   noPass: true, autoOpen: true, skipOnWrong: true, lockstep: true,
   circulate: true, recircCap: 400
 };
@@ -203,9 +204,10 @@ function applySigns() {
 function drawSigns() {
   if (M.useBoard) {
     const red = board.filter(r => r.banned).length;
-    $('signRow').className = 'sign-row sign-board';
+    $('signRow').className = 'sign-row sign-board' + (M.lean ? ' sign-grid' : '');
     $('signRow').innerHTML = board.map(r =>
-      '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') + '" title="' + r.cat.label + '">' +
+      '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') + (r.lit ? ' lit' : '') +
+      '" title="' + r.cat.label + '">' +
       '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt="' + r.cat.label + '"></span>'
     ).join('');
     $('signCount').textContent = red + ' of ' + board.length + ' turned';
@@ -469,7 +471,9 @@ function start() {
   you.skipped = 0; opp.skipped = 0;
   roundNo = 0; youDone = oppDone = false; roundGoing = false;
   you.stabs = 0; opp.stabs = 0;
+  you.lights = 0; opp.lights = 0;
   $('stab').hidden = true;
+  $('light').hidden = true;
   you.skipNext = false; opp.skipNext = false;
 
   started = false; over = false;
@@ -534,7 +538,11 @@ function briefText() {
         ? '<p class="brief-lede"><strong>Every piece has two sides</strong>, and the one facing up is not always ' +
           'the one that gets it confiscated — tap a piece to turn it over, drag it to the tray to seize it. ' +
           'There are only three knives in the whole game: take one and you can <strong>stab a sign</strong> ' +
-          'before the next turn, and it stays green that round.</p>'
+          'before the next turn, and it stays green that round.</p>' +
+          '<p class="brief-lede">There are four <strong>lighters</strong>. Take one and, before any round, you can ' +
+          'set fire to the board: pick a <strong>red</strong> sign and the signs directly above, below and either ' +
+          'side of it turn red too; pick a <strong>green</strong> sign and just that one turns. A stabbed sign ' +
+          'will not catch.</p>'
         : '') +
       (you.bonus
         ? '<div class="brief-permit"><img src="assets/ui/signs/' + you.bonus.allowed + '" alt="">' +
@@ -1028,6 +1036,10 @@ function seize(card) {
       you.stabs = (you.stabs || 0) + 1;
       toast('A knife — you can stab a sign before a round turns', true);
     }
+    if (M.lean && isLighter(card.item)) {
+      you.lights = (you.lights || 0) + 1;
+      toast('A lighter — you can set fire to the board before the next round', true);
+    }
     const worth = creditSeizure(you, card.item);
     pop(c.x - 24, c.y - 28, worth === 2 ? 'Yours \u00b7 2' : '+' + VP_SEIZED, 'good');
   }
@@ -1499,7 +1511,7 @@ function flipsThisRound() {
 function isKnife(it) { return !!(it && it.design && it.design.indexOf('lean_knives') === 0); }
 
 function offerStab(then) {
-  const green = board.filter(r => !r.banned);
+  const green = board.filter(r => !r.banned && !r.stabbed);
   if (!green.length) { you.stabs--; then(); return; }
   paused = true;
   $('stabList').innerHTML = green.map((r, i) =>
@@ -1519,6 +1531,97 @@ function offerStab(then) {
   $('stab').hidden = false;
 }
 
+/* ---------- the lighter ----------
+   Take a lighter and, before any round, you can set fire to the board. Pick a
+   red sign and it spreads: the signs directly above, below and either side of
+   it turn red too. Pick a green sign and only that one turns. Fire only ever
+   turns signs red, and a stabbed sign does not catch — the knife is the one
+   thing that stops it. Four lighters in the game, one of each. */
+function isLighter(it) { return !!(it && it.design && it.design.indexOf('lean_lighters') === 0); }
+
+/* what striking a lighter on this square would turn, without doing it */
+function fireReach(i) {
+  const row = board[i];
+  if (!row) return [];
+  const targets = row.banned ? leanNeighbours(i) : [i];
+  return targets.map(k => board[k]).filter(r => r && !r.banned && !r.stabbed);
+}
+
+function strike(i) {
+  const caught = fireReach(i);
+  caught.forEach(r => { r.banned = true; r.lit = true; });
+  if (caught.length) { recomputeBoard(); drawSigns(); }
+  return caught.map(r => r.cat.label);
+}
+
+function offerLight(then) {
+  if (!board.some((r, i) => fireReach(i).length)) { then(); return; }   /* nothing left to burn: keep it */
+  paused = true;
+  const list = $('lightList');
+  list.innerHTML = board.map((r, i) =>
+    '<button class="light-pick light-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') +
+    '" type="button" data-i="' + i + '" title="' + r.cat.label + '">' +
+    '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt=""><b>' + r.cat.label + '</b></button>'
+  ).join('');
+  const buttons = [].slice.call(list.querySelectorAll('.light-pick'));
+  const hint = $('lightHint');
+  const say = i => {
+    buttons.forEach(b => b.classList.remove('reach', 'aim'));
+    if (i == null) { hint.textContent = 'Pick a sign.'; return; }
+    const r = board[i], reach = fireReach(i);
+    buttons[i].classList.add('aim');
+    reach.forEach(x => buttons[board.indexOf(x)].classList.add('reach'));
+    const names = reach.map(x => x.cat.label.toLowerCase());
+    const list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+    hint.textContent = !reach.length
+      ? (r.banned ? 'Nothing next to ' + r.cat.label.toLowerCase() + ' can catch.' : r.cat.label + ' is stabbed — it will not catch.')
+      : (r.banned ? 'Fire spreads from ' + r.cat.label.toLowerCase() + ' to ' + list + '.'
+                  : 'Only ' + list + ' turns red.');
+  };
+  const done = (i) => {
+    $('light').hidden = true;
+    paused = false;
+    if (i != null) {
+      you.lights--;
+      const caught = strike(i);
+      toast(caught.length ? 'You set fire to the board: no ' + caught.join(', no ').toLowerCase()
+                          : 'Your lighter caught nothing', true);
+    }
+    then();
+  };
+  /* with a mouse, hovering shows where it will spread and a click strikes;
+     on a touchscreen the first tap aims and a second tap on the same sign strikes */
+  const hover = matchMedia('(hover: hover)').matches;
+  let aimed = null;
+  buttons.forEach(b => {
+    const i = Number(b.getAttribute('data-i'));
+    if (hover) { b.onmouseenter = () => say(i); b.onmouseleave = () => say(aimed); }
+    b.onclick = () => {
+      if ((hover || aimed === i) && fireReach(i).length) { done(i); return; }
+      aimed = i; say(i);
+    };
+  });
+  say(null);
+  $('lightCount').textContent = you.lights > 1 ? 'You have ' + you.lights + ' lighters.' : '';
+  $('lightSkip').onclick = () => done(null);
+  $('light').hidden = false;
+}
+
+/* Officer B strikes as soon as they have one, wherever it catches most */
+function oppLights() {
+  if (!(opp.lights > 0)) return;
+  let best = -1, most = 0;
+  board.forEach((r, i) => {
+    const n = fireReach(i).length + Math.random() * 0.5;   /* ties broken at random */
+    if (n > most) { most = n; best = i; }
+  });
+  if (best < 0 || most < 1) return;
+  opp.lights--;
+  const from = board[best];
+  const caught = strike(best);
+  toast('Officer B set fire to ' + from.cat.label.toLowerCase() + ': no ' + caught.join(', no ').toLowerCase(), false);
+}
+
 function oppStabs() {
   if (!(opp.stabs > 0)) return;
   const green = board.filter(r => !r.banned && !r.stabbed);
@@ -1530,17 +1633,26 @@ function oppStabs() {
   toast('Officer B stabbed ' + row.cat.label.toLowerCase(), false);
 }
 
+/* Before a round: Officer B stabs first, where you can see it, then you get
+   your knife and then your lighter, then B strikes theirs, then the policy
+   turns. Knives only come out on rounds where signs are due to turn — that is
+   the only thing they stop — but a lighter does something on any round. */
 function beginRound() {
   if (over || !M.lockstep) return;
   roundNo++;
   youDone = false; oppDone = false; roundGoing = true;
-  if (M.lean && flipsThisRound() && you.stabs > 0) { offerStab(dealRound); return; }
-  dealRound();
+  board.forEach(r => { r.lit = false; });
+  if (M.lean && flipsThisRound()) oppStabs();
+  const steps = [];
+  if (M.lean && flipsThisRound() && you.stabs > 0) steps.push(offerStab);
+  if (M.lean && you.lights > 0) steps.push(offerLight);
+  const run = () => { const step = steps.shift(); if (step) step(run); else dealRound(); };
+  run();
 }
 
 function dealRound() {
   if (over) return;
-  if (M.lean && flipsThisRound()) oppStabs();
+  if (M.lean) oppLights();
   amendmentDue();
   board.forEach(r => { r.stabbed = false; });   /* a stab holds for one turn only */
   if (M.useBoard) drawSigns();
@@ -1803,6 +1915,7 @@ function oppSearch(contraband, size, rush) {
       playItem(it, SFX_THEM);
       stow(cd.el, SEIZE_THEM, stowThem, it);
       if (M.lean && isKnife(it)) opp.stabs = (opp.stabs || 0) + 1;
+      if (M.lean && isLighter(it)) opp.lights = (opp.lights || 0) + 1;
       creditSeizure(opp, it);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');
