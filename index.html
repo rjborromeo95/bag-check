@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=46">
+<link rel="stylesheet" href="assets/style.css?v=48">
 </head>
 <body>
 
@@ -31,7 +31,19 @@
       know is to open it. Finish searching and pass with time left and the other officer has to
       pass too, wherever they have got to.</p>
 
-    <div class="menu-modes menu-modes-two">
+    <div class="menu-modes menu-modes-three">
+      <div class="mode-card mode-card-lead">
+        <span class="mode-name">Lean shift</span>
+        <span class="mode-tag">18 pieces &middot; 11 signs &middot; turn them over</span>
+        <span class="mode-body">Knives, hats, t-shirts and trousers, every one of them two-sided — and
+          the side facing up is not always the one that gets it confiscated. Tap a piece to turn it over,
+          drag it to the tray to seize it. Take a knife and you can stab a sign so it cannot turn.</span>
+        <span class="mode-picks">
+          <button class="mode" type="button" data-game="lean" data-goal="12">First to 12</button>
+          <button class="mode" type="button" data-game="lean" data-goal="20">First to 20</button>
+        </span>
+      </div>
+
       <div class="mode-card">
         <span class="mode-name">Standard shift</span>
         <span class="mode-tag">12 trays each &middot; 10s a bag &middot; two signs</span>
@@ -46,7 +58,7 @@
       <div class="mode-card">
         <span class="mode-name">Policy shift</span>
         <span class="mode-tag">7 bags &middot; 8 things in each &middot; 10 seconds</span>
-        <span class="mode-body">Seven suitcases between you, six ordinary things and three forbidden in
+        <span class="mode-body">Seven suitcases between you, nine things in each and the forbidden ones shuffled through
           every one, circling round and round. No passing — the bag opens itself and goes when the
           clock says. Every three bags, two more ordinary things are struck off at random. Take
           something legal by mistake and you sit out the next bag.</span>
@@ -186,6 +198,16 @@
 
 </main>
 
+<div class="draft" id="stab" hidden>
+  <div class="draft-inner">
+    <p class="brief-kicker">You took a knife</p>
+    <h2 class="brief-head">Stab a sign</h2>
+    <p class="brief-lede">Two signs are about to turn over. Pick one and it stays green this round.</p>
+    <div class="draft-list" id="stabList"></div>
+    <button class="ghost stab-skip" id="stabSkip" type="button">Keep the knife in your pocket</button>
+  </div>
+</div>
+
 <div class="brief" id="brief" hidden>
   <div class="brief-inner">
     <p class="brief-kicker">Before the shift</p>
@@ -206,8 +228,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=46"></script>
-<script src="assets/game.js?v=46"></script>
+<script src="assets/items.js?v=48"></script>
+<script src="assets/game.js?v=48"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

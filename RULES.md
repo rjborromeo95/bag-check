@@ -52,8 +52,9 @@ An alternative shift with a broader deck, built so the categories overlap: blue
 jeans are caught by No blue and by No trousers, and a croissant teddy is caught
 by No croissants and by No teddies.
 
-**Seven bags in the whole game**, and every one holds the same: six ordinary
-things and three off the forbidden list. **Ten seconds a bag.** Both officers
+**Seven bags in the whole game**, nine things in each. The twenty-one forbidden
+items are shuffled in with the forty-two ordinary ones, so every suitcase is the
+same size but no two hold the same mix — three is only the average. **Ten seconds a bag.** Both officers
 take a bag at the same moment and neither gets the next one until both are
 finished, so nobody can work ahead.
 
@@ -92,6 +93,20 @@ rounds takes the match, so a three can finish in two. Every round is a fresh
 deal with fresh amendments, so what counts as contraband changes under you. A
 drawn round counts for nobody; a match level on rounds goes to whoever has more
 points across all of them.
+
+## The lean shift
+
+**Every piece has two sides**, and the side facing up is not always the side
+that gets it confiscated. A piece is contraband if either side qualifies. Turn
+pieces over to find out.
+
+Eleven signs start green except **Knives**. After three rounds, **two more turn
+red every round**.
+
+**Knives.** There are only three. Take one and, before a round in which signs
+turn, you may stab one green sign: it cannot turn that round.
+
+First to 12 seized wins, or 20 for a longer shift.
 
 ## The day's amendments
 

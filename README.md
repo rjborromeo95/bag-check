@@ -321,6 +321,59 @@ start walking past them; let them settle and they are hard to beat. They are
 deliberately unhurried either way: a flagged bag takes them four to six seconds
 of visible work.
 
+## The lean shift — the one to build on
+
+The first card on the menu, and deliberately small. Eighteen punch-out pieces
+and a board of eleven signs, so every rule can be seen working rather than
+buried under a hundred and seven objects.
+
+**The pieces.** Knives, hats, t-shirts and trousers, cut out of the four sheets
+along their outlines. The top half of each sheet is fronts and the bottom half
+backs; each front was matched to its back by colour, size and shape, and all
+eighteen pairs were checked by eye. Both sides are rendered at one shared
+transform so turning a piece over never changes its size. Everything stays
+upright except the three knives, which lie diagonally — at card size a knife
+laid flat was ten pixels thick. Because the back of a knife is the drawn mirror
+of its front, the two faces turn in opposite directions, so flipping one swaps
+which way it points, as a real one would.
+
+**Two sides, and either can get it confiscated.** Each face carries its own
+tags. The black t-shirt has a guitar on the back only; the beanie has a smiley
+on the front only; the white t-shirt has a panel on the back. A piece is
+contraband if **either** side qualifies — so under No instruments the black
+t-shirt is contraband even lying plain side up, and the only way to know is to
+turn it over. Tap a piece on the bench to flip it. Seizing is now a drag to the
+tray, since tapping is taken.
+
+**The deck.** One of each knife and three of everything else: 48 pieces into
+six pouches of eight. Knives are rare on purpose — they are the only piece that
+does anything.
+
+**The board.** Eleven signs: knives, hats, t-shirts, trousers, green, white,
+red, yellow, black, instruments, belts. Only knives start red. After three
+rounds of grace two more turn every round.
+
+Two signs had no partner in the set you sent. **Instruments allowed** turned out
+to share its music-note icon with **No music**, so those two are simply the pair.
+**Green allowed** did not exist at all; it is made from Yellow allowed with the
+disc recoloured to the exact green of No green, and a white keyline round the
+tick so it does not disappear into a green disc.
+
+**The knife.** Take one and you can stab a sign before a round turns: it cannot
+turn that round, and a small blade marks it on the wall. Signs only turn after
+the grace rounds, so a stab is kept until a round where it would do something
+rather than burned on a round where nothing moves. Officer B stabs with theirs.
+
+**Judgement calls you may want to change**, all in `LEAN_PIECES`:
+- The olive trousers count as **green**.
+- The bucket hat's **belt** is on both faces — the buckle only shows on the
+  front, but the band is visible from either side.
+- Jeans and the beanie carry no colour, since there is no blue sign.
+- The beanie's smiley is tagged `smiley` already, ready for a sign that does
+  not exist yet.
+- Knives, the bucket hat and the jeans make the `light` sound and everything
+  else `cloth`, so the sound of a knife is not, on its own, a giveaway.
+
 ## The game
 
 Twelve trays each, ten seconds a bag, no detector. The belt runs itself — Go is
@@ -447,7 +500,19 @@ nothing more, and letting something through costs nothing at all. So the running
 total on your seize tray *is* your score, with nothing to reconcile at the end,
 and the target is just that number.
 
-**Nine to a bag now** — six ordinary things and three forbidden — and the wall
+**Nine to a bag, but the mix is dealt rather than built.** Every suitcase holds
+the same number of things, so weight still tells you nothing — but the twenty-one
+forbidden items go into the shuffle with the forty-two ordinary ones and land
+where they land. Three a bag is the average and nothing more: over 20,000 deals,
+24% of bags come out with two, 30% with three, 21% with four, and one bag in
+eight has five or more. Two per cent are clean.
+
+That was the point of changing it. A guaranteed three meant you knew what you
+were hunting before the case opened and could rack up an early score on
+arithmetic rather than looking. Now a bag can be nearly empty or half
+contraband, and the only way to find out is to get into it.
+
+The wall
 turns over far harder: three rounds of grace, then **two more categories go red
 every single round**. Measured: 7 red for rounds one to three, then 9, 11, 13,
 15.
