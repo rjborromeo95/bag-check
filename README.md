@@ -324,8 +324,8 @@ of visible work.
 ## The lean shift — the one to build on
 
 The first card on the menu, and deliberately small. Originally eighteen
-punch-out pieces and a board of eleven signs (now twenty-seven and fifteen —
-see below), so every rule can be seen working rather than
+punch-out pieces and a board of eleven signs (now forty-one and eighteen — see
+below; the rules for how the wall turns have also changed since), so every rule can be seen working rather than
 buried under a hundred and seven objects.
 
 **The pieces.** Knives, hats, t-shirts and trousers, cut out of the four sheets
@@ -414,6 +414,59 @@ catches most.
   since there is no blue or purple sign.
 - **The black slip dress makes the `light` sound**, so the sound of a lighter
   is not a giveaway on its own.
+
+## Tote bags, bottles, screwdrivers — and a wall that only moves by hand
+
+**Fourteen more pieces**, cut from three sheets and paired front to back by
+area and colour, all fourteen checked by eye:
+- **Tote bags:** tennis, black smiley, white, yellow, blue.
+- **Bottles:** olive oil, rum, red wine, water, mustard.
+- **Screwdrivers:** green, black, red, maroon.
+
+On the tote sheet the pairs are not in rows: the yellow pocket bag's back is
+the plain yellow one below it, and each black and white bag pairs with its
+mirror. Screwdrivers stay diagonal as drawn, like the knives, so turning one
+over swaps which way it points; the little red one stays upright.
+
+**Signs.** Tote bags uses `tote_bag_allowed` / `no_tote_bags` and Screwdrivers
+uses `screwdriver_allowed` / `no_screwdriver`. **There is no bottle sign in the
+art**, so Bottles uses the alcohol pair (`alcohol_allowed` / `no_alcohol`),
+whose icon is a bottle. It should get its own art eventually. The board is now
+**6×3**; `LEAN_COLS` and the order of `LEAN_CATEGORIES` set the layout.
+
+**No passive turning.** The lean shift no longer turns two signs a round;
+`amendmentDue()` is skipped entirely. Only three pieces move the wall, and all
+three go through one table, `TOOLS`, in game.js — each has a `reach(i)` that
+says what it would change and an `apply` that does it:
+- **Screwdriver:** one sign, either direction.
+- **Lighter:** struck on a red sign, burns it and every red sign connected to
+  it through orthogonal neighbours back to green. It is a flood fill, so a long
+  chain of reds goes out in one go.
+- **Knife:** blocks both, and fire treats a stabbed sign as a firebreak.
+
+One picker (`offerTool`) serves all three, showing the wall with a live preview
+of what will change.
+
+**Officer B plays their hand in plain sight.** Screwdrivers go on the green
+sign with the most pieces still going round. Lighters are only struck on a
+chain of two or more reds, the biggest. A knife only comes out when you are
+holding a lighter or screwdriver, and protects the red sign covering the most
+pieces.
+
+**Judgement calls:**
+- **Screwdrivers start red**, like knives and lighters, or they could never be
+  seized and used.
+- **The knife now works on either colour**, since signs can now turn both
+  ways. It lasts one round and is offered before every bag.
+- **Colour tags:**
+  - The olive oil counts as green and the mustard as yellow.
+  - The rum, the water and the blue tote carry no colour.
+  - The red and maroon screwdrivers count as red, and the black one as black.
+
+**The one thing to watch: the pace.** At the start only 11 pieces are
+contraband, fewer than the target of 12, so nobody can win until somebody uses
+a screwdriver. A lighter can make it worse. In testing, Officer B alone reached
+12 in six to thirteen rounds, depending on which screwdrivers turned up early.
 
 ## The game
 

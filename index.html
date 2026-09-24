@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- ?v= is a cache buster. Bump it whenever style.css or game.js changes, or a
      browser (and Vercel's edge cache) will keep serving the old file. -->
-<link rel="stylesheet" href="assets/style.css?v=49">
+<link rel="stylesheet" href="assets/style.css?v=50">
 </head>
 <body>
 
@@ -34,11 +34,10 @@
     <div class="menu-modes menu-modes-three">
       <div class="mode-card mode-card-lead">
         <span class="mode-name">Lean shift</span>
-        <span class="mode-tag">27 pieces &middot; 15 signs &middot; turn them over</span>
-        <span class="mode-body">Knives, lighters, hats, t-shirts, trousers and dresses, every one of them
-          two-sided — and the side facing up is not always the one that gets it confiscated. Tap a piece to
-          turn it over, drag it to the tray to seize it. Take a knife and you can stab a sign so it cannot
-          turn; take a lighter and you can set the board on fire.</span>
+        <span class="mode-tag">41 pieces &middot; 18 signs &middot; turn them over</span>
+        <span class="mode-body">Every piece is two-sided, and the side facing up is not always the one that
+          gets it confiscated. The wall never turns by itself: take a screwdriver to turn a sign over, a lighter
+          to burn a run of red signs back to green, a knife to stop a sign turning at all.</span>
         <span class="mode-picks">
           <button class="mode" type="button" data-game="lean" data-goal="12">First to 12</button>
           <button class="mode" type="button" data-game="lean" data-goal="20">First to 20</button>
@@ -199,26 +198,14 @@
 
 </main>
 
-<div class="draft" id="stab" hidden>
-  <div class="draft-inner">
-    <p class="brief-kicker">You took a knife</p>
-    <h2 class="brief-head">Stab a sign</h2>
-    <p class="brief-lede">Two signs are about to turn over. Pick one and it stays green this round.</p>
-    <div class="draft-list" id="stabList"></div>
-    <button class="ghost stab-skip" id="stabSkip" type="button">Keep the knife in your pocket</button>
-  </div>
-</div>
-
-<div class="draft" id="light" hidden>
+<div class="draft" id="tool" hidden>
   <div class="draft-inner light-inner">
-    <p class="brief-kicker">You took a lighter</p>
-    <h2 class="brief-head">Set fire to the board</h2>
-    <p class="brief-lede">Pick a <strong>red</strong> sign and the fire spreads to the signs directly above,
-      below and either side of it. Pick a <strong>green</strong> sign and only that one turns red.
-      Stabbed signs will not catch. <span id="lightCount"></span></p>
-    <div class="light-grid" id="lightList"></div>
-    <p class="light-hint" id="lightHint">Pick a sign.</p>
-    <button class="ghost stab-skip" id="lightSkip" type="button">Keep the lighter for later</button>
+    <p class="brief-kicker" id="toolKicker"></p>
+    <h2 class="brief-head" id="toolHead"></h2>
+    <p class="brief-lede"><span id="toolLede"></span> <span id="toolCount"></span></p>
+    <div class="light-grid" id="toolList"></div>
+    <p class="light-hint" id="toolHint">Pick a sign.</p>
+    <button class="ghost stab-skip" id="toolSkip" type="button"></button>
   </div>
 </div>
 
@@ -242,8 +229,8 @@
   <p>Playtest rig, not the finished game. Every rule here is a proposal you can argue with.</p>
 </footer>
 
-<script src="assets/items.js?v=49"></script>
-<script src="assets/game.js?v=49"></script>
+<script src="assets/items.js?v=50"></script>
+<script src="assets/game.js?v=50"></script>
 <script>
 /* Offline + add-to-home-screen. Only registers where it can: a service worker
    needs https or localhost, so opening the file directly does nothing. */

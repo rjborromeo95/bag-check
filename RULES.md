@@ -100,31 +100,33 @@ points across all of them.
 that gets it confiscated. A piece is contraband if either side qualifies. Turn
 pieces over to find out.
 
-Sixty-seven pieces: three knives, four lighters, and three each of five hats,
-five t-shirts, five trousers and five dresses. Eight pouches of eight, so three
-ordinary pieces stay in the box each shift — never a knife or a lighter.
+A hundred and one pieces: three knives, four lighters, four screwdrivers, and
+three each of five hats, five t-shirts, five trousers, five dresses, five tote
+bags and five bottles. Twelve pouches of eight, so five ordinary pieces stay in
+the box each shift — never a knife, lighter or screwdriver.
 
-Fifteen signs, laid out **five across and three down**. Knives (top-left
-corner) and Lighters (centre) start red; the rest start green. After three
-rounds, **two more turn red every round**.
+Eighteen signs, laid out **six across and three down**. Knives, Lighters and
+Screwdrivers start red, placed so none of them touch; everything else starts
+green.
 
-**Knives.** There are only three. Take one and, before a round in which signs
-turn, you may stab one green sign: it cannot turn that round — not by policy,
-and not by fire.
+**The wall never turns by itself.** Signs only move when somebody uses
+something they have seized. Everything you take is kept until you choose to
+use it, and it is used between bags, never during one.
 
-**Lighters.** There are four. Take one and, before any round, you may strike
-it on one sign:
-- a **red** sign spreads: the signs directly above, below and either side of
-  it turn red;
-- a **green** sign turns red on its own, and nothing else does.
+- **Screwdriver** (four). Turn any one sign over: green to red, or red to
+  green.
+- **Lighter** (four). Strike it on a **red** sign. That sign goes back to
+  green, and so does every red sign touching it — above, below or either side
+  — and every red sign touching those, as far as the red runs.
+- **Knife** (three). Stab any sign, either colour. Nothing can turn it this
+  round: a screwdriver cannot, and fire stops at it.
 
-Fire only turns signs red. A stabbed sign does not catch. Officer B stabs
-first, then you use your knife, then your lighter, then B strikes theirs, then
-the policy turns.
+Before each bag: Officer B stabs first, then you use your knife, lighter and
+screwdriver in that order, then B uses theirs.
 
-**Smiley faces and teddies are different signs.** The blue dress and the
-beanie carry smileys on their front only; the white dress carries a teddy on
-its front only.
+**Smiley faces and teddies are different signs.** The beanie and the blue
+dress have a smiley on the front only; the black tote has one on both sides.
+The white dress has a teddy on the front only. The red wine counts as red.
 
 First to 12 seized wins, or 20 for a longer shift.
 
