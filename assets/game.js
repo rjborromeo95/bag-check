@@ -52,16 +52,17 @@ const GAMES = {
               circulate: true,   /* bags go round and round rather than away */
               recircCap: 400 }   /* a backstop; the seizure target normally lands first */
 };
-/* The lean shift. Twenty-seven two-sided punch-out pieces — knives,
-   lighters, hats, t-shirts, trousers, dresses — eight pouches of eight, and a
-   board of fifteen signs laid out five by three. Everything else about the
-   policy shift carries over: one clock for both benches, bags that go round,
-   no passing, and a lost bag for taking something legal. Knives and lighters
-   are the pieces that do something. */
+/* The lean shift. Forty-one two-sided punch-out pieces — knives, lighters,
+   screwdrivers, hats, t-shirts, trousers, dresses, tote bags, bottles —
+   twelve pouches of eight, and a board of eighteen signs laid out six by
+   three. The wall never turns by itself: only knives, lighters and
+   screwdrivers move it. Everything else about the policy shift carries over:
+   one clock for both benches, bags that go round, no passing, and a lost bag
+   for taking something legal. */
 GAMES.lean = {
   key: 'lean', name: 'Lean shift', tray: 10000, cut: true, reveal: false,
   lean: true, wide: true, useBoard: true, banAfter: 3, banCount: 2,
-  perSide: 4, bags: 8, cap: 8, fixedBag: 8, permitted: 57, restricted: 7,
+  perSide: 6, bags: 12, cap: 8, fixedBag: 8, permitted: 85, restricted: 11,
   noPass: true, autoOpen: true, skipOnWrong: true, lockstep: true,
   circulate: true, recircCap: 400
 };
@@ -205,12 +206,13 @@ function drawSigns() {
   if (M.useBoard) {
     const red = board.filter(r => r.banned).length;
     $('signRow').className = 'sign-row sign-board' + (M.lean ? ' sign-grid' : '');
+    $('signRow').style.gridTemplateColumns = M.lean ? 'repeat(' + LEAN_COLS + ', minmax(0, 1fr))' : '';
     $('signRow').innerHTML = board.map(r =>
       '<span class="sign sign-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') + (r.lit ? ' lit' : '') +
       '" title="' + r.cat.label + '">' +
       '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt="' + r.cat.label + '"></span>'
     ).join('');
-    $('signCount').textContent = red + ' of ' + board.length + ' turned';
+    $('signCount').textContent = red + ' of ' + board.length + (M.lean ? ' red' : ' turned');
     return;
   }
   const n = signsToday.length;
@@ -472,8 +474,8 @@ function start() {
   roundNo = 0; youDone = oppDone = false; roundGoing = false;
   you.stabs = 0; opp.stabs = 0;
   you.lights = 0; opp.lights = 0;
-  $('stab').hidden = true;
-  $('light').hidden = true;
+  you.screws = 0; opp.screws = 0;
+  $('tool').hidden = true;
   you.skipNext = false; opp.skipNext = false;
 
   started = false; over = false;
@@ -528,6 +530,23 @@ function amendBlock() {
 }
 
 function briefText() {
+  if (M.useBoard && M.lean) {
+    return '<p class="brief-rules">Red on the wall. Everything else is allowed — for now.</p>' +
+      boardBlock() +
+      '<p class="brief-lede">Every other sign is <strong>green</strong>, and taking one of those off a passenger ' +
+      'costs you the next bag. <strong>Every piece has two sides</strong> and either can get it confiscated — tap a ' +
+      'piece to turn it over, drag it to the tray to seize it.</p>' +
+      '<p class="brief-lede"><strong>The wall never turns by itself.</strong> It only moves when somebody uses ' +
+      'something they have seized, before the next bag:</p>' +
+      '<ul class="brief-tools">' +
+      '<li><b>Screwdriver</b> — four in the game. Turn any one sign over, green to red or red to green.</li>' +
+      '<li><b>Lighter</b> — four in the game. Strike it on a red sign: that sign and every red sign joined to it, ' +
+      'up, down or sideways, burns back to green.</li>' +
+      '<li><b>Knife</b> — three in the game. Stab any sign and nothing can turn it this round. Fire stops at it.</li>' +
+      '</ul>' +
+      '<p class="brief-score">The bags go round and round; the shift ends when somebody has seized <strong>' +
+      seizeGoal + '</strong>.</p>';
+  }
   if (M.useBoard) {
     return '<p class="brief-rules">Red on the wall. Everything else is allowed — for now.</p>' +
       boardBlock() +
@@ -1034,11 +1053,15 @@ function seize(card) {
   if (bad(card.item)) {
     if (M.lean && isKnife(card.item)) {
       you.stabs = (you.stabs || 0) + 1;
-      toast('A knife — you can stab a sign before a round turns', true);
+      toast('A knife — you can stab a sign before the next bag', true);
     }
     if (M.lean && isLighter(card.item)) {
       you.lights = (you.lights || 0) + 1;
-      toast('A lighter — you can set fire to the board before the next round', true);
+      toast('A lighter — you can burn red signs off the wall before the next bag', true);
+    }
+    if (M.lean && isScrewdriver(card.item)) {
+      you.screws = (you.screws || 0) + 1;
+      toast('A screwdriver — you can turn a sign over before the next bag', true);
     }
     const worth = creditSeizure(you, card.item);
     pop(c.x - 24, c.y - 28, worth === 2 ? 'Yours \u00b7 2' : '+' + VP_SEIZED, 'good');
@@ -1497,163 +1520,244 @@ function render() {
    past and they wait for the other officer to finish. */
 let roundNo = 0, youDone = false, oppDone = false, roundGoing = false;
 
-/* ---------- the knife ----------
-   Take a knife and you get to stab a sign before the next bag: that sign
-   cannot turn over this round. Signs only turn once the three rounds of grace
-   are up, so a stab is kept until a round where it would actually do
-   something rather than wasted on a round where nothing moves. Officer B does
-   the same with theirs. Only three knives in the game, so they are worth
-   having. */
+/* ---------- the knife, the lighter and the screwdriver ----------
+   On the lean shift nothing on the wall moves by itself any more. Signs only
+   turn when somebody uses something they took off a passenger:
+
+   - a SCREWDRIVER turns one sign over, either way: green to red or red to
+     green. Four in the game.
+   - a LIGHTER is struck on a red sign and puts it out: that sign, and every
+     red sign joined to it up, down or sideways, goes back to green. It runs
+     along a chain of reds as far as the chain goes. Four in the game.
+   - a KNIFE stabs one sign, either colour, and nothing can turn it this round:
+     not a screwdriver, and not fire, which stops at it like a firebreak.
+     Three in the game.
+
+   Everything is kept until you choose to spend it, and it is spent between
+   bags, never during one, so it costs nothing off your ten seconds. */
 function flipsThisRound() {
-  return !!M.useBoard && roundNo > (M.banAfter || 0);
+  return !!M.useBoard && !M.lean && roundNo > (M.banAfter || 0);
 }
 
-function isKnife(it) { return !!(it && it.design && it.design.indexOf('lean_knives') === 0); }
+function isKnife(it)       { return !!(it && it.design && it.design.indexOf('lean_knives') === 0); }
+function isLighter(it)     { return !!(it && it.design && it.design.indexOf('lean_lighters') === 0); }
+function isScrewdriver(it) { return !!(it && it.design && it.design.indexOf('lean_screwdrivers') === 0); }
 
-function offerStab(then) {
-  const green = board.filter(r => !r.banned && !r.stabbed);
-  if (!green.length) { you.stabs--; then(); return; }
-  paused = true;
-  $('stabList').innerHTML = green.map((r, i) =>
-    '<button class="stab-pick" type="button" data-i="' + i + '">' +
-    '<img src="assets/ui/signs/' + r.cat.allowed + '" alt=""><b>' + r.cat.label + '</b></button>').join('');
-  const done = (row) => {
-    $('stab').hidden = true;
-    paused = false;
-    you.stabs--;
-    if (row) { row.stabbed = true; drawSigns(); toast('You stabbed ' + row.cat.label.toLowerCase() + ' — it stays put this round', true); }
-    then();
-  };
-  [].forEach.call($('stabList').querySelectorAll('.stab-pick'), b => {
-    b.onclick = () => done(green[Number(b.getAttribute('data-i'))]);
-  });
-  $('stabSkip').onclick = () => done(null);
-  $('stab').hidden = false;
-}
-
-/* ---------- the lighter ----------
-   Take a lighter and, before any round, you can set fire to the board. Pick a
-   red sign and it spreads: the signs directly above, below and either side of
-   it turn red too. Pick a green sign and only that one turns. Fire only ever
-   turns signs red, and a stabbed sign does not catch — the knife is the one
-   thing that stops it. Four lighters in the game, one of each. */
-function isLighter(it) { return !!(it && it.design && it.design.indexOf('lean_lighters') === 0); }
-
-/* what striking a lighter on this square would turn, without doing it */
+/* what each tool would change if used on square i, without doing it */
 function fireReach(i) {
-  const row = board[i];
-  if (!row) return [];
-  const targets = row.banned ? leanNeighbours(i) : [i];
-  return targets.map(k => board[k]).filter(r => r && !r.banned && !r.stabbed);
+  const start = board[i];
+  if (!start || !start.banned || start.stabbed) return [];
+  const seen = {}, out = [], todo = [i];
+  seen[i] = true;
+  while (todo.length) {
+    const k = todo.shift();
+    out.push(board[k]);
+    leanNeighbours(k).forEach(n => {
+      if (seen[n]) return;
+      seen[n] = true;
+      if (board[n] && board[n].banned && !board[n].stabbed) todo.push(n);
+    });
+  }
+  return out;
+}
+function turnReach(i) {
+  const r = board[i];
+  return r && !r.stabbed ? [r] : [];
+}
+function stabReach(i) {
+  const r = board[i];
+  return r && !r.stabbed ? [r] : [];
 }
 
-function strike(i) {
-  const caught = fireReach(i);
-  caught.forEach(r => { r.banned = true; r.lit = true; });
-  if (caught.length) { recomputeBoard(); drawSigns(); }
-  return caught.map(r => r.cat.label);
+function names(rows) {
+  const n = rows.map(r => r.cat.label.toLowerCase());
+  return n.length > 1 ? n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1] : (n[0] || '');
 }
 
-function offerLight(then) {
-  if (!board.some((r, i) => fireReach(i).length)) { then(); return; }   /* nothing left to burn: keep it */
+const TOOLS = {
+  stab: {
+    count: 'stabs', reach: stabReach,
+    kicker: 'You took a knife', head: 'Stab a sign',
+    lede: 'Pick any sign, red or green. Nothing can turn it this round — not a screwdriver, and not fire, ' +
+          'which stops dead at it.',
+    skip: 'Keep the knife in your pocket',
+    hint: (r, reach) => !reach.length ? r.cat.label + ' is already stabbed.'
+                                      : r.cat.label + ' stays ' + (r.banned ? 'red' : 'green') + ' this round.',
+    apply: rows => { rows.forEach(r => { r.stabbed = true; }); },
+    said: (who, rows) => who + ' stabbed ' + names(rows) + ' — it stays put this round'
+  },
+  light: {
+    count: 'lights', reach: fireReach,
+    kicker: 'You took a lighter', head: 'Burn a sign off the wall',
+    lede: 'Strike it on a <strong>red</strong> sign. That sign goes back to green, and so does every red sign ' +
+          'touching it — above, below or either side — and every red sign touching those, as far as the red runs. ' +
+          'A stabbed sign will not burn and the fire stops at it.',
+    skip: 'Keep the lighter for later',
+    hint: (r, reach) => !reach.length
+      ? (r.stabbed ? r.cat.label + ' is stabbed — it will not burn.' : r.cat.label + ' is green — nothing to burn.')
+      : 'Burns ' + names(reach) + ' back to green.',
+    apply: rows => { rows.forEach(r => { r.banned = false; r.lit = true; }); },
+    said: (who, rows) => who + ' burnt ' + (rows.length > 1 ? rows.length + ' signs' : 'a sign') +
+                         ' off the wall: ' + names(rows) + ' allowed again'
+  },
+  screw: {
+    count: 'screws', reach: turnReach,
+    kicker: 'You took a screwdriver', head: 'Turn a sign over',
+    lede: 'Pick one sign. Green turns <strong>red</strong>, red turns <strong>green</strong>. ' +
+          'Just the one. A stabbed sign will not turn.',
+    skip: 'Keep the screwdriver for later',
+    hint: (r, reach) => !reach.length ? r.cat.label + ' is stabbed — it will not turn.'
+                                      : r.cat.label + ' turns ' + (r.banned ? 'green' : 'red') + '.',
+    apply: rows => { rows.forEach(r => { r.banned = !r.banned; r.lit = true; }); },
+    said: (who, rows) => who + ' turned a sign: ' +
+                         (rows[0].banned ? 'no ' + names(rows) : names(rows) + ' allowed')
+  }
+};
+
+function useTool(kind, i) {
+  const tool = TOOLS[kind];
+  const rows = tool.reach(i);
+  if (!rows.length) return rows;
+  tool.apply(rows);
+  recomputeBoard();
+  drawSigns();
+  return rows;
+}
+
+/* One picker for all three: the wall itself, big enough to aim at. With a
+   mouse, hovering shows what will change and a click commits; on a
+   touchscreen the first tap aims and a second tap on the same sign commits. */
+function offerTool(kind, then) {
+  const tool = TOOLS[kind];
+  if (!(you[tool.count] > 0) || !board.some((r, i) => tool.reach(i).length)) { then(); return; }
   paused = true;
-  const list = $('lightList');
+  $('toolKicker').textContent = tool.kicker;
+  $('toolHead').textContent = tool.head;
+  $('toolLede').innerHTML = tool.lede;
+  $('toolSkip').textContent = tool.skip;
+  $('toolCount').textContent = you[tool.count] > 1 ? 'You have ' + you[tool.count] + '.' : '';
+  const list = $('toolList');
+  list.style.gridTemplateColumns = 'repeat(' + LEAN_COLS + ', minmax(0, 1fr))';
   list.innerHTML = board.map((r, i) =>
     '<button class="light-pick light-' + (r.banned ? 'ban' : 'ok') + (r.stabbed ? ' stabbed' : '') +
     '" type="button" data-i="' + i + '" title="' + r.cat.label + '">' +
     '<img src="assets/ui/signs/' + (r.banned ? r.cat.banned : r.cat.allowed) + '" alt=""><b>' + r.cat.label + '</b></button>'
   ).join('');
   const buttons = [].slice.call(list.querySelectorAll('.light-pick'));
-  const hint = $('lightHint');
+  const hint = $('toolHint');
   const say = i => {
     buttons.forEach(b => b.classList.remove('reach', 'aim'));
     if (i == null) { hint.textContent = 'Pick a sign.'; return; }
-    const r = board[i], reach = fireReach(i);
+    const reach = tool.reach(i);
     buttons[i].classList.add('aim');
     reach.forEach(x => buttons[board.indexOf(x)].classList.add('reach'));
-    const names = reach.map(x => x.cat.label.toLowerCase());
-    const list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
-    hint.textContent = !reach.length
-      ? (r.banned ? 'Nothing next to ' + r.cat.label.toLowerCase() + ' can catch.' : r.cat.label + ' is stabbed — it will not catch.')
-      : (r.banned ? 'Fire spreads from ' + r.cat.label.toLowerCase() + ' to ' + list + '.'
-                  : 'Only ' + list + ' turns red.');
+    hint.textContent = tool.hint(board[i], reach);
   };
-  const done = (i) => {
-    $('light').hidden = true;
+  const done = i => {
+    $('tool').hidden = true;
     paused = false;
     if (i != null) {
-      you.lights--;
-      const caught = strike(i);
-      toast(caught.length ? 'You set fire to the board: no ' + caught.join(', no ').toLowerCase()
-                          : 'Your lighter caught nothing', true);
+      you[tool.count]--;
+      const rows = useTool(kind, i);
+      if (rows.length) toast(tool.said('You', rows), true);
     }
     then();
   };
-  /* with a mouse, hovering shows where it will spread and a click strikes;
-     on a touchscreen the first tap aims and a second tap on the same sign strikes */
   const hover = matchMedia('(hover: hover)').matches;
   let aimed = null;
   buttons.forEach(b => {
     const i = Number(b.getAttribute('data-i'));
     if (hover) { b.onmouseenter = () => say(i); b.onmouseleave = () => say(aimed); }
     b.onclick = () => {
-      if ((hover || aimed === i) && fireReach(i).length) { done(i); return; }
+      if ((hover || aimed === i) && tool.reach(i).length) { done(i); return; }
       aimed = i; say(i);
     };
   });
   say(null);
-  $('lightCount').textContent = you.lights > 1 ? 'You have ' + you.lights + ' lighters.' : '';
-  $('lightSkip').onclick = () => done(null);
-  $('light').hidden = false;
+  $('toolSkip').onclick = () => done(null);
+  $('tool').hidden = false;
 }
 
-/* Officer B strikes as soon as they have one, wherever it catches most */
-function oppLights() {
-  if (!(opp.lights > 0)) return;
-  let best = -1, most = 0;
-  board.forEach((r, i) => {
-    const n = fireReach(i).length + Math.random() * 0.5;   /* ties broken at random */
-    if (n > most) { most = n; best = i; }
-  });
-  if (best < 0 || most < 1) return;
-  opp.lights--;
-  const from = board[best];
-  const caught = strike(best);
-  toast('Officer B set fire to ' + from.cat.label.toLowerCase() + ': no ' + caught.join(', no ').toLowerCase(), false);
+/* ---------- Officer B's hand ----------
+   B reads the same wall and plays simply, and in plain sight:
+   - a screwdriver goes straight on the green sign with the most pieces still
+     going round, because more contraband is how anybody gets to the target;
+   - a lighter is only struck on a chain of two or more reds, the biggest one;
+   - a knife is only drawn when you are holding a lighter or a screwdriver,
+     and it goes on the red sign that covers the most pieces in play. */
+function piecesLeft() {
+  const n = {};
+  [].concat(YOU.queue || [], THEM.queue || [], YOU.donePile || [], THEM.donePile || [],
+            held ? [held] : [], oppHeld ? [oppHeld] : [])
+    .forEach(t => t && t.bag && t.bag.items.forEach(it => {
+      (tagIndex()[it.design] || []).forEach(tg => { n[tg] = (n[tg] || 0) + 1; });
+    }));
+  return n;
+}
+
+function oppPlay(kind, i) {
+  const rows = useTool(kind, i);
+  if (!rows.length) return false;
+  opp[TOOLS[kind].count]--;
+  toast(TOOLS[kind].said('Officer B', rows), false);
+  return true;
 }
 
 function oppStabs() {
-  if (!(opp.stabs > 0)) return;
-  const green = board.filter(r => !r.banned && !r.stabbed);
-  if (!green.length) return;
-  const row = green[Math.floor(Math.random() * green.length)];
-  row.stabbed = true;
-  opp.stabs--;
-  drawSigns();
-  toast('Officer B stabbed ' + row.cat.label.toLowerCase(), false);
+  if (!(opp.stabs > 0) || !((you.lights || 0) + (you.screws || 0))) return;
+  const left = piecesLeft();
+  let best = -1, most = -1;
+  board.forEach((r, i) => {
+    if (!r.banned || r.stabbed) return;
+    const n = (left[r.cat.tag] || 0) + Math.random() * 0.5;
+    if (n > most) { most = n; best = i; }
+  });
+  if (best >= 0) oppPlay('stab', best);
 }
 
-/* Before a round: Officer B stabs first, where you can see it, then you get
-   your knife and then your lighter, then B strikes theirs, then the policy
-   turns. Knives only come out on rounds where signs are due to turn — that is
-   the only thing they stop — but a lighter does something on any round. */
+function oppTools() {
+  if (opp.lights > 0) {
+    let best = -1, most = 1;
+    board.forEach((r, i) => {
+      const n = fireReach(i).length + Math.random() * 0.5;
+      if (n >= 2 && n > most) { most = n; best = i; }
+    });
+    if (best >= 0) oppPlay('light', best);
+  }
+  if (opp.screws > 0) {
+    const left = piecesLeft();
+    let best = -1, most = 0;
+    board.forEach((r, i) => {
+      if (r.banned || r.stabbed) return;
+      const n = (left[r.cat.tag] || 0) + Math.random() * 0.5;
+      if (n > most) { most = n; best = i; }
+    });
+    if (best >= 0) oppPlay('screw', best);
+  }
+}
+
+/* Before a round: Officer B draws a knife first, where you can see it, then
+   you get your knife, your lighter and your screwdriver in that order, then B
+   uses theirs. A stab lasts until the end of the round it was made in. */
 function beginRound() {
   if (over || !M.lockstep) return;
   roundNo++;
   youDone = false; oppDone = false; roundGoing = true;
   board.forEach(r => { r.lit = false; });
-  if (M.lean && flipsThisRound()) oppStabs();
-  const steps = [];
-  if (M.lean && flipsThisRound() && you.stabs > 0) steps.push(offerStab);
-  if (M.lean && you.lights > 0) steps.push(offerLight);
-  const run = () => { const step = steps.shift(); if (step) step(run); else dealRound(); };
-  run();
+  if (M.lean) {
+    oppStabs();
+    const steps = ['stab', 'light', 'screw'].map(k => then => offerTool(k, then));
+    const run = () => { const step = steps.shift(); if (step) step(run); else dealRound(); };
+    run();
+    return;
+  }
+  dealRound();
 }
 
 function dealRound() {
   if (over) return;
-  if (M.lean) oppLights();
-  amendmentDue();
+  if (M.lean) oppTools();
+  else amendmentDue();                          /* the lean wall never turns by itself */
   board.forEach(r => { r.stabbed = false; });   /* a stab holds for one turn only */
   if (M.useBoard) drawSigns();
 
@@ -1916,6 +2020,7 @@ function oppSearch(contraband, size, rush) {
       stow(cd.el, SEIZE_THEM, stowThem, it);
       if (M.lean && isKnife(it)) opp.stabs = (opp.stabs || 0) + 1;
       if (M.lean && isLighter(it)) opp.lights = (opp.lights || 0) + 1;
+      if (M.lean && isScrewdriver(it)) opp.screws = (opp.screws || 0) + 1;
       creditSeizure(opp, it);
       pop(SEIZE_THEM.x + SEIZE_THEM.w - 60, SEIZE_THEM.y - 26,
           '+' + VP_SEIZED, 'theirs');

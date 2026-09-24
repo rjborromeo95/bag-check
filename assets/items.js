@@ -881,38 +881,94 @@ const LEAN_PIECES = [
              { img: 'lean_lighters_2_b.png', tags: ['lighter'] } ] },
   { key: 'lean_lighters_3',  name: "Mini lighter",     sound: 'light',  copies: 1,
     sides: [ { img: 'lean_lighters_3_a.png', tags: ['lighter', 'black'] },
-             { img: 'lean_lighters_3_b.png', tags: ['lighter', 'black'] } ] }
+             { img: 'lean_lighters_3_b.png', tags: ['lighter', 'black'] } ] },
+
+  /* Tote bags. The black one has a smiley on both faces. */
+  { key: 'lean_totes_0',     name: "Tennis tote",      sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_totes_0_a.png', tags: ['tote', 'white'] },
+             { img: 'lean_totes_0_b.png', tags: ['tote', 'white'] } ] },
+  { key: 'lean_totes_1',     name: "Black tote",       sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_totes_1_a.png', tags: ['tote', 'black', 'smiley'] },
+             { img: 'lean_totes_1_b.png', tags: ['tote', 'black', 'smiley'] } ] },
+  { key: 'lean_totes_2',     name: "White tote",       sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_totes_2_a.png', tags: ['tote', 'white'] },
+             { img: 'lean_totes_2_b.png', tags: ['tote', 'white'] } ] },
+  { key: 'lean_totes_3',     name: "Yellow tote",      sound: 'cloth',  copies: 3,
+    sides: [ { img: 'lean_totes_3_a.png', tags: ['tote', 'yellow'] },
+             { img: 'lean_totes_3_b.png', tags: ['tote', 'yellow'] } ] },
+  { key: 'lean_totes_4',     name: "Blue tote",        sound: 'rustle', copies: 3,
+    sides: [ { img: 'lean_totes_4_a.png', tags: ['tote'] },
+             { img: 'lean_totes_4_b.png', tags: ['tote'] } ] },
+
+  /* Bottles. The wine counts as red, not black — it is the red sign that
+     catches it. */
+  { key: 'lean_bottles_0',   name: "Olive oil",        sound: 'glass',  copies: 3,
+    sides: [ { img: 'lean_bottles_0_a.png', tags: ['bottle', 'green'] },
+             { img: 'lean_bottles_0_b.png', tags: ['bottle', 'green'] } ] },
+  { key: 'lean_bottles_1',   name: "Rum",              sound: 'glass',  copies: 3,
+    sides: [ { img: 'lean_bottles_1_a.png', tags: ['bottle'] },
+             { img: 'lean_bottles_1_b.png', tags: ['bottle'] } ] },
+  { key: 'lean_bottles_2',   name: "Red wine",         sound: 'glass',  copies: 3,
+    sides: [ { img: 'lean_bottles_2_a.png', tags: ['bottle', 'red'] },
+             { img: 'lean_bottles_2_b.png', tags: ['bottle', 'red'] } ] },
+  { key: 'lean_bottles_3',   name: "Water",            sound: 'plastic', copies: 3,
+    sides: [ { img: 'lean_bottles_3_a.png', tags: ['bottle'] },
+             { img: 'lean_bottles_3_b.png', tags: ['bottle'] } ] },
+  { key: 'lean_bottles_4',   name: "Mustard",          sound: 'plastic', copies: 3,
+    sides: [ { img: 'lean_bottles_4_a.png', tags: ['bottle', 'yellow'] },
+             { img: 'lean_bottles_4_b.png', tags: ['bottle', 'yellow'] } ] },
+
+  /* Screwdrivers. One of each, four in the game: take one and you can turn
+     any single sign over, either way. They lie diagonally like the knives,
+     except the little red one, and flipping one swaps which way it points. */
+  { key: 'lean_screwdrivers_0', name: "Green screwdriver", sound: 'light', copies: 1,
+    sides: [ { img: 'lean_screwdrivers_0_a.png', tags: ['screwdriver'] },
+             { img: 'lean_screwdrivers_0_b.png', tags: ['screwdriver'] } ] },
+  { key: 'lean_screwdrivers_1', name: "Black screwdriver", sound: 'light', copies: 1,
+    sides: [ { img: 'lean_screwdrivers_1_a.png', tags: ['screwdriver', 'black'] },
+             { img: 'lean_screwdrivers_1_b.png', tags: ['screwdriver', 'black'] } ] },
+  { key: 'lean_screwdrivers_2', name: "Red screwdriver", sound: 'light', copies: 1,
+    sides: [ { img: 'lean_screwdrivers_2_a.png', tags: ['screwdriver', 'red'] },
+             { img: 'lean_screwdrivers_2_b.png', tags: ['screwdriver', 'red'] } ] },
+  { key: 'lean_screwdrivers_3', name: "Maroon screwdriver", sound: 'light', copies: 1,
+    sides: [ { img: 'lean_screwdrivers_3_a.png', tags: ['screwdriver', 'red'] },
+             { img: 'lean_screwdrivers_3_b.png', tags: ['screwdriver', 'red'] } ] }
 ];
 
 /* The pieces that do something when you take them. They are never the ones
    left in the box when the deck is too big for the pouches. */
-function isEffectPiece(key) { return key.indexOf('lean_knives') === 0 || key.indexOf('lean_lighters') === 0; }
+function isEffectPiece(key) {
+  return key.indexOf('lean_knives') === 0 || key.indexOf('lean_lighters') === 0 ||
+         key.indexOf('lean_screwdrivers') === 0;
+}
 
-/* The board is a grid now, five across and three down, because the lighter
-   needs to know what is next to what: set fire to a red sign and it spreads to
-   the signs directly above, below and either side. The order below IS the
-   layout, read left to right, top to bottom. Knives sit in a corner and
-   Lighters in the middle, so the two that start red are as far apart as the
-   grid allows and the centre is where fire does the most. */
-const LEAN_COLS = 5;
+/* The board is a grid, six across and three down, because the lighter needs
+   to know what is next to what. The order below IS the layout, read left to
+   right, top to bottom. The three that start red — Knives, Lighters,
+   Screwdrivers — are placed so that none of them touch, so one lighter can
+   never put all three out at once unless somebody has joined them up first. */
+const LEAN_COLS = 6;
 const LEAN_CATEGORIES = [
   { key: 'knife',       label: 'Knives',       tag: 'knife',       allowed: 'knife_ok.png',             banned: 'no_knives.png',        start: true },
   { key: 'hat',         label: 'Hats',         tag: 'hat',         allowed: 'hats_allowed.png',         banned: 'no_hats.png',          start: false },
   { key: 'tshirt',      label: 'T-shirts',     tag: 'tshirt',      allowed: 't_shirts_allowed.png',     banned: 'no_t_shirts.png',      start: false },
   { key: 'trousers',    label: 'Trousers',     tag: 'trousers',    allowed: 'trousers_allowed.png',     banned: 'no_trousers.png',      start: false },
   { key: 'dress',       label: 'Dresses',      tag: 'dress',       allowed: 'dresses_allowed.png',      banned: 'no_dresses.png',       start: false },
+  { key: 'tote',        label: 'Tote bags',    tag: 'tote',        allowed: 'tote_bag_allowed.png',     banned: 'no_tote_bags.png',     start: false },
 
   { key: 'green',       label: 'Green',        tag: 'green',       allowed: 'green_allowed.png',        banned: 'no_green.png',         start: false },
   { key: 'white',       label: 'White',        tag: 'white',       allowed: 'white_allowed.png',        banned: 'no_white.png',         start: false },
   { key: 'lighter',     label: 'Lighters',     tag: 'lighter',     allowed: 'lighter_allowed.png',      banned: 'no_lighter.png',       start: true },
   { key: 'red',         label: 'Red',          tag: 'red',         allowed: 'red_allowed.png',          banned: 'no_red.png',           start: false },
   { key: 'yellow',      label: 'Yellow',       tag: 'yellow',      allowed: 'yellow_allowed.png',       banned: 'no_yellow.png',        start: false },
+  { key: 'bottle',      label: 'Bottles',      tag: 'bottle',      allowed: 'alcohol_allowed.png',      banned: 'no_alcohol.png',       start: false },
 
   { key: 'black',       label: 'Black',        tag: 'black',       allowed: 'black_allowed.png',        banned: 'no_black.png',         start: false },
   { key: 'instruments', label: 'Instruments',  tag: 'instruments', allowed: 'instruments_allowed.png',  banned: 'no_music.png',         start: false },
   { key: 'belts',       label: 'Belts',        tag: 'belt',        allowed: 'belts_allowed.png',        banned: 'no_belts.png',         start: false },
   { key: 'teddy',       label: 'Teddies',      tag: 'teddy',       allowed: 'teddies_allowed.png',      banned: 'no_teddys.png',        start: false },
-  { key: 'smiley',      label: 'Smiley faces', tag: 'smiley',      allowed: 'smiley_faces_allowed.png', banned: 'no_smiley_faces.png',  start: false }
+  { key: 'smiley',      label: 'Smiley faces', tag: 'smiley',      allowed: 'smiley_faces_allowed.png', banned: 'no_smiley_faces.png',  start: false },
+  { key: 'screwdriver', label: 'Screwdrivers', tag: 'screwdriver', allowed: 'screwdriver_allowed.png',  banned: 'no_screwdriver.png',   start: true }
 ];
 
 /* the four signs touching a square of the grid — fewer at the edges */
@@ -946,9 +1002,9 @@ function leanDeck() {
       });
     }
   });
-  /* Sixty-seven pieces and eight pouches of eight: three stay in the box each
-     shift, chosen at random — but never a knife or a lighter, so there are
-     always three of one and four of the other in play. */
+  /* A hundred and one pieces and twelve pouches of eight: five stay in the
+     box each shift, chosen at random — but never a knife, a lighter or a
+     screwdriver, so all eleven of those are always in play. */
   const room = DEAL.trays * DEAL.cap;
   while (d.length > room) {
     const plain = d.filter(x => !x.restricted);
